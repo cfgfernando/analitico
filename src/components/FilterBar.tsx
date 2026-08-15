@@ -1,7 +1,8 @@
 import React from 'react';
 import { Search, RotateCcw, Building2, Calendar, ArrowLeftRight, TrendingUp, Sparkles, Percent, CalendarDays, BarChart3 } from 'lucide-react';
-import { ComparativeMode } from '../types/fiscal';
+import { ComparativeMode, DataSourceMetadata } from '../types/fiscal';
 import { MONTH_NAMES, QUARTERS_INFO } from '../utils/comparative';
+import { DataSourceBadge } from './DataSourceBadge';
 
 interface FilterBarProps {
   searchQuery: string;
@@ -20,6 +21,7 @@ interface FilterBarProps {
   isComparativoAnual?: boolean;
   onToggleComparativoAnual?: (enabled: boolean) => void;
   anoAtual?: number;
+  dataSource?: DataSourceMetadata;
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -39,6 +41,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   isComparativoAnual = false,
   onToggleComparativoAnual,
   anoAtual = 2026,
+  dataSource,
 }) => {
   const anoAnterior = anoAtual - 1;
 
@@ -281,6 +284,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               <span>Limpar</span>
             </button>
           )}
+
+          <div className="hidden lg:flex items-center pl-2 border-l border-slate-200 dark:border-slate-700">
+            <DataSourceBadge dataSource={dataSource} size="sm" showDetails />
+          </div>
         </div>
       </div>
 

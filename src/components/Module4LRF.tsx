@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { LRFLimit, ToastMessage } from '../types/fiscal';
 import { formatCurrency, formatPercent, formatCompactCurrency } from '../utils/formatters';
+import { DataSourceBadge } from './DataSourceBadge';
 
 interface Module4LRFProps {
   limites: LRFLimit[];
@@ -89,6 +90,7 @@ export const Module4LRF: React.FC<Module4LRFProps> = ({ limites, ano, onTriggerT
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            <DataSourceBadge size="sm" showDetails />
             <span className="px-2.5 py-1 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
               RELATÓRIO RGF / SICONFI
             </span>

@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { RevenueSource, ComparativeAnalysis, ComparativeMode, MonthlyComparativeAnalysis, QuarterlyComparativeAnalysis } from '../types/fiscal';
 import { formatCompactCurrency, formatCurrency, formatPercent, exportToCSV } from '../utils/formatters';
+import { DataSourceBadge } from './DataSourceBadge';
 
 interface Module2ReceitasProps {
   receitas: RevenueSource[];
@@ -372,15 +373,18 @@ export const Module2Receitas: React.FC<Module2ReceitasProps> = ({
       {/* Detailed Revenue Table */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm overflow-hidden shadow-sm">
         <div className="px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/40">
-          <h3 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider">
-            {activeMode === 'anual' && comparativeData
-              ? `Detalhamento Comparativo de Receitas (${comparativeData.anoAtual} vs ${comparativeData.anoAnterior})`
-              : activeMode === 'trimestral' && quarterlyComparativeData
-              ? `Detalhamento Comparativo Trimestral de Receitas (${quarterlyComparativeData.trimestreNome}: ${quarterlyComparativeData.ano} vs ${quarterlyComparativeData.anoAnterior})`
-              : activeMode === 'mensal' && monthlyComparativeData
-              ? `Detalhamento Comparativo Mensal de Receitas (${monthlyComparativeData.mesAtual} vs ${monthlyComparativeData.mesAnterior} / ${monthlyComparativeData.ano})`
-              : 'Detalhamento das Fontes de Receita Orçamentária'}
-          </h3>
+          <div className="flex items-center gap-3">
+            <h3 className="font-bold text-slate-900 dark:text-white text-xs uppercase tracking-wider">
+              {activeMode === 'anual' && comparativeData
+                ? `Detalhamento Comparativo de Receitas (${comparativeData.anoAtual} vs ${comparativeData.anoAnterior})`
+                : activeMode === 'trimestral' && quarterlyComparativeData
+                ? `Detalhamento Comparativo Trimestral de Receitas (${quarterlyComparativeData.trimestreNome}: ${quarterlyComparativeData.ano} vs ${quarterlyComparativeData.anoAnterior})`
+                : activeMode === 'mensal' && monthlyComparativeData
+                ? `Detalhamento Comparativo Mensal de Receitas (${monthlyComparativeData.mesAtual} vs ${monthlyComparativeData.mesAnterior} / ${monthlyComparativeData.ano})`
+                : 'Detalhamento das Fontes de Receita Orçamentária'}
+            </h3>
+            <DataSourceBadge size="xs" />
+          </div>
           <span className="text-[10px] font-mono text-slate-500">
             {filteredReceitas.length} FONTE(S) SELECIONADA(S)
           </span>

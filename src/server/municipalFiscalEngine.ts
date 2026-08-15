@@ -264,7 +264,14 @@ export function getMunicipalFiscalSummary(tenant: TenantInfo, ano: number = 2026
       uf: tenant.uf,
       codigoIbge: tenant.codigoIbge,
       perfil: profile.perfilEconomico,
-    }
+    },
+    dataSource: {
+      origin: 'DEMONSTRACAO',
+      source: `Modelo Preditivo LOA / SGF ${tenant.cidade}`,
+      collectedAt: new Date().toISOString(),
+      confidence: 'ESTIMATIVA_ALTA_CONFIANCA',
+      anexo: 'RREO Anexo 01 & RGF Anexo 01',
+    },
   };
 }
 
@@ -474,7 +481,16 @@ export function getMunicipalReceitas(tenant: TenantInfo, ano: number = 2026) {
     },
   ];
 
-  return { ano, receitas };
+  return {
+    ano,
+    receitas,
+    dataSource: {
+      origin: 'DEMONSTRACAO',
+      source: `RREO Anexo 03 / LOA ${tenant.cidade}`,
+      collectedAt: new Date().toISOString(),
+      confidence: 'ESTIMATIVA_ALTA_CONFIANCA',
+    },
+  };
 }
 
 // 3. Despesas
@@ -621,9 +637,6 @@ export function getMunicipalDespesas(tenant: TenantInfo, ano: number = 2026) {
       percentualOrcamento: 3.0,
     },
     {
-      id: 'outras_funcoes',
-      funcao: 'Demais Funções (Cultura, Esporte, Habitação)',
-      icone: 'Layers',
       orcado: Math.round(total * 0.078),
       empenhado: Math.round(total * 0.072 * (ano === 2026 ? 0.52 : 0.90)),
       liquidado: Math.round(total * 0.068 * (ano === 2026 ? 0.48 : 0.86)),
@@ -632,7 +645,17 @@ export function getMunicipalDespesas(tenant: TenantInfo, ano: number = 2026) {
     },
   ];
 
-  return { ano, porNatureza, porFuncao };
+  return {
+    ano,
+    porNatureza,
+    porFuncao,
+    dataSource: {
+      origin: 'DEMONSTRACAO',
+      source: `RREO Anexo 02 / LOA ${tenant.cidade}`,
+      collectedAt: new Date().toISOString(),
+      confidence: 'ESTIMATIVA_ALTA_CONFIANCA',
+    },
+  };
 }
 
 // 4. Limites LRF
@@ -649,11 +672,11 @@ export function getMunicipalLimites(tenant: TenantInfo, ano: number = 2026) {
   const fundebValor = Math.round(fundebBase * 0.742);
 
   const dividaValor = Math.round(rcl * 0.128);
-  const creditoValor = Math.round(rcl * 0.0314);
+  const antecipacaoReceita = Math.round(rcl * 0.0314);
 
   const limites = [
     {
-      id: 'folha_executivo',
+      id: 'pessoal_executivo',
       nome: 'Despesa Total com Pessoal — Poder Executivo',
       baseCalculoNome: 'Receita Corrente Líquida (RCL)',
       baseCalculoValor: rcl,
@@ -663,18 +686,13 @@ export function getMunicipalLimites(tenant: TenantInfo, ano: number = 2026) {
       limiteAlerta: 48.60,
       limitePrudencial: 51.30,
       limiteLegal: 54.00,
-      status: pessoalPct >= 51.3 ? 'CRITICO' : pessoalPct >= 48.6 ? 'ATENCAO' : 'OK',
+      status: pessoalPct > 54 ? 'CRITICO' : pessoalPct > 51.3 ? 'PRUDENCIAL' : pessoalPct > 48.6 ? 'ALERTA' : 'OK',
       fundamentoLegal: 'Art. 19, III e Art. 20, III, "b" da LRF (LC 101/2000)',
-      observacao:
-        pessoalPct >= 51.30
-          ? `ALERTA MÁXIMO em ${tenant.cidade}: Limite Prudencial (51,30%) ultrapassado! Vedações do art. 22 da LRF ativadas.`
-          : pessoalPct >= 48.60
-          ? `Superou o Limite de Alerta (48,60%) com ${pessoalPct.toFixed(2)}% da RCL em ${tenant.cidade}. Vigilância fiscal do Tribunal de Contas (${(51.30 - pessoalPct).toFixed(2)} p.p. abaixo do prudencial).`
-          : `Dentro da conformidade fiscal em ${tenant.cidade} (${pessoalPct.toFixed(2)}% da RCL).`,
+      observacao: `Gasto com pessoal do Executivo em ${pessoalPct}%. ${pessoalPct > 51.3 ? 'Atenção: próximo ou acima do limite prudencial.' : 'Enquadramento regular.'}`,
     },
     {
       id: 'educacao_mde',
-      nome: 'Aplicação em Manutenção e Desenvolvimento do Ensino (MDE)',
+      nome: 'Aplicação em Manutenção e Desenv. do Ensino (MDE)',
       baseCalculoNome: 'Receita Líquida de Impostos e Transferências',
       baseCalculoValor: baseImpostos,
       valorRealizado: educacaoValor,
@@ -683,11 +701,11 @@ export function getMunicipalLimites(tenant: TenantInfo, ano: number = 2026) {
       limiteLegal: 25.00,
       status: 'OK',
       fundamentoLegal: 'Art. 212 da Constituição Federal de 1988',
-      observacao: `Conformidade plena em ${tenant.cidade}. Município aplica 27,4%, superando a exigência constitucional mínima de 25,00%.`,
+      observacao: `Aplicação constitucional de 27,4% da receita resultante de impostos na Educação em ${tenant.cidade}, cumprindo o piso de 25,0%.`,
     },
     {
       id: 'saude_asps',
-      nome: 'Aplicação em Ações e Serviços Públicos de Saúde (ASPS)',
+      nome: 'Ações e Serviços Públicos de Saúde (ASPS)',
       baseCalculoNome: 'Receita Líquida de Impostos e Transferências',
       baseCalculoValor: baseImpostos,
       valorRealizado: saudeValor,
@@ -695,12 +713,12 @@ export function getMunicipalLimites(tenant: TenantInfo, ano: number = 2026) {
       limiteMinimoOuMaximo: 'minimo',
       limiteLegal: 15.00,
       status: 'OK',
-      fundamentoLegal: 'Art. 77 do ADCT / LC 141/2012',
-      observacao: `Conformidade plena em ${tenant.cidade}. Aplicação de 21,8% supera com folga o piso constitucional de 15,00%.`,
+      fundamentoLegal: 'Art. 198 da CF/88 e Lei Complementar nº 141/2012',
+      observacao: `Aplicação em Saúde em ${tenant.cidade} atinge 21,82%, superando com folga a exigência mínima de 15,0%.`,
     },
     {
       id: 'fundeb_magisterio',
-      nome: 'Remuneração dos Profissionais da Educação Básica (FUNDEB)',
+      nome: 'Aplicação do FUNDEB na Remuneração do Magistério',
       baseCalculoNome: 'Total de Recursos do FUNDEB Recebidos',
       baseCalculoValor: fundebBase,
       valorRealizado: fundebValor,
@@ -728,10 +746,10 @@ export function getMunicipalLimites(tenant: TenantInfo, ano: number = 2026) {
     },
     {
       id: 'operacoes_credito',
-      nome: 'Operações de Crédito no Exercício',
+      nome: 'Operações de Crédito (Endividamento Anual)',
       baseCalculoNome: 'Receita Corrente Líquida (RCL)',
       baseCalculoValor: rcl,
-      valorRealizado: creditoValor,
+      valorRealizado: antecipacaoReceita,
       percentualRealizado: 3.14,
       limiteMinimoOuMaximo: 'maximo',
       limiteLegal: 16.00,
@@ -741,7 +759,16 @@ export function getMunicipalLimites(tenant: TenantInfo, ano: number = 2026) {
     },
   ];
 
-  return { ano, limites };
+  return {
+    ano,
+    limites,
+    dataSource: {
+      origin: 'DEMONSTRACAO',
+      source: `RGF Anexo 01 / TCE-${tenant.uf} ${tenant.cidade}`,
+      collectedAt: new Date().toISOString(),
+      confidence: 'ESTIMATIVA_ALTA_CONFIANCA',
+    },
+  };
 }
 
 // 5. Captação & Emendas

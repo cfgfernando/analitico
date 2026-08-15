@@ -34,6 +34,7 @@ import { formatCompactCurrency, formatCurrency, formatPercent } from '../utils/f
 import { SparklineSummary12M } from './SparklineSummary12M';
 import { PredictiveAnalysisModal } from './PredictiveAnalysisModal';
 import { FiscalRadarLimitsChart } from './FiscalRadarLimitsChart';
+import { DataSourceBadge } from './DataSourceBadge';
 
 interface Module1KPIsProps {
   summary: FiscalKPIs;
@@ -205,6 +206,7 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
               <span className="text-[10px] text-slate-400 font-mono">
                 IBGE: {tenantInfo?.codigoIbge || '4101804'} ({(tenantInfo?.cidade || 'ARAUCÁRIA').toUpperCase()}/{tenantInfo?.uf || 'PR'})
               </span>
+              <DataSourceBadge dataSource={summary.dataSource} size="xs" showDetails />
             </div>
             <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white uppercase">
               PAINEL EXECUTIVO DE GESTÃO FISCAL & ORÇAMENTÁRIA — {tenantInfo?.cidade || 'ARAUCÁRIA'}

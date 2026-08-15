@@ -136,6 +136,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           isComparativoAnual={isComparativoAnual}
           onToggleComparativoAnual={onToggleComparativoAnual}
           anoAtual={ano}
+          dataSource={summary?.dataSource}
         />
       )}
 

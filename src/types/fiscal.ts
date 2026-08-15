@@ -1,3 +1,13 @@
+export type DataSourceOrigin = 'OFICIAL' | 'DEMONSTRACAO';
+
+export interface DataSourceMetadata {
+  origin: DataSourceOrigin;
+  source: string; // Ex: 'SICONFI / STN (Tesouro Nacional)', 'TCE-PR CAp Fiscal', 'Transferegov / Obrasgov', 'Modelo Preditivo LOA'
+  collectedAt?: string;
+  confidence?: 'OFICIAL_HOMOLOGADO' | 'ESTIMATIVA_ALTA_CONFIANCA' | 'PROJECAO_PREDITIVA';
+  anexo?: string;
+}
+
 export interface SiconfiRreoItem {
   exercicio: number;
   periodo: number;
@@ -52,12 +62,14 @@ export interface FiscalKPIs {
   fundebMagisterioPercentual: number; // min 70%
   metaCaptacaoAnual: number; // R$ 124.000.000
   captacaoRealizada: number;
+  dataSource?: DataSourceMetadata;
 }
 
 export interface RevenueSource {
   id: string;
   nome: string;
   categoria: 'Tributária Própria' | 'Transferências do Estado' | 'Transferências da União' | 'Royalties/Compensações' | 'Outras';
+  dataSource?: DataSourceMetadata;
   orcado: number;
   reestimado: number;
   realizado: number;
