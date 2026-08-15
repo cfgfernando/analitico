@@ -3,34 +3,18 @@ import {
   Database,
   RefreshCw,
   FileSpreadsheet,
-  Layers,
-  LayoutDashboard,
-  TrendingUp,
-  Receipt,
-  Scale,
-  HandCoins,
-  GraduationCap,
-  Sparkles,
   Menu,
-  X,
-  ChevronLeft,
-  ChevronRight,
   ChevronDown,
   Building2,
   CheckCircle2,
   AlertTriangle,
   Presentation,
-  Maximize2,
-  Minimize2,
-  MapPin,
-  Landmark,
-  Check,
-  ShieldCheck,
   Moon,
   Sun,
-  Trophy,
-  Award,
-  BellRing,
+  MapPin,
+  Check,
+  ShieldCheck,
+  Landmark,
 } from 'lucide-react';
 import { SiconfiApiStatus } from '../types/fiscal';
 
@@ -57,6 +41,7 @@ interface HeaderProps {
   };
   authRole?: 'EMPRESA_MASTER' | 'PREFEITURA_CLIENTE';
   onChangeAuthRole?: (role: 'EMPRESA_MASTER' | 'PREFEITURA_CLIENTE') => void;
+  onToggleSidebar?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -68,7 +53,6 @@ export const Header: React.FC<HeaderProps> = ({
   onExportAllCSV,
   activeTab,
   setActiveTab,
-  novasEmendas7Dias = 0,
   isPresentationMode = false,
   onTogglePresentationMode,
   isDarkMode = false,
@@ -81,11 +65,10 @@ export const Header: React.FC<HeaderProps> = ({
   },
   authRole = 'EMPRESA_MASTER',
   onChangeAuthRole,
+  onToggleSidebar,
 }) => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const roleDropdownRef = useRef<HTMLDivElement>(null);
-  const navScrollRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -109,675 +92,190 @@ export const Header: React.FC<HeaderProps> = ({
     setRoleDropdownOpen(false);
   };
 
-  const tabs = [
-    {
-      id: 'painel_prefeito',
-      number: 'PREF',
-      label: 'PAINEL DO PREFEITO',
-      shortLabel: 'Gabinete Prefeito',
-      icon: Landmark,
-      badge: 'Executivo',
-      badgeColor: 'emerald',
-      desc: 'Visão executiva resumida, margem da folha em R$ e decisões da semana',
-    },
-    {
-      id: 'modulo1',
-      number: '01',
-      label: 'DASHBOARD PRINCIPAL',
-      shortLabel: 'Dashboard',
-      icon: LayoutDashboard,
-      desc: 'Visão executiva, KPIs consolidados e semáforos fiscais',
-    },
-    {
-      id: 'modulo2',
-      number: '02',
-      label: 'RECEITAS ORÇAMENTÁRIAS',
-      shortLabel: 'Receitas',
-      icon: TrendingUp,
-      desc: 'Arrecadação, ICMS/REPAR, ISSQN, IPTU e reestimativa LOA',
-    },
-    {
-      id: 'modulo3',
-      number: '03',
-      label: 'DESPESAS E FUNÇÕES',
-      shortLabel: 'Despesas',
-      icon: Receipt,
-      desc: 'Execução por função de governo e natureza de despesa',
-    },
-    {
-      id: 'modulo4',
-      number: '04',
-      label: 'LIMITES LRF',
-      shortLabel: 'Limites LRF',
-      icon: Scale,
-      badge: 'Alerta 50,15%',
-      badgeColor: 'amber',
-      desc: 'Folha de pessoal, pisos constitucionais e endividamento',
-    },
-    {
-      id: 'modulo5',
-      number: '05',
-      label: 'CAPTAÇÃO E CONVÊNIOS',
-      shortLabel: 'Captação',
-      icon: HandCoins,
-      badge: novasEmendas7Dias > 0 ? `+${novasEmendas7Dias} novas (7d)` : undefined,
-      badgeColor: 'emerald',
-      desc: 'Emendas parlamentares federais/estaduais e Transferegov',
-    },
-    {
-      id: 'modulo6',
-      number: '06',
-      label: 'FUNDEB',
-      shortLabel: 'FUNDEB',
-      icon: GraduationCap,
-      desc: 'Magistério, complementação VAAT/VAAR e matrizes SIOPE',
-    },
-    {
-      id: 'benchmark',
-      number: '07',
-      label: 'BENCHMARK REGIONAL',
-      shortLabel: 'Benchmark',
-      icon: Trophy,
-      badge: 'Comparativo',
-      badgeColor: 'amber',
-      desc: 'Comparativo regional pareado, RCL per capita e eficiência fiscal',
-    },
-    {
-      id: 'selo',
-      number: '08',
-      label: 'SELO DE CONFORMIDADE',
-      shortLabel: 'Selo Fiscal',
-      icon: Award,
-      badge: 'Oficial',
-      badgeColor: 'emerald',
-      desc: 'Certificado de gestão fiscal transparente e widget de transparência',
-    },
-    {
-      id: 'alertas_prazos',
-      number: '09',
-      label: 'ALERTAS E PRAZOS',
-      shortLabel: 'Radar Riscos',
-      icon: BellRing,
-      badge: '2 Críticos',
-      badgeColor: 'amber',
-      desc: 'Monitoramento de certidões do CAUC, prazos SICONFI e riscos da LRF',
-    },
-    {
-      id: 'siconfi',
-      number: '10',
-      label: 'API SICONFI LIVE',
-      shortLabel: 'Siconfi API',
-      icon: Database,
-      badge: authRole === 'PREFEITURA_CLIENTE' ? 'Consulta Segura' : 'Configuração',
-      badgeColor: 'emerald',
-      desc: 'Console de dados abertos e payloads JSON do Tesouro Nacional',
-    },
-    {
-      id: 'diagnostico',
-      number: '08',
-      label: 'DIAGNÓSTICO EXECUTIVO',
-      shortLabel: 'IA Auditor',
-      icon: Sparkles,
-      desc: 'Parecer técnico automatizado e consultoria estratégica',
-    },
-    {
-      id: 'obras',
-      number: '09',
-      label: 'MAPA DE OBRAS',
-      shortLabel: 'Mapa Obras',
-      icon: MapPin,
-      badge: 'Georreferenciado',
-      badgeColor: 'emerald',
-      desc: 'Obras públicas em execução, geolocalização e avanço físico',
-    },
-    {
-      id: 'saas_admin',
-      number: '10',
-      label: 'PAINEL MASTER SAAS',
-      shortLabel: authRole === 'PREFEITURA_CLIENTE' ? 'Master SaaS 🔒' : 'Master SaaS',
-      icon: Building2,
-      badge: authRole === 'PREFEITURA_CLIENTE' ? '🔒 Exclusivo Empresa' : 'Provedor SaaS',
-      badgeColor: authRole === 'PREFEITURA_CLIENTE' ? 'amber' : 'emerald',
-      desc: 'Gestão multi-tenant de prefeituras, edição cadastral, APIs dinâmicas e faturamento',
-    },
-    {
-      id: 'usuarios',
-      number: '11',
-      label: 'GESTÃO DE USUÁRIOS',
-      shortLabel: authRole === 'PREFEITURA_CLIENTE' ? 'Equipe Municipal' : 'Usuários & Licenças',
-      icon: Layers,
-      badge: authRole === 'PREFEITURA_CLIENTE' ? '2 Inclusos' : 'Controle SaaS',
-      badgeColor: 'amber',
-      desc: authRole === 'PREFEITURA_CLIENTE'
-        ? 'Visualização de acessos municipais e solicitações à Empresa Mantenedora'
-        : 'Cadastro e acréscimos de usuários para prefeituras contratantes',
-    },
-  ];
-
-  const handleTabClick = (tabId: string) => {
-    setActiveTab(tabId);
-    setMobileMenuOpen(false);
-    // Scroll window smoothly to top of main view
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const scrollNav = (direction: 'left' | 'right') => {
-    if (navScrollRef.current) {
-      const scrollAmount = direction === 'left' ? -250 : 250;
-      navScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  const getTabLabel = (id: string) => {
+    switch (id) {
+      case 'painel_prefeito': return 'Painel do Prefeito (Gabinete)';
+      case 'benchmark': return 'Benchmark Regional & Eficiência Fiscal';
+      case 'selo': return 'Selo de Conformidade & Certificado Oficial';
+      case 'alertas_prazos': return 'Radar de Alertas & Prazos Críticos';
+      case 'modulo1': return '01. Dashboard Executivo & KPIs';
+      case 'modulo2': return '02. Receitas Orçamentárias & Reforma EC 132';
+      case 'modulo3': return '03. Despesas & Funções de Governo';
+      case 'modulo4': return '04. Limites LRF & Gastos de Pessoal';
+      case 'modulo5': return '05. Captação Externa & Convênios';
+      case 'modulo6': return '06. FUNDEB, VAAT/VAAR & SIOPE';
+      case 'diagnostico': return '08. Diagnóstico IA Auditor';
+      case 'obras': return '09. Mapa Georreferenciado de Obras';
+      case 'siconfi': return '10. Console API SICONFI Live';
+      case 'saas_admin': return 'Painel Master SaaS (Empresa)';
+      case 'tenant_users': return 'Gestão de Usuários e Acessos';
+      default: return 'Painel Fiscal';
     }
   };
 
-  const currentTabObj = tabs.find(t => t.id === activeTab) || tabs[0];
-
   return (
-    <div
-      className="sticky top-0"
-      style={{ zIndex: 'var(--sgf-z-header)', boxShadow: 'var(--sgf-shadow-md)' }}
-    >
-      {/* Top Header - Deep Slate with Emerald Accent Line */}
-      <header className="h-16 bg-slate-900 text-white flex items-center justify-between px-3 sm:px-6 lg:px-8 border-b-4 border-emerald-500">
-        {/* Brand & Municipal Identity */}
-        <div className="flex items-center gap-2.5 sm:gap-3.5">
-          {/* Mobile Menu Toggle Button */}
+    <header className="sticky top-0 z-30 bg-slate-900 border-b border-slate-800 text-white shadow-md">
+      <div className="w-full px-3 sm:px-4 lg:px-6 flex items-center justify-between h-14 gap-2">
+        {/* Left: Sidebar Toggle + Tenant Info & Breadcrumb */}
+        <div className="flex items-center gap-3 min-w-0">
           <button
-            type="button"
-            id="mobile-menu-toggle-btn"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition"
-            aria-label={mobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
-            title="Menu de navegação dos módulos"
+            onClick={onToggleSidebar}
+            className="p-1.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer shrink-0"
+            title="Abrir/Fechar Menu Lateral ([)"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5 text-emerald-400" /> : <Menu className="w-5 h-5 text-emerald-400" />}
+            <Menu className="w-4 h-4" />
           </button>
 
-          <button
-            type="button"
-            onClick={() => handleTabClick('modulo1')}
-            className="flex items-center gap-2.5 sm:gap-3.5 text-left focus:outline-none group"
-            title="Ir para o Dashboard Principal"
-          >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-500 rounded-sm flex items-center justify-center font-bold text-lg sm:text-xl text-slate-950 shadow-sm shrink-0 font-mono select-none group-hover:bg-emerald-400 transition">
-              {tenantInfo.cidade ? tenantInfo.cidade.charAt(0).toUpperCase() : 'A'}
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-sm bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+              <Landmark className="w-4 h-4" />
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <h1 className="text-xs sm:text-sm font-bold leading-tight uppercase tracking-wider text-white">
-                  SGF {tenantInfo.cidade || 'Araucária'}
-                </h1>
-                <span className="text-[8.5px] font-bold px-1.5 py-0.5 rounded-sm bg-emerald-950 text-emerald-300 border border-emerald-500/40">
-                  {tenantInfo.uf || 'PR'}
+
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-xs font-mono tracking-tight text-white uppercase truncate">
+                  {tenantInfo.cidade} / {tenantInfo.uf}
+                </span>
+                <span className="hidden sm:inline-block text-[9px] font-mono px-1.5 py-0.2 rounded-xs bg-slate-800 text-slate-400 border border-slate-700">
+                  IBGE {tenantInfo.codigoIbge}
                 </span>
               </div>
-              <p className="text-[8.5px] sm:text-[9px] text-emerald-400 font-mono uppercase tracking-[0.12em] truncate max-w-[180px] sm:max-w-none">
-                Gestão Fiscal & Orçamentária
-              </p>
+              <span className="text-[10px] font-mono text-emerald-400 truncate">
+                {getTabLabel(activeTab)}
+              </span>
             </div>
+          </div>
+        </div>
+
+        {/* Center/Right: Actions & Controls */}
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Seletor de Exercício Fiscal */}
+          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-sm p-0.5">
+            {[2024, 2025, 2026, 2027].map(ano => (
+              <button
+                key={ano}
+                onClick={() => onSelectAno(ano)}
+                className={`px-2 py-0.5 text-xs font-mono font-bold rounded-xs transition cursor-pointer ${
+                  anoSelecionado === ano
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {ano}
+              </button>
+            ))}
+          </div>
+
+          {/* SICONFI Live Status */}
+          <div
+            className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-slate-950/60 border border-slate-800 text-[11px] font-mono text-slate-300"
+            title={`API SICONFI Live: ${siconfiStatus?.tempoRespostaMs || 240}ms`}
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <span>SICONFI LIVE</span>
+            <span className="text-[10px] text-slate-400 font-bold">
+              {siconfiStatus?.tempoRespostaMs || 240}ms
+            </span>
+          </div>
+
+          {/* Botão de Atualizar Dados */}
+          <button
+            onClick={onRefresh}
+            disabled={loading}
+            className="p-1.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer disabled:opacity-50"
+            title="Atualizar Dados Fiscais"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
           </button>
 
-          {/* Role / Profile Selector (Empresa Master vs Prefeitura Cliente) */}
-          <div className="relative ml-1 sm:ml-3" ref={roleDropdownRef}>
+          {/* Botão Exportar CSV */}
+          <button
+            onClick={onExportAllCSV}
+            className="hidden sm:flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-wider text-emerald-300 bg-emerald-950/40 border border-emerald-800 rounded-sm hover:bg-emerald-900/50 transition cursor-pointer"
+            title="Exportar Relatório Consolidado em CSV"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>CSV</span>
+          </button>
+
+          {/* Botão Modo Apresentação */}
+          {onTogglePresentationMode && (
             <button
-              type="button"
-              id="btn-switch-user-role"
-              onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 sm:py-1.5 rounded-lg text-xs font-bold border transition shadow-sm cursor-pointer select-none ${
-                authRole === 'EMPRESA_MASTER'
-                  ? 'bg-blue-950/90 hover:bg-blue-900 text-blue-200 border-blue-500/50 hover:border-blue-400'
-                  : 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-200 border-emerald-500/50 hover:border-emerald-400'
+              onClick={onTogglePresentationMode}
+              className={`flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-bold uppercase tracking-wider rounded-sm transition cursor-pointer border ${
+                isPresentationMode
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-xs'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
               }`}
-              title="Clique para alternar entre Perfil Empresa SaaS (Master) e Prefeitura Municipal (Cliente)"
+              title="Alternar Modo Apresentação para Audiências Públicas"
             >
-              {authRole === 'EMPRESA_MASTER' ? (
-                <>
-                  <Building2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                  <span className="hidden sm:inline font-mono">🏢 Empresa Master</span>
-                  <span className="sm:hidden font-mono">🏢 Master</span>
-                </>
-              ) : (
-                <>
-                  <Landmark className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span className="hidden sm:inline font-mono">🏛️ {tenantInfo.cidade || 'Prefeitura'}</span>
-                  <span className="sm:hidden font-mono">🏛️ Cliente</span>
-                </>
-              )}
-              <ChevronDown className={`w-3.5 h-3.5 opacity-80 transition-transform ${roleDropdownOpen ? 'rotate-180' : ''}`} />
+              <Presentation className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Apresentação</span>
+            </button>
+          )}
+
+          {/* Toggle Tema Escuro/Claro */}
+          {onToggleDarkMode && (
+            <button
+              onClick={onToggleDarkMode}
+              className="p-1.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer"
+              title={isDarkMode ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro'}
+            >
+              {isDarkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-slate-300" />}
+            </button>
+          )}
+
+          {/* Dropdown de Seleção de Papel (Role) */}
+          <div className="relative" ref={roleDropdownRef}>
+            <button
+              onClick={() => setRoleDropdownOpen(prev => !prev)}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono text-slate-200 transition cursor-pointer"
+            >
+              <Building2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span className="hidden sm:inline font-bold">
+                {authRole === 'EMPRESA_MASTER' ? 'Empresa Master' : 'Prefeitura'}
+              </span>
+              <ChevronDown className="w-3 h-3 text-slate-400" />
             </button>
 
             {roleDropdownOpen && (
-              <div
-                className="absolute left-0 mt-2 w-80 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-xs"
-              >
-                <div className="px-2 py-1.5 text-[10px] font-mono uppercase text-slate-400 border-b border-slate-800 font-bold flex items-center justify-between">
-                  <span>Alternar Perfil de Acesso</span>
-                  <span className="text-amber-400">Controle RBAC</span>
+              <div className="absolute right-0 mt-1 w-56 bg-slate-900 border border-slate-800 rounded-sm shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1.5 border-b border-slate-800 text-[10px] font-mono text-slate-400 uppercase">
+                  Alternar Perfil de Acesso
                 </div>
 
-                <div className="space-y-1.5 mt-2">
-                  <button
-                    type="button"
-                    id="btn-role-empresa-master"
-                    onClick={() => handleSelectRole('EMPRESA_MASTER')}
-                    className={`w-full text-left p-2.5 rounded-lg transition-all flex items-start gap-2.5 cursor-pointer ${
-                      authRole === 'EMPRESA_MASTER'
-                        ? 'bg-blue-600/30 text-white border border-blue-500 shadow-xs'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent'
-                    }`}
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-blue-600/40 text-blue-300 flex items-center justify-center shrink-0 mt-0.5 font-bold">
-                      🏢
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-bold flex items-center justify-between text-blue-200">
-                        <span>Empresa SaaS (Master Admin)</span>
-                        {authRole === 'EMPRESA_MASTER' && <Check className="w-4 h-4 text-blue-400 shrink-0" />}
-                      </div>
-                      <p className="text-[11px] text-slate-400 leading-tight mt-1">
-                        Acesso total: cadastrar prefeituras, gerenciar planos, faturamento, criar usuários e configurar APIs.
-                      </p>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    id="btn-role-prefeitura-cliente"
-                    onClick={() => handleSelectRole('PREFEITURA_CLIENTE')}
-                    className={`w-full text-left p-2.5 rounded-lg transition-all flex items-start gap-2.5 cursor-pointer ${
-                      authRole === 'PREFEITURA_CLIENTE'
-                        ? 'bg-emerald-600/30 text-white border border-emerald-500 shadow-xs'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent'
-                    }`}
-                  >
-                    <div className="w-7 h-7 rounded-lg bg-emerald-600/40 text-emerald-300 flex items-center justify-center shrink-0 mt-0.5 font-bold">
-                      🏛️
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-bold flex items-center justify-between text-emerald-200">
-                        <span>Prefeitura Municipal (Cliente)</span>
-                        {authRole === 'PREFEITURA_CLIENTE' && <Check className="w-4 h-4 text-emerald-400 shrink-0" />}
-                      </div>
-                      <p className="text-[11px] text-slate-400 leading-tight mt-1">
-                        Acesso cliente: Módulos fiscais (01 ao 09) e visualização de servidores cadastrados pela empresa.
-                      </p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Right Controls: Year Selector, Refresh, Export, Siconfi Pill */}
-        <div className="flex items-center gap-2 sm:gap-4 lg:gap-6">
-          {/* IBGE Metric (Desktop) */}
-          <div className="hidden xl:flex flex-col items-end">
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">CÓDIGO IBGE</span>
-            <span className="text-xs font-mono text-slate-200 font-semibold">{tenantInfo.codigoIbge || '4101804'}</span>
-          </div>
-
-          <div className="hidden xl:block h-8 w-[1px] bg-white/20"></div>
-
-          {/* Exercise Year Selector */}
-          <div className="flex items-center sm:flex-col sm:items-end gap-1 sm:gap-0">
-            <span className="hidden sm:inline text-[9px] uppercase font-bold text-slate-400 tracking-wider">EXERCÍCIO</span>
-            <div className="flex items-center gap-1">
-              {[2024, 2025, 2026].map(ano => (
                 <button
-                  type="button"
-                  key={ano}
-                  id={`btn-ano-${ano}`}
-                  onClick={() => onSelectAno(ano)}
-                  className={`px-1.5 sm:px-2 py-0.5 text-xs font-mono font-bold rounded-sm transition-all ${
-                    anoSelecionado === ano
-                      ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                      : 'text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700'
-                  }`}
-                  title={`Alternar para o exercício de ${ano}`}
-                >
-                  {ano}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="h-8 w-[1px] bg-white/20 hidden sm:block"></div>
-
-          {/* Actions: Refresh, Export & Modo Apresentação */}
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {onTogglePresentationMode && (
-              <button
-                type="button"
-                id="header-presentation-mode-btn"
-                onClick={onTogglePresentationMode}
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-sm text-xs font-bold font-mono uppercase tracking-wider transition shadow-sm cursor-pointer ${
-                  isPresentationMode
-                    ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black animate-pulse'
-                    : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                }`}
-                title={
-                  isPresentationMode
-                    ? 'Sair do Modo Apresentação (Esc)'
-                    : 'Ativar Modo Apresentação (Tela cheia para TCE-PR / Audiência)'
-                }
-              >
-                <Presentation className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">
-                  {isPresentationMode ? 'Sair da Apresentação' : 'Apresentação TCE'}
-                </span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              id="header-refresh-btn"
-              onClick={onRefresh}
-              disabled={loading}
-              className="p-1.5 sm:p-2 rounded-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition disabled:opacity-50"
-              title="Atualizar dados oficiais do Tesouro Nacional / Siconfi"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
-            </button>
-
-            {/* Dark Mode Toggle */}
-            {onToggleDarkMode && (
-              <button
-                type="button"
-                id="header-dark-mode-toggle-btn"
-                onClick={onToggleDarkMode}
-                className="p-1.5 sm:p-2 rounded-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition relative overflow-hidden"
-                title={isDarkMode ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro'}
-                aria-label={isDarkMode ? 'Ativar modo claro' : 'Ativar modo escuro'}
-              >
-                <span className="relative block w-3.5 h-3.5">
-                  <Sun
-                    className={`absolute inset-0 w-3.5 h-3.5 transition-all duration-300 ${
-                      isDarkMode ? 'opacity-100 rotate-0 scale-100 text-amber-400' : 'opacity-0 -rotate-90 scale-50'
-                    }`}
-                  />
-                  <Moon
-                    className={`absolute inset-0 w-3.5 h-3.5 transition-all duration-300 ${
-                      isDarkMode ? 'opacity-0 rotate-90 scale-50' : 'opacity-100 rotate-0 scale-100 text-slate-300'
-                    }`}
-                  />
-                </span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              id="header-export-csv-btn"
-              onClick={onExportAllCSV}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-sm bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold font-mono uppercase tracking-wider shadow-sm transition"
-              title="Exportar dados consolidados em planilha CSV"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">CSV</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Desktop Navigation Bar with Scroll Arrows */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 relative flex items-center">
-        {/* Left Scroll Arrow for Narrow Screens */}
-        <button
-          type="button"
-          onClick={() => scrollNav('left')}
-          className="hidden md:flex items-center justify-center w-7 h-11 bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 border-r border-slate-200 dark:border-slate-800 z-10 shrink-0"
-          title="Rolar menu para esquerda"
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-
-        {/* Horizontal Navigation List */}
-        <nav
-          ref={navScrollRef}
-          id="main-desktop-navigation"
-          className="h-10 flex-1 flex items-center px-2 sm:px-3 gap-1.5 sm:gap-2.5 overflow-x-auto scrollbar-none scroll-smooth"
-        >
-          {tabs.map(tab => {
-            const isActive = activeTab === tab.id;
-            const Icon = tab.icon;
-            const isCaptacaoComNovas = tab.id === 'modulo5' && novasEmendas7Dias > 0;
-            return (
-              <button
-                type="button"
-                key={tab.id}
-                id={`tab-btn-${tab.id}`}
-                onClick={() => handleTabClick(tab.id)}
-                className={`text-[11px] uppercase tracking-wide py-2 px-2 sm:px-2.5 font-bold whitespace-nowrap cursor-pointer transition-all flex items-center gap-1.5 rounded-sm ${
-                  isActive
-                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-b-2 border-emerald-600 dark:border-emerald-400 font-bold shadow-xs'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 border-b-2 border-transparent font-semibold'
-                }`}
-                title={tab.desc}
-              >
-                <div className="relative inline-flex items-center justify-center">
-                  <Icon className={`w-3 h-3 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
-                  {isCaptacaoComNovas && (
-                    <span
-                      id="badge-icon-captacao-desktop"
-                      className="absolute -top-1.5 -right-1.5 flex h-2 w-2"
-                      title={`${novasEmendas7Dias} novas emendas processadas nos últimos 7 dias`}
-                    >
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 ring-1 ring-white dark:ring-slate-900" />
-                    </span>
-                  )}
-                </div>
-                <span>{tab.number}. {tab.label}</span>
-                {tab.badge && (
-                  <span
-                    className={`inline-flex items-center gap-1 px-1 py-0.2 text-[8px] font-mono font-bold rounded-sm ml-1 ${
-                      tab.badgeColor === 'emerald'
-                        ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40'
-                        : 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40'
-                    }`}
-                    title={tab.badge}
-                  >
-                    {tab.badgeColor === 'emerald' && (
-                      <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                    )}
-                    {tab.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Right Scroll Arrow */}
-        <button
-          type="button"
-          onClick={() => scrollNav('right')}
-          className="hidden md:flex items-center justify-center w-7 h-11 bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 border-l border-slate-200 dark:border-slate-800 z-10 shrink-0"
-          title="Rolar menu para direita"
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-
-        {/* Live Siconfi Status Pill (Desktop right) */}
-        <div className="hidden xl:flex items-center gap-2 shrink-0 px-4 border-l border-slate-200 dark:border-slate-800">
-          <div
-            className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded-sm border flex items-center gap-1.5 ${
-              siconfiStatus?.online
-                ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
-                : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800'
-            }`}
-            title={`API Tesouro Nacional Siconfi: ${siconfiStatus?.online ? 'Conectado' : 'Cache local ativo'}`}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                siconfiStatus?.online ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.7)] animate-pulse' : 'bg-amber-500'
-              }`}
-            />
-            <span>SICONFI: {siconfiStatus?.online ? 'SINCRONIZADO' : 'CACHE'}</span>
-            {siconfiStatus?.latencyMs !== undefined && (
-              <span className="opacity-60 font-mono">({siconfiStatus.latencyMs}ms)</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Current Module Quick Bar (Visible only on smaller screens) */}
-      <div className="lg:hidden bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">MÓDULO ATIVO:</span>
-          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase flex items-center gap-1.5">
-            <span className="relative inline-flex items-center justify-center">
-              {React.createElement(currentTabObj.icon, { className: 'w-3.5 h-3.5' })}
-              {currentTabObj.id === 'modulo5' && novasEmendas7Dias > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-              )}
-            </span>
-            <span>{currentTabObj.number}. {currentTabObj.label}</span>
-          </span>
-        </div>
-        <button
-          type="button"
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="text-[11px] font-mono font-bold uppercase text-slate-600 dark:text-slate-300 flex items-center gap-1 hover:text-emerald-500"
-        >
-          <span>Todos Módulos</span>
-          <ChevronDown className={`w-3.5 h-3.5 transition-transform ${mobileMenuOpen ? 'rotate-180' : ''}`} />
-        </button>
-      </div>
-
-      {/* Mobile Drawer Navigation Menu */}
-      {mobileMenuOpen && (
-        <div
-          id="mobile-navigation-drawer"
-          className="lg:hidden bg-slate-900 border-b border-slate-800 shadow-2xl animate-in slide-in-from-top duration-200 max-h-[85vh] overflow-y-auto"
-        >
-          <div className="p-4 space-y-3">
-            {/* Mobile Profile Switcher Box */}
-            <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2">
-              <div className="text-[10px] font-mono font-bold uppercase text-slate-400 flex items-center justify-between">
-                <span>Perfil de Acesso Atual:</span>
-                <span className="text-amber-400 font-bold">RBAC</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  id="mobile-btn-role-master"
                   onClick={() => handleSelectRole('EMPRESA_MASTER')}
-                  className={`p-2 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all cursor-pointer ${
-                    authRole === 'EMPRESA_MASTER'
-                      ? 'bg-blue-600/30 text-blue-200 border-blue-500 shadow-sm'
-                      : 'bg-slate-800/60 text-slate-400 border-slate-700 hover:text-white'
+                  className={`w-full text-left px-3 py-2 text-xs font-mono flex items-center justify-between hover:bg-slate-800 transition ${
+                    authRole === 'EMPRESA_MASTER' ? 'text-emerald-400 font-bold bg-slate-800/40' : 'text-slate-300'
                   }`}
                 >
-                  <Building2 className="w-4 h-4 text-blue-400" />
-                  <span className="text-[11px] leading-tight text-center">🏢 Empresa SaaS</span>
-                  {authRole === 'EMPRESA_MASTER' && (
-                    <span className="text-[9px] bg-blue-500 text-white px-1.5 py-0.2 rounded font-mono">ATIVO</span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>🏢 Empresa SaaS (Master)</span>
+                  </div>
+                  {authRole === 'EMPRESA_MASTER' && <Check className="w-3 h-3 text-emerald-400" />}
                 </button>
 
                 <button
-                  type="button"
-                  id="mobile-btn-role-cliente"
                   onClick={() => handleSelectRole('PREFEITURA_CLIENTE')}
-                  className={`p-2 rounded-lg text-xs font-bold flex flex-col items-center justify-center gap-1 border transition-all cursor-pointer ${
-                    authRole === 'PREFEITURA_CLIENTE'
-                      ? 'bg-emerald-600/30 text-emerald-200 border-emerald-500 shadow-sm'
-                      : 'bg-slate-800/60 text-slate-400 border-slate-700 hover:text-white'
+                  className={`w-full text-left px-3 py-2 text-xs font-mono flex items-center justify-between hover:bg-slate-800 transition ${
+                    authRole === 'PREFEITURA_CLIENTE' ? 'text-amber-400 font-bold bg-slate-800/40' : 'text-slate-300'
                   }`}
                 >
-                  <Landmark className="w-4 h-4 text-emerald-400" />
-                  <span className="text-[11px] leading-tight text-center">🏛️ {tenantInfo.cidade || 'Prefeitura'}</span>
-                  {authRole === 'PREFEITURA_CLIENTE' && (
-                    <span className="text-[9px] bg-emerald-500 text-slate-950 px-1.5 py-0.2 rounded font-mono">ATIVO</span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <Landmark className="w-3.5 h-3.5 text-amber-400" />
+                    <span>🏛️ Prefeitura Cliente</span>
+                  </div>
+                  {authRole === 'PREFEITURA_CLIENTE' && <Check className="w-3 h-3 text-amber-400" />}
                 </button>
               </div>
-            </div>
-
-            <div className="text-[10px] font-mono font-bold uppercase text-slate-400 tracking-wider px-1 flex items-center justify-between">
-              <span>Selecione um Módulo para Acessar:</span>
-              <span className="text-emerald-400">{tabs.length} MÓDULOS</span>
-            </div>
-
-            {tabs.map(tab => {
-              const isActive = activeTab === tab.id;
-              const Icon = tab.icon;
-              const isCaptacaoComNovas = tab.id === 'modulo5' && novasEmendas7Dias > 0;
-              return (
-                <button
-                  type="button"
-                  key={tab.id}
-                  id={`mobile-tab-btn-${tab.id}`}
-                  onClick={() => handleTabClick(tab.id)}
-                  className={`w-full text-left p-3 rounded-sm transition flex items-start gap-3 border ${
-                    isActive
-                      ? 'bg-emerald-950/80 border-emerald-500 text-white shadow-inner'
-                      : 'bg-slate-800/70 border-slate-700/80 text-slate-200 hover:bg-slate-700/80 hover:border-emerald-500/50'
-                  }`}
-                >
-                  <div
-                    className={`w-8 h-8 rounded-sm flex items-center justify-center shrink-0 mt-0.5 relative ${
-                      isActive ? 'bg-emerald-500 text-slate-950 font-bold' : 'bg-slate-700 text-slate-300'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {isCaptacaoComNovas && (
-                      <span
-                        className="absolute -top-1 -right-1 flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-emerald-400 text-[9px] font-mono font-black text-slate-950 ring-2 ring-slate-900 shadow-sm"
-                        title={`${novasEmendas7Dias} novas emendas parlamentares processadas nos últimos 7 dias`}
-                      >
-                        {novasEmendas7Dias}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-bold font-mono tracking-wide uppercase text-white">
-                        {tab.number}. {tab.label}
-                      </span>
-                      {isActive && (
-                        <span className="px-1.5 py-0.2 rounded-sm text-[9px] font-mono font-bold uppercase bg-emerald-500 text-slate-950">
-                          ATIVO
-                        </span>
-                      )}
-                      {tab.badge && !isActive && (
-                        <span
-                          className={`px-1.5 py-0.2 rounded-sm text-[9px] font-mono font-bold uppercase ${
-                            tab.badgeColor === 'emerald'
-                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                              : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                          }`}
-                        >
-                          {tab.badge}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
-                      {tab.desc}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-
-            <div className="pt-3 border-t border-slate-800 mt-3 flex items-center justify-between text-xs text-slate-400 font-mono px-1">
-              <span>Siconfi Tesouro: {siconfiStatus?.online ? 'Online' : 'Cache'}</span>
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-emerald-400 hover:underline font-bold text-xs"
-              >
-                Fechar Menu ✕
-              </button>
-            </div>
+            )}
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    </header>
   );
 };
 
-
+export default Header;

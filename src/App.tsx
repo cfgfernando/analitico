@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Header } from './components/Header';
+import { SidebarNav } from './components/SidebarNav';
 import { ToastContainer } from './components/Toast';
 import { ToastMessage, ComparativeMode } from './types/fiscal';
 import { DashboardPage } from './pages/DashboardPage';
@@ -19,15 +20,19 @@ import {
 } from 'lucide-react';
 
 const PRESENTATION_TABS = [
+  { id: 'painel_prefeito', num: 'PREF', title: 'Painel do Prefeito', badge: 'Gabinete Executivo' },
+  { id: 'benchmark', num: '07', title: 'Benchmark Regional', badge: 'Comparativo' },
+  { id: 'selo', num: '08', title: 'Selo de Conformidade Fiscal', badge: 'Oficial' },
+  { id: 'alertas_prazos', num: '09', title: 'Alertas & Prazos Críticos', badge: 'Radar Riscos' },
   { id: 'modulo1', num: '01', title: 'Dashboard Executivo & KPIs', badge: 'Semáforos Fiscais' },
-  { id: 'modulo2', num: '02', title: 'Receitas Orçamentárias', badge: 'Arrecadação & LOA' },
+  { id: 'modulo2', num: '02', title: 'Receitas Orçamentárias & IBS', badge: 'Arrecadação & EC 132' },
   { id: 'modulo3', num: '03', title: 'Despesas e Funções de Governo', badge: 'Saúde, Educação, Obras' },
-  { id: 'modulo4', num: '04', title: 'Limites LRF & Contas do TCE-PR', badge: 'Folha 50,15% e Pisos' },
+  { id: 'modulo4', num: '04', title: 'Limites LRF & Gastos Pessoal', badge: 'Folha 50,15% e Pisos' },
   { id: 'modulo5', num: '05', title: 'Captação Externa & Transferegov', badge: 'Emendas & Convênios' },
   { id: 'modulo6', num: '06', title: 'FUNDEB, VAAT/VAAR & SIOPE', badge: 'Magistério 74,2%' },
-  { id: 'siconfi', num: '07', title: 'API Siconfi Live (Tesouro Nacional)', badge: 'Dados Abertos' },
-  { id: 'diagnostico', num: '08', title: 'Diagnóstico IA Especialista', badge: 'Parecer Técnico' },
-  { id: 'obras', num: '09', title: 'Mapa Georreferenciado de Obras', badge: 'Infraestrutura' },
+  { id: 'diagnostico', num: 'IA', title: 'Diagnóstico IA Especialista', badge: 'Parecer Técnico' },
+  { id: 'obras', num: 'GEO', title: 'Mapa Georreferenciado de Obras', badge: 'Infraestrutura' },
+  { id: 'siconfi', num: 'API', title: 'API Siconfi Live (Tesouro Nacional)', badge: 'Dados Abertos' },
 ];
 
 function MainDashboardApp() {
@@ -35,10 +40,31 @@ function MainDashboardApp() {
   const { activeTenant, setActiveTenant } = useTenantContext();
 
   const [ano, setAno] = useState<number>(2026);
-  const [activeTab, setActiveTab] = useState<string>('modulo1');
+  const [activeTab, setActiveTab] = useState<string>('painel_prefeito');
   const [isPresentationMode, setIsPresentationMode] = useState<boolean>(false);
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Sidebar Retrátil States (Padrão: Fechada / Collapsed para tela limpa)
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [isSidebarPinned, setIsSidebarPinned] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('sgf_sidebar_pinned') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleToggleSidebar = () => setIsSidebarOpen(prev => !prev);
+  const handleTogglePinned = () => {
+    setIsSidebarPinned(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem('sgf_sidebar_pinned', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // Dark Mode State
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -176,143 +202,171 @@ function MainDashboardApp() {
         onClearAll={() => setToasts([])}
       />
 
-      <Header
-        anoSelecionado={ano}
-        onSelectAno={setAno}
-        siconfiStatus={siconfiStatus}
-        loading={loading}
-        onRefresh={refetch}
-        onExportAllCSV={handleExportGeneralReport}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        novasEmendas7Dias={novasEmendas7Dias}
-        isPresentationMode={isPresentationMode}
-        onTogglePresentationMode={togglePresentationMode}
-        tenantInfo={activeTenant}
-        authRole={authRole}
-        onChangeAuthRole={handleRoleChange}
-        isDarkMode={isDarkMode}
-        onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
-      />
+      {/* Sidebar Retrátil Lateral Sofisticada */}
+      {!isPresentationMode && (
+        <SidebarNav
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isOpen={isSidebarOpen}
+          onToggleOpen={handleToggleSidebar}
+          isPinned={isSidebarPinned}
+          onTogglePinned={handleTogglePinned}
+          authRole={authRole}
+          novasEmendas7Dias={novasEmendas7Dias}
+          cidade={activeTenant.cidade}
+        />
+      )}
 
-      {/* Presentation Mode Slide Bar */}
-      {isPresentationMode && (
-        <div className="bg-slate-900 border-b-2 border-amber-500 text-white px-3 sm:px-6 py-2 sticky top-16 z-30 shadow-lg">
-          <div className="w-full flex flex-col md:flex-row items-center justify-between gap-2.5">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-sm bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold uppercase">
-                MODO APRESENTAÇÃO • AUDIÊNCIA TCE-PR
-              </span>
-              <span className="text-xs font-mono text-slate-300">
-                {activeTenant.nomePrefeitura} • Exercício {ano}
-              </span>
-            </div>
+      {/* Main Layout Area com Margem Dinâmica da Sidebar */}
+      <div
+        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+          !isPresentationMode
+            ? isSidebarPinned && isSidebarOpen
+              ? 'pl-72'
+              : 'pl-16'
+            : 'pl-0'
+        }`}
+      >
+        <Header
+          anoSelecionado={ano}
+          onSelectAno={setAno}
+          siconfiStatus={siconfiStatus}
+          loading={loading}
+          onRefresh={refetch}
+          onExportAllCSV={handleExportGeneralReport}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          novasEmendas7Dias={novasEmendas7Dias}
+          isPresentationMode={isPresentationMode}
+          onTogglePresentationMode={togglePresentationMode}
+          tenantInfo={activeTenant}
+          authRole={authRole}
+          onChangeAuthRole={handleRoleChange}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
+          onToggleSidebar={handleToggleSidebar}
+        />
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  const currIdx = PRESENTATION_TABS.findIndex(t => t.id === activeTab);
-                  const prevIdx = (currIdx - 1 + PRESENTATION_TABS.length) % PRESENTATION_TABS.length;
-                  setActiveTab(PRESENTATION_TABS[prevIdx].id);
-                }}
-                className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1 border border-slate-700"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-                <span>Anterior</span>
-              </button>
-
-              <div className="px-3 py-1 bg-slate-950 rounded border border-slate-800 text-xs font-bold text-amber-400">
-                {PRESENTATION_TABS.findIndex(t => t.id === activeTab) + 1}/9 • {PRESENTATION_TABS.find(t => t.id === activeTab)?.title}
+        {/* Presentation Mode Slide Bar */}
+        {isPresentationMode && (
+          <div className="bg-slate-900 border-b-2 border-amber-500 text-white px-3 sm:px-6 py-2 sticky top-0 z-40 shadow-lg">
+            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-sm bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold uppercase">
+                  MODO APRESENTAÇÃO • AUDIÊNCIA TCE-PR
+                </span>
+                <span className="text-xs font-mono text-slate-300">
+                  {activeTenant.nomePrefeitura} • Exercício {ano}
+                </span>
               </div>
 
-              <button
-                onClick={() => {
-                  const currIdx = PRESENTATION_TABS.findIndex(t => t.id === activeTab);
-                  const nextIdx = (currIdx + 1) % PRESENTATION_TABS.length;
-                  setActiveTab(PRESENTATION_TABS[nextIdx].id);
-                }}
-                className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1 border border-slate-700"
-              >
-                <span>Próximo</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const currIdx = PRESENTATION_TABS.findIndex(t => t.id === activeTab);
+                    const prevIdx = (currIdx - 1 + PRESENTATION_TABS.length) % PRESENTATION_TABS.length;
+                    setActiveTab(PRESENTATION_TABS[prevIdx].id);
+                  }}
+                  className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1 border border-slate-700 cursor-pointer"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Anterior</span>
+                </button>
 
-              <button
-                onClick={toggleBrowserFullscreen}
-                className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700"
-              >
-                {isBrowserFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-              </button>
+                <div className="px-3 py-1 bg-slate-950 rounded border border-slate-800 text-xs font-bold text-amber-400 font-mono">
+                  {PRESENTATION_TABS.findIndex(t => t.id === activeTab) + 1}/13 • {PRESENTATION_TABS.find(t => t.id === activeTab)?.title}
+                </div>
 
-              <button
-                onClick={togglePresentationMode}
-                className="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1"
-              >
-                <X className="w-3.5 h-3.5" />
-                <span>Sair</span>
-              </button>
+                <button
+                  onClick={() => {
+                    const currIdx = PRESENTATION_TABS.findIndex(t => t.id === activeTab);
+                    const nextIdx = (currIdx + 1) % PRESENTATION_TABS.length;
+                    setActiveTab(PRESENTATION_TABS[nextIdx].id);
+                  }}
+                  className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1 border border-slate-700 cursor-pointer"
+                >
+                  <span>Próximo</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  onClick={toggleBrowserFullscreen}
+                  className="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 cursor-pointer"
+                  title="Tela cheia do navegador"
+                >
+                  {isBrowserFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                </button>
+
+                <button
+                  onClick={togglePresentationMode}
+                  className="px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Sair</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <main className="flex-1 w-full px-2 sm:px-4 lg:px-6 py-4 transition-all duration-300 pb-16">
-        <DashboardPage
-          activeTab={activeTab}
-          ano={ano}
-          selectedPeriod={selectedPeriod}
-          setSelectedPeriod={setSelectedPeriod}
-          selectedUnidade={selectedUnidade}
-          setSelectedUnidade={setSelectedUnidade}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          isComparativoAnual={isComparativoAnual}
-          onToggleComparativoAnual={setIsComparativoAnual}
-          comparativeMode={comparativeMode}
-          onComparativeModeChange={setComparativeMode}
-          selectedMonth={selectedMonth}
-          onMonthChange={setSelectedMonth}
-          selectedQuarter={selectedQuarter}
-          onQuarterChange={setSelectedQuarter}
-          onResetFilters={handleResetFilters}
-          summary={summary}
-          receitas={receitas}
-          porNatureza={porNatureza}
-          porFuncao={porFuncao}
-          limites={limites}
-          captacao={captacao}
-          fundeb={fundeb}
-          alerts={alerts}
-          obrasData={obrasData}
-          siconfiStatus={siconfiStatus}
-          comparativeData={comparativeData}
-          monthlyComparativeData={monthlyComparativeData}
-          quarterlyComparativeData={quarterlyComparativeData}
-          activeTenant={activeTenant}
-          authRole={authRole}
-          onNavigateToTab={setActiveTab}
-          onAddToast={addToast}
-          onSelectTenant={handleTenantSelect}
-          isPresentationMode={isPresentationMode}
-        />
-      </main>
+        <main className="flex-1 w-full px-2 sm:px-4 lg:px-6 py-4 transition-all duration-300 pb-16">
+          <DashboardPage
+            activeTab={activeTab}
+            ano={ano}
+            selectedPeriod={selectedPeriod}
+            setSelectedPeriod={setSelectedPeriod}
+            selectedUnidade={selectedUnidade}
+            setSelectedUnidade={setSelectedUnidade}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isComparativoAnual={isComparativoAnual}
+            onToggleComparativoAnual={setIsComparativoAnual}
+            comparativeMode={comparativeMode}
+            onComparativeModeChange={setComparativeMode}
+            selectedMonth={selectedMonth}
+            onMonthChange={setSelectedMonth}
+            selectedQuarter={selectedQuarter}
+            onQuarterChange={setSelectedQuarter}
+            onResetFilters={handleResetFilters}
+            summary={summary}
+            receitas={receitas}
+            porNatureza={porNatureza}
+            porFuncao={porFuncao}
+            limites={limites}
+            captacao={captacao}
+            fundeb={fundeb}
+            alerts={alerts}
+            obrasData={obrasData}
+            siconfiStatus={siconfiStatus}
+            comparativeData={comparativeData}
+            monthlyComparativeData={monthlyComparativeData}
+            quarterlyComparativeData={quarterlyComparativeData}
+            activeTenant={activeTenant}
+            authRole={authRole}
+            onNavigateToTab={setActiveTab}
+            onAddToast={addToast}
+            onSelectTenant={handleTenantSelect}
+            isPresentationMode={isPresentationMode}
+          />
+        </main>
 
-      {!isPresentationMode && (
-        <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 text-xs py-6 mt-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="flex items-center space-x-2">
-              <Building className="w-4 h-4 text-emerald-400" />
-              <span className="font-semibold text-white">
-                Sistema de Monitoramento Fiscal Municipal — {activeTenant.nomePrefeitura}
-              </span>
+        {!isPresentationMode && (
+          <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 text-xs py-6 mt-12">
+            <div className="w-full px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3">
+              <div className="flex items-center space-x-2">
+                <Building className="w-4 h-4 text-emerald-400" />
+                <span className="font-semibold text-white">
+                  Sistema de Monitoramento Fiscal Municipal — {activeTenant.nomePrefeitura}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-400 font-mono text-[11px]">
+                <span>Fontes: Siconfi / Tesouro Nacional • TCE • Transferegov • FNDE • IBGE</span>
+                <span>Código IBGE: {activeTenant.codigoIbge}</span>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-400">
-              <span>Fontes: Siconfi / Tesouro Nacional • TCE • Transferegov • FNDE • IBGE</span>
-              <span>Código IBGE: {activeTenant.codigoIbge}</span>
-            </div>
-          </div>
-        </footer>
-      )}
+          </footer>
+        )}
+      </div>
     </div>
   );
 }
