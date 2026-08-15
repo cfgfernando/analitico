@@ -1,8 +1,13 @@
 import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
+import env from './src/config/env';
+import {
+  helmetSecurityMiddleware,
+  corsSecurityMiddleware,
+  apiRateLimiter,
+} from './src/server/security';
 import { autoDiscoverMunicipality, generateApisForMunicipality, MUNICIPIOS_REFERENCIA } from './src/data/municipiosBrasil';
 import {
   resolveTenant,
@@ -17,12 +22,15 @@ import {
   getMunicipalSiconfiStatus,
 } from './src/server/municipalFiscalEngine';
 
-dotenv.config();
-
 const app = express();
-const PORT = 3000;
+const PORT = env.PORT || 3000;
 
-app.use(express.json());
+// Middlewares de Segurança Básicos (Fase 0)
+app.use(helmetSecurityMiddleware);
+app.use(corsSecurityMiddleware);
+app.use('/api/', apiRateLimiter);
+
+app.use(express.json({ limit: '1mb' }));
 
 // In-memory cache for Siconfi API responses to avoid rate limits
 const cacheStore: Record<string, { data: any; timestamp: number }> = {};
