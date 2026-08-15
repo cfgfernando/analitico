@@ -14,6 +14,7 @@ import {
   getMunicipalRadarCaptacao,
   simularContrapartida,
   getMunicipalSimuladorReforma,
+  getMunicipalBenchmark,
 } from '../municipalFiscalEngine';
 
 @Injectable()
@@ -64,5 +65,9 @@ export class FiscalService {
 
   getSimuladorReforma(tenant: TenantInfo, variacaoArrecadacaoPropriaPct: number = 0) {
     return getMunicipalSimuladorReforma(tenant, variacaoArrecadacaoPropriaPct);
+  }
+
+  getBenchmark(tenant: TenantInfo) {
+    return getMunicipalBenchmark(tenant);
   }
 }

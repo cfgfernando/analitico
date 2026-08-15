@@ -103,4 +103,10 @@ export class FiscalController {
     const tenant = this.extractTenant(req);
     return this.fiscalService.getSimuladorReforma(tenant, body.variacaoArrecadacaoPropriaPct || 0);
   }
+
+  @Get('benchmark')
+  getBenchmark(@Req() req: Request) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.getBenchmark(tenant);
+  }
 }

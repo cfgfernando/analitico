@@ -28,6 +28,7 @@ import {
   ShieldCheck,
   Moon,
   Sun,
+  Trophy,
 } from 'lucide-react';
 import { SiconfiApiStatus } from '../types/fiscal';
 
@@ -170,8 +171,18 @@ export const Header: React.FC<HeaderProps> = ({
       desc: 'Magistério, complementação VAAT/VAAR e matrizes SIOPE',
     },
     {
-      id: 'siconfi',
+      id: 'benchmark',
       number: '07',
+      label: 'BENCHMARK REGIONAL',
+      shortLabel: 'Benchmark',
+      icon: Trophy,
+      badge: 'Comparativo',
+      badgeColor: 'amber',
+      desc: 'Comparativo regional pareado, RCL per capita e eficiência fiscal',
+    },
+    {
+      id: 'siconfi',
+      number: '08',
       label: 'API SICONFI LIVE',
       shortLabel: 'Siconfi API',
       icon: Database,

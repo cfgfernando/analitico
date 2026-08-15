@@ -205,6 +205,44 @@ export interface SimuladorReformaPayload {
   dataSource?: DataSourceMetadata;
 }
 
+export interface MunicipioBenchmark {
+  id: string;
+  codigoIbge: string;
+  cidade: string;
+  uf: string;
+  populacao: number;
+  porte: 'Pequeno' | 'Médio' | 'Grande' | 'Metrópole';
+  rclTotal: number;
+  rclPerCapita: number;
+  despesaPessoalPct: number;
+  arrecadacaoPropriaPerCapita: number;
+  investimentoPerCapita: number;
+  dependenciaTransferenciasPct: number;
+  scoreEficienciaFiscal: number;
+  posicaoRanking: number;
+  isMunicipioAtivo?: boolean;
+}
+
+export interface BenchmarkPayload {
+  municipioAtivo: MunicipioBenchmark;
+  grupoComparativo: {
+    nomeGrupo: string;
+    totalMunicipios: number;
+    posicaoAtivo: number;
+    mediaRclPerCapita: number;
+    mediaDespesaPessoalPct: number;
+    mediaArrecadacaoPropriaPerCapita: number;
+    mediaInvestimentoPerCapita: number;
+    scoreMedio: number;
+  };
+  ranking: MunicipioBenchmark[];
+  destaques: {
+    pontosFortes: string[];
+    oportunidadesMelhoria: string[];
+  };
+  dataSource?: DataSourceMetadata;
+}
+
 export interface EmendaParlamentar {
   id: string;
   autor: string;

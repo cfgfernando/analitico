@@ -12,6 +12,7 @@ import { ModuleObrasMap } from '../components/ModuleObrasMap';
 import { SaaSAdminPanel } from '../components/SaaSAdminPanel';
 import { TenantUserManagement } from '../components/TenantUserManagement';
 import { PainelDoPrefeito } from '../components/PainelDoPrefeito';
+import { BenchmarkMunicipal } from '../components/BenchmarkMunicipal';
 import {
   FiscalKPIs,
   RevenueSource,
@@ -229,6 +230,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               <p className="text-sm font-mono text-slate-500">Carregando matrizes do FUNDEB e SIOPE...</p>
             </div>
           )
+        )}
+
+        {activeTab === 'benchmark' && (
+          <BenchmarkMunicipal cidade={activeTenant.cidade} uf={activeTenant.uf} />
         )}
 
         {activeTab === 'siconfi' && (

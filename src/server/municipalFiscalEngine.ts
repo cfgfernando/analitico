@@ -1849,3 +1849,223 @@ export function getMunicipalSimuladorReforma(tenant: TenantInfo, variacaoArrecad
     },
   };
 }
+
+// 13. Benchmark Regional & Pareamento Municipal
+export function getMunicipalBenchmark(tenant: TenantInfo) {
+  const profile = getMunicipalFinancialProfile(tenant, 2026);
+
+  const baseMunicipios = [
+    {
+      id: 'm-araucaria',
+      codigoIbge: '4101804',
+      cidade: 'Araucária',
+      uf: 'PR',
+      populacao: 151666,
+      porte: 'Médio' as const,
+      rclTotal: 1460000000,
+      despesaPessoalPct: 51.3,
+      arrecadacaoPropriaTotal: 345000000,
+      investimentoTotal: 182500000,
+      dependenciaTransferenciasPct: 76.4,
+    },
+    {
+      id: 'm-curitiba',
+      codigoIbge: '4106902',
+      cidade: 'Curitiba',
+      uf: 'PR',
+      populacao: 1773733,
+      porte: 'Metrópole' as const,
+      rclTotal: 10850000000,
+      despesaPessoalPct: 44.8,
+      arrecadacaoPropriaTotal: 4950000000,
+      investimentoTotal: 980000000,
+      dependenciaTransferenciasPct: 54.4,
+    },
+    {
+      id: 'm-sjp',
+      codigoIbge: '4125506',
+      cidade: 'São José dos Pinhais',
+      uf: 'PR',
+      populacao: 329222,
+      porte: 'Grande' as const,
+      rclTotal: 1780000000,
+      despesaPessoalPct: 48.2,
+      arrecadacaoPropriaTotal: 520000000,
+      investimentoTotal: 195000000,
+      dependenciaTransferenciasPct: 70.8,
+    },
+    {
+      id: 'm-londrina',
+      codigoIbge: '4113700',
+      cidade: 'Londrina',
+      uf: 'PR',
+      populacao: 555965,
+      porte: 'Grande' as const,
+      rclTotal: 2650000000,
+      despesaPessoalPct: 50.1,
+      arrecadacaoPropriaTotal: 840000000,
+      investimentoTotal: 220000000,
+      dependenciaTransferenciasPct: 68.3,
+    },
+    {
+      id: 'm-maringa',
+      codigoIbge: '4115200',
+      cidade: 'Maringá',
+      uf: 'PR',
+      populacao: 409657,
+      porte: 'Grande' as const,
+      rclTotal: 2380000000,
+      despesaPessoalPct: 46.5,
+      arrecadacaoPropriaTotal: 810000000,
+      investimentoTotal: 285000000,
+      dependenciaTransferenciasPct: 65.9,
+    },
+    {
+      id: 'm-pontagrossa',
+      codigoIbge: '4119905',
+      cidade: 'Ponta Grossa',
+      uf: 'PR',
+      populacao: 358371,
+      porte: 'Grande' as const,
+      rclTotal: 1620000000,
+      despesaPessoalPct: 49.6,
+      arrecadacaoPropriaTotal: 460000000,
+      investimentoTotal: 155000000,
+      dependenciaTransferenciasPct: 71.6,
+    },
+    {
+      id: 'm-cascavel',
+      codigoIbge: '4104808',
+      cidade: 'Cascavel',
+      uf: 'PR',
+      populacao: 348051,
+      porte: 'Grande' as const,
+      rclTotal: 1720000000,
+      despesaPessoalPct: 47.9,
+      arrecadacaoPropriaTotal: 490000000,
+      investimentoTotal: 170000000,
+      dependenciaTransferenciasPct: 71.5,
+    },
+  ];
+
+  // Garante que o município ativo esteja no grupo
+  let lista = [...baseMunicipios];
+  const jaExiste = lista.some(m => m.codigoIbge === tenant.codigoIbge);
+  if (!jaExiste) {
+    const pop = tenant.populacaoEstimada || 151666;
+    lista.push({
+      id: `m-${tenant.id}`,
+      codigoIbge: tenant.codigoIbge,
+      cidade: tenant.cidade,
+      uf: tenant.uf,
+      populacao: pop,
+      porte: pop > 500000 ? 'Grande' : pop > 100000 ? 'Médio' : 'Pequeno',
+      rclTotal: profile.rcl,
+      despesaPessoalPct: profile.despesaPessoalPct,
+      arrecadacaoPropriaTotal: Math.round(profile.orcamento * 0.25),
+      investimentoTotal: Math.round(profile.orcamento * 0.12),
+      dependenciaTransferenciasPct: 74.0,
+    });
+  }
+
+  // Calcula indicadores per capita e score de eficiência (0 a 100)
+  const rankingCalculado = lista.map(m => {
+    const rclPerCapita = Math.round(m.rclTotal / m.populacao);
+    const arrecadacaoPropriaPerCapita = Math.round(m.arrecadacaoPropriaTotal / m.populacao);
+    const investimentoPerCapita = Math.round(m.investimentoTotal / m.populacao);
+
+    // Score: 35% peso RCL per capita, 25% baixa despesa de pessoal, 20% arrecadação própria, 20% investimento
+    const scoreRcl = Math.min(100, (rclPerCapita / 10000) * 100);
+    const scorePessoal = Math.max(0, 100 - ((m.despesaPessoalPct - 40) / 14) * 100);
+    const scoreArrecadacao = Math.min(100, (arrecadacaoPropriaPerCapita / 3000) * 100);
+    const scoreInvestimento = Math.min(100, (investimentoPerCapita / 1500) * 100);
+
+    const scoreEficienciaFiscal = Number(
+      (scoreRcl * 0.35 + scorePessoal * 0.25 + scoreArrecadacao * 0.20 + scoreInvestimento * 0.20).toFixed(1)
+    );
+
+    const isMunicipioAtivo = m.codigoIbge === tenant.codigoIbge || (tenant.codigoIbge === '4101804' && m.codigoIbge === '4101804');
+
+    return {
+      id: m.id,
+      codigoIbge: m.codigoIbge,
+      cidade: m.cidade,
+      uf: m.uf,
+      populacao: m.populacao,
+      porte: m.porte,
+      rclTotal: m.rclTotal,
+      rclPerCapita,
+      despesaPessoalPct: m.despesaPessoalPct,
+      arrecadacaoPropriaPerCapita,
+      investimentoPerCapita,
+      dependenciaTransferenciasPct: m.dependenciaTransferenciasPct,
+      scoreEficienciaFiscal,
+      posicaoRanking: 1,
+      isMunicipioAtivo,
+    };
+  });
+
+  // Ordena por score decrescente e atribui posições
+  rankingCalculado.sort((a, b) => b.scoreEficienciaFiscal - a.scoreEficienciaFiscal);
+  rankingCalculado.forEach((item, index) => {
+    item.posicaoRanking = index + 1;
+  });
+
+  const ativoCalculado = rankingCalculado.find(m => m.isMunicipioAtivo) || rankingCalculado[0];
+
+  // Médias do grupo
+  const mediaRclPerCapita = Math.round(rankingCalculado.reduce((acc, m) => acc + m.rclPerCapita, 0) / rankingCalculado.length);
+  const mediaPessoal = Number((rankingCalculado.reduce((acc, m) => acc + m.despesaPessoalPct, 0) / rankingCalculado.length).toFixed(1));
+  const mediaArrecadacao = Math.round(rankingCalculado.reduce((acc, m) => acc + m.arrecadacaoPropriaPerCapita, 0) / rankingCalculado.length);
+  const mediaInvestimento = Math.round(rankingCalculado.reduce((acc, m) => acc + m.investimentoPerCapita, 0) / rankingCalculado.length);
+  const scoreMedio = Number((rankingCalculado.reduce((acc, m) => acc + m.scoreEficienciaFiscal, 0) / rankingCalculado.length).toFixed(1));
+
+  // Destaques e oportunidades
+  const pontosFortes: string[] = [];
+  const oportunidades: string[] = [];
+
+  if (ativoCalculado.rclPerCapita > mediaRclPerCapita) {
+    pontosFortes.push(`RCL per capita (R$ ${ativoCalculado.rclPerCapita}/hab) está ${(ativoCalculado.rclPerCapita / mediaRclPerCapita * 100 - 100).toFixed(0)}% acima da média do grupo de municípios similares.`);
+  } else {
+    oportunidades.push(`RCL per capita abaixo da média regional. Necessário reforçar captação externa e receitas próprias.`);
+  }
+
+  if (ativoCalculado.investimentoPerCapita > mediaInvestimento) {
+    pontosFortes.push(`Capacidade de investimento por habitante (R$ ${ativoCalculado.investimentoPerCapita}/hab) supera a média regional.`);
+  }
+
+  if (ativoCalculado.despesaPessoalPct > mediaPessoal) {
+    oportunidades.push(`Despesa com pessoal (${ativoCalculado.despesaPessoalPct}%) está acima da média do grupo (${mediaPessoal}%). Recomenda-se controle de novas admissões e horas extras.`);
+  } else {
+    pontosFortes.push(`Índice de folha de pagamento (${ativoCalculado.despesaPessoalPct}%) mais saudável do que a média dos pares.`);
+  }
+
+  if (ativoCalculado.arrecadacaoPropriaPerCapita < mediaArrecadacao) {
+    oportunidades.push(`Arrecadação tributária própria por habitante (IPTU/ISS) tem potencial de expansão com modernização cadastral.`);
+  }
+
+  return {
+    municipioAtivo: ativoCalculado,
+    grupoComparativo: {
+      nomeGrupo: 'Mesorregiões & Polos Econômicos do Paraná',
+      totalMunicipios: rankingCalculado.length,
+      posicaoAtivo: ativoCalculado.posicaoRanking,
+      mediaRclPerCapita,
+      mediaDespesaPessoalPct: mediaPessoal,
+      mediaArrecadacaoPropriaPerCapita: mediaArrecadacao,
+      mediaInvestimentoPerCapita: mediaInvestimento,
+      scoreMedio,
+    },
+    ranking: rankingCalculado,
+    destaques: {
+      pontosFortes,
+      oportunidadesMelhoria: oportunidades,
+    },
+    dataSource: {
+      origin: 'DEMONSTRACAO',
+      source: `SICONFI / STN / TCE-${tenant.uf} • Benchmark Municipal 2026`,
+      collectedAt: new Date().toISOString(),
+      confidence: 'ESTIMATIVA_ALTA_CONFIANCA',
+    },
+  };
+}
