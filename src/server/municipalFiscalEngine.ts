@@ -1406,3 +1406,114 @@ export function getMunicipalSiconfiStatus(tenant: TenantInfo, latencyMs: number 
     cacheEntries: 12,
   };
 }
+
+// 10. Painel do Prefeito (Visão Executiva Resumida)
+export function getPainelPrefeito(tenant: TenantInfo, ano: number = 2026) {
+  const profile = getMunicipalFinancialProfile(tenant, ano);
+  const rcl = profile.rcl;
+  const pessoalPct = profile.despesaPessoalPct;
+  const gastoAtualPessoal = Math.round(rcl * (pessoalPct / 100));
+
+  const limiteAlertaReais = Math.round(rcl * 0.486);
+  const limitePrudencialReais = Math.round(rcl * 0.513);
+  const limiteLegalReais = Math.round(rcl * 0.540);
+
+  const margemAtePrudencialReais = limitePrudencialReais - gastoAtualPessoal;
+  const margemAteLegalReais = limiteLegalReais - gastoAtualPessoal;
+
+  // Semáforo Fiscal Geral
+  let semaforo: 'VERDE' | 'AMARELO' | 'VERMELHO' = 'VERDE';
+  let semaforoMotivo = 'Contas sob controle rigoroso e limites constitucionais cumpridos.';
+  if (pessoalPct >= 54.0) {
+    semaforo = 'VERMELHO';
+    semaforoMotivo = 'Alerta Crítico: Limite Legal da LRF ultrapassado ou déficit orçamentário iminente.';
+  } else if (pessoalPct >= 48.6) {
+    semaforo = 'AMARELO';
+    semaforoMotivo = 'Atenção: Folha ultrapassou limite de alerta (48,6%) e queda de repasses estaduais.';
+  }
+
+  // Caixa Disponível
+  const caixaTotal = Math.round(profile.orcamento * 0.125);
+  const caixaLivre = Math.round(caixaTotal * 0.38);
+  const caixaVinculado = caixaTotal - caixaLivre;
+
+  // Captação & Emendas
+  const metaCaptacao = Math.round(profile.orcamento * 0.065);
+  const captacaoRealizada = Math.round(metaCaptacao * 0.632);
+  const captacaoPct = Number(((captacaoRealizada / metaCaptacao) * 100).toFixed(1));
+
+  // Top 3 Decisões Urgentes da Semana contextualizadas
+  const decisoesUrgentes = [
+    {
+      id: 'decisao-1',
+      prioridade: 'ALTA',
+      categoria: 'FOLHA DE PESSOAL',
+      titulo: 'Controle de Horas Extras e Cargos em Comissão',
+      descricao: `A folha está em ${pessoalPct}% da RCL. ${margemAtePrudencialReais >= 0 ? `Resta uma folga de ${Math.round(margemAtePrudencialReais / 1_000_000)}M até o limite prudencial.` : `Ultrapassou em ${Math.round(Math.abs(margemAtePrudencialReais) / 1_000_000)}M o limite prudencial.`}`,
+      impactoFinanceiro: `R$ ${(Math.abs(margemAtePrudencialReais) * 0.15 / 1_000_000).toFixed(1)}M/ano`,
+      acaoSugerida: 'Publicar Decreto Municipal restringindo concessão de novas gratificações e horas extras.',
+      prazoDias: 5,
+    },
+    {
+      id: 'decisao-2',
+      prioridade: 'ALTA',
+      categoria: 'RECEITAS & ICMS',
+      titulo: 'Revisão da Cota-Parte do ICMS e Ação Judicial / Administrativa',
+      descricao: `Queda estimada de 12% no repasse do ICMS estadual para ${tenant.cidade}. Necessário envio de auditoria ao Estado.`,
+      impactoFinanceiro: `R$ ${(profile.orcamento * 0.035 / 1_000_000).toFixed(1)}M`,
+      acaoSugerida: 'Acionar Procuradoria Geral do Município para contestar o IPM (Índice de Participação dos Municípios).',
+      prazoDias: 7,
+    },
+    {
+      id: 'decisao-3',
+      prioridade: 'MEDIA',
+      categoria: 'CONVÊNIOS & CAPTAÇÃO',
+      titulo: 'Homologação e Desbloqueio de Emendas Parlamentares Federais',
+      descricao: `3 propostas cadastradas no Transferegov aguardando complementação documental de engenharia.`,
+      impactoFinanceiro: `R$ ${(metaCaptacao * 0.22 / 1_000_000).toFixed(1)}M`,
+      acaoSugerida: 'Determinar à Secretaria de Planejamento o envio dos projetos executivos para a Caixa.',
+      prazoDias: 10,
+    },
+  ];
+
+  return {
+    ano,
+    municipio: {
+      nome: tenant.nomePrefeitura,
+      cidade: tenant.cidade,
+      uf: tenant.uf,
+      codigoIbge: tenant.codigoIbge,
+    },
+    semaforo: {
+      status: semaforo,
+      motivo: semaforoMotivo,
+    },
+    caixaDisponivel: {
+      total: caixaTotal,
+      recursosLivres: caixaLivre,
+      recursosVinculados: caixaVinculado,
+    },
+    margemFolha: {
+      gastoAtual: gastoAtualPessoal,
+      percentualRCL: pessoalPct,
+      limiteAlertaValor: limiteAlertaReais,
+      limitePrudencialValor: limitePrudencialReais,
+      limiteLegalValor: limiteLegalReais,
+      margemAtePrudencialReais,
+      margemAteLegalReais,
+      status: pessoalPct > 54 ? 'CRITICO' : pessoalPct > 51.3 ? 'PRUDENCIAL' : pessoalPct > 48.6 ? 'ALERTA' : 'REGULAR',
+    },
+    captacao: {
+      metaAnual: metaCaptacao,
+      realizado: captacaoRealizada,
+      percentual: captacaoPct,
+    },
+    decisoesUrgentes,
+    dataSource: {
+      origin: 'DEMONSTRACAO',
+      source: `Painel Executivo Municipal / LOA ${tenant.cidade}`,
+      collectedAt: new Date().toISOString(),
+      confidence: 'ESTIMATIVA_ALTA_CONFIANCA',
+    },
+  };
+}

@@ -11,6 +11,7 @@ import { ModuleAIDiagnostico } from '../components/ModuleAIDiagnostico';
 import { ModuleObrasMap } from '../components/ModuleObrasMap';
 import { SaaSAdminPanel } from '../components/SaaSAdminPanel';
 import { TenantUserManagement } from '../components/TenantUserManagement';
+import { PainelDoPrefeito } from '../components/PainelDoPrefeito';
 import {
   FiscalKPIs,
   RevenueSource,
@@ -141,6 +142,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       )}
 
       <div>
+        {activeTab === 'painel_prefeito' && (
+          <PainelDoPrefeito
+            ano={ano}
+            onNavigateToTab={onNavigateToTab}
+          />
+        )}
+
         {activeTab === 'modulo1' && (
           summary ? (
             <Module1KPIs

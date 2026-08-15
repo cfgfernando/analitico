@@ -108,6 +108,16 @@ export const Header: React.FC<HeaderProps> = ({
 
   const tabs = [
     {
+      id: 'painel_prefeito',
+      number: 'PREF',
+      label: 'PAINEL DO PREFEITO',
+      shortLabel: 'Gabinete Prefeito',
+      icon: Landmark,
+      badge: 'Executivo',
+      badgeColor: 'emerald',
+      desc: 'Visão executiva resumida, margem da folha em R$ e decisões da semana',
+    },
+    {
       id: 'modulo1',
       number: '01',
       label: 'DASHBOARD PRINCIPAL',

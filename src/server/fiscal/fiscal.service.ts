@@ -10,6 +10,7 @@ import {
   getMunicipalFundeb,
   getMunicipalAlertas,
   getMunicipalObras,
+  getPainelPrefeito,
 } from '../municipalFiscalEngine';
 
 @Injectable()
@@ -44,5 +45,9 @@ export class FiscalService {
 
   getObras(tenant: TenantInfo) {
     return getMunicipalObras(tenant);
+  }
+
+  getPainelPrefeito(tenant: TenantInfo, ano: number = 2026) {
+    return getPainelPrefeito(tenant, ano);
   }
 }

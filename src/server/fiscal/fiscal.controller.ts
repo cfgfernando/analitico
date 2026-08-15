@@ -71,4 +71,11 @@ export class FiscalController {
     const tenant = this.extractTenant(req);
     return this.fiscalService.getObras(tenant);
   }
+
+  @Get('painel-prefeito')
+  getPainelPrefeito(@Req() req: Request, @Query('ano') ano?: string) {
+    const tenant = this.extractTenant(req);
+    const parsedAno = ano ? parseInt(ano, 10) : 2026;
+    return this.fiscalService.getPainelPrefeito(tenant, parsedAno);
+  }
 }
