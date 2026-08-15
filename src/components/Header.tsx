@@ -148,14 +148,14 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Center/Right: Actions & Controls com Textos Claros e Nítidos */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           {/* Seletor de Exercício Fiscal */}
           <div className="flex items-center bg-slate-950 border border-slate-700 rounded-sm p-0.5 shadow-inner">
             {[2024, 2025, 2026, 2027].map(ano => (
               <button
                 key={ano}
                 onClick={() => onSelectAno(ano)}
-                className={`px-2.5 py-1 text-xs font-mono font-bold rounded-xs transition cursor-pointer ${
+                className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-[11px] sm:text-xs font-mono font-bold rounded-xs transition cursor-pointer ${
                   anoSelecionado === ano
                     ? 'bg-emerald-600 text-white shadow-xs'
                     : 'text-slate-300 hover:text-white hover:bg-slate-800'
@@ -182,10 +182,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onRefresh}
             disabled={loading}
-            className="p-1.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 transition cursor-pointer disabled:opacity-50"
+            className="p-1 sm:p-1.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 transition cursor-pointer disabled:opacity-50"
             title="Atualizar Dados Fiscais"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
+            <RefreshCw className={`w-3.5 sm:w-4 h-3.5 sm:h-4 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
           </button>
 
           {/* Botão Exportar CSV */}
@@ -202,7 +202,7 @@ export const Header: React.FC<HeaderProps> = ({
           {onTogglePresentationMode && (
             <button
               onClick={onTogglePresentationMode}
-              className={`flex items-center gap-1.5 px-3 py-1 text-xs font-mono font-bold uppercase tracking-wider rounded-sm transition cursor-pointer border shadow-xs ${
+              className={`hidden md:flex items-center gap-1.5 px-3 py-1 text-xs font-mono font-bold uppercase tracking-wider rounded-sm transition cursor-pointer border shadow-xs ${
                 isPresentationMode
                   ? 'bg-amber-500 text-slate-950 border-amber-400'
                   : 'bg-slate-800 hover:bg-slate-700 text-slate-100 border-slate-700'
@@ -210,7 +210,7 @@ export const Header: React.FC<HeaderProps> = ({
               title="Alternar Modo Apresentação para Audiências Públicas"
             >
               <Presentation className="w-4 h-4" />
-              <span className="hidden sm:inline">Apresentação</span>
+              <span>Apresentação</span>
             </button>
           )}
 
@@ -218,10 +218,10 @@ export const Header: React.FC<HeaderProps> = ({
           {onToggleDarkMode && (
             <button
               onClick={onToggleDarkMode}
-              className="p-1.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 transition cursor-pointer"
+              className="p-1 sm:p-1.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 transition cursor-pointer"
               title={isDarkMode ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro'}
             >
-              {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-200" />}
+              {isDarkMode ? <Sun className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-amber-400" /> : <Moon className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-slate-200" />}
             </button>
           )}
 
@@ -229,13 +229,13 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="relative" ref={roleDropdownRef}>
             <button
               onClick={() => setRoleDropdownOpen(prev => !prev)}
-              className="flex items-center gap-2 px-3 py-1 rounded-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono text-slate-100 transition cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 px-2 sm:px-3 py-1 rounded-sm bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono text-slate-100 transition cursor-pointer shadow-xs"
             >
-              <Building2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <Building2 className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-emerald-400 shrink-0" />
               <span className="hidden sm:inline font-bold">
                 {authRole === 'EMPRESA_MASTER' ? 'Empresa Master' : 'Prefeitura'}
               </span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-300" />
+              <ChevronDown className="w-3 h-3 text-slate-300" />
             </button>
 
             {roleDropdownOpen && (

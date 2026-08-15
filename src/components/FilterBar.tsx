@@ -242,7 +242,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
       {/* Painel Retrátil Sofisticado (Drawer / Dropdown Avançado) */}
       {isOpen && (
-        <div className="mt-2 p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm shadow-xl animate-in fade-in zoom-in-98 duration-150 space-y-4">
+        <div className="mt-2 p-3 sm:p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm shadow-xl animate-in fade-in zoom-in-98 duration-150 space-y-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">

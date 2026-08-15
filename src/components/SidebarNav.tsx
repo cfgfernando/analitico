@@ -305,24 +305,31 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   return (
     <>
       {/* Overlay Backdrop for Mobile */}
-      {isOpen && !isPinned && (
+      {isOpen && (
         <div
           onClick={onToggleOpen}
-          className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-300 animate-in fade-in"
         />
       )}
 
-      {/* Sidebar Container: w-80 quando aberta para legibilidade impecável */}
+      {/* Sidebar Container: Gaveta deslizante em Mobile e Dock em Desktop */}
       <aside
         id="sidebar-navigation"
         className={`fixed top-0 left-0 h-full z-50 bg-slate-950 border-r border-slate-800 text-white transition-all duration-300 ease-in-out flex flex-col shadow-2xl ${
-          isOpen ? 'w-80' : 'w-16'
+          // Em mobile: esconde com -translate-x-full se fechada, desliza se aberta
+          isOpen
+            ? 'translate-x-0 w-80 max-w-[85vw]'
+            : '-translate-x-full lg:translate-x-0 lg:w-16 w-80'
         }`}
         onMouseEnter={() => {
-          if (!isPinned && !isOpen) onToggleOpen();
+          if (window.innerWidth >= 1024 && !isPinned && !isOpen) {
+            onToggleOpen();
+          }
         }}
         onMouseLeave={() => {
-          if (!isPinned && isOpen) onToggleOpen();
+          if (window.innerWidth >= 1024 && !isPinned && isOpen) {
+            onToggleOpen();
+          }
         }}
       >
         {/* Sidebar Header */}

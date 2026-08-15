@@ -219,14 +219,14 @@ function MainDashboardApp() {
         />
       )}
 
-      {/* Main Layout Area com Margem Dinâmica da Sidebar */}
+      {/* Main Layout Area com Margem Dinâmica da Sidebar (pl-0 em mobile, lg:pl-16 ou lg:pl-80 em desktop) */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out pl-0 ${
           !isPresentationMode
             ? isSidebarPinned && isSidebarOpen
-              ? 'pl-80'
-              : 'pl-16'
-            : 'pl-0'
+              ? 'lg:pl-80'
+              : 'lg:pl-16'
+            : 'lg:pl-0'
         }`}
       >
         <Header
