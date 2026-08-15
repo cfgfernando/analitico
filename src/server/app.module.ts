@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from './database/database.module';
 import { RepositoriesModule } from './repositories/repositories.module';
 import { HealthModule } from './health/health.module';
@@ -18,6 +19,7 @@ import { DiagnosticoModule } from './diagnostico/diagnostico.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     RepositoriesModule,
     HealthModule,
