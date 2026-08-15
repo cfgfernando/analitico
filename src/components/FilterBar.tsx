@@ -80,6 +80,25 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     }
   };
 
+  const handleExecuteReset = () => {
+    onSearchChange('');
+    onPeriodChange('todos');
+    onUnidadeChange('todas');
+    if (onComparativeModeChange) {
+      onComparativeModeChange('nenhum');
+    }
+    if (onToggleComparativoAnual) {
+      onToggleComparativoAnual(false);
+    }
+    if (onQuarterChange) {
+      onQuarterChange(1);
+    }
+    if (onMonthChange) {
+      onMonthChange(8);
+    }
+    onResetFilters();
+  };
+
   const activeFiltersCount =
     (searchQuery ? 1 : 0) +
     (selectedPeriod !== 'todos' ? 1 : 0) +
@@ -204,7 +223,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
           {isFiltered && (
             <button
-              onClick={onResetFilters}
+              id="btn-limpar-filtros-bar"
+              onClick={handleExecuteReset}
               className="text-[11px] font-mono text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 flex items-center gap-1 transition cursor-pointer ml-1"
               title="Limpar todos os filtros"
             >
@@ -426,7 +446,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               {isFiltered && (
                 <button
                   type="button"
-                  onClick={onResetFilters}
+                  id="btn-restaurar-padrao-drawer"
+                  onClick={handleExecuteReset}
                   className="px-3 py-1.5 rounded-sm text-xs font-mono font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                 >
                   Restaurar Padrão

@@ -152,8 +152,10 @@ function MainDashboardApp() {
     setSearchQuery('');
     setSelectedPeriod('todos');
     setSelectedUnidade('todas');
-    setComparativeMode('anual');
+    setComparativeMode('nenhum');
     setIsComparativoAnual(false);
+    setSelectedMonth(8);
+    setSelectedQuarter(1);
   };
 
   // Comparatives
