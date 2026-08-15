@@ -1,3 +1,298 @@
+/* ============================================================
+   SGF Dashboard — Integração Gov.br Design System
+   Estratégia: Tokens Only (sem Web Components)
+   - Paleta: emerald/slate (identidade do projeto, mantida)
+   - Tokens Gov.br: spacing, shadow, radius, animation, z-index,
+     font-scale, semantic colors (success/danger/warning/info)
+   ============================================================ */
+
 @import "tailwindcss";
 
+/* 1. Design Tokens do Gov.br DS (somente variáveis CSS, sem estilos de componentes) */
+@import "@govbr-ds/core/dist/core-tokens.min.css";
+
+/* 2. Dark mode via classe .dark no <html> */
 @variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   3. Override de paleta — manter identidade emerald/slate
+   Os tokens Gov.br usam azul (#1351b4) como primário.
+   Sobrescrevemos para manter o verde-esmeralda do SGF.
+   ============================================================ */
+:root {
+  /* Primária → emerald (acento do SGF) */
+  --color-primary-default:    #10b981; /* emerald-500  */
+  --color-primary-lighten-01: #34d399; /* emerald-400  */
+  --color-primary-lighten-02: #6ee7b7; /* emerald-300  */
+  --color-primary-darken-01:  #059669; /* emerald-600  */
+  --color-primary-darken-02:  #047857; /* emerald-700  */
+  --color-primary-pastel-01:  #d1fae5; /* emerald-100  */
+  --color-primary-pastel-02:  #ecfdf5; /* emerald-50   */
+
+  /* Interativo → emerald (links, focus, selected) */
+  --interactive-light:        #059669; /* emerald-600  */
+  --interactive-dark:         #6ee7b7; /* emerald-300  */
+  --interactive-alternative:  #10b981; /* emerald-500  */
+
+  /* Background → slate (base do dashboard) */
+  --background-light:         #f8fafc; /* slate-50     */
+  --background-dark:          #020617; /* slate-950    */
+  --background-alternative:   #f1f5f9; /* slate-100    */
+
+  /* Cor de texto */
+  --color-light:              #1e293b; /* slate-800    */
+  --color-dark:               #f1f5f9; /* slate-100    */
+
+  /* Semantic — mantemos as cores Gov.br (verde/amarelo/vermelho/azul) */
+  /* --success: var(--green-cool-vivid-50)  → #168821  ✓ OK  */
+  /* --warning: var(--yellow-vivid-20)      → #ffcd07  ✓ OK  */
+  /* --danger:  var(--red-vivid-50)         → #e52207  ✓ OK  */
+  /* --info:    var(--blue-warm-vivid-60)   → #155bcb  ✓ OK  */
+
+  /* Focus ring → amber (contraste sobre emerald/slate) */
+  --focus-color-light: #f59e0b; /* amber-400  */
+  --focus-color-dark:  #fcd34d; /* amber-300  */
+
+  /* Active / Selected → emerald escuro */
+  --active:    #064e3b; /* emerald-900  */
+  --selected:  #10b981; /* emerald-500  */
+
+  /* ---- Fonte base: mantém Plus Jakarta Sans ---- */
+  --font-family-base: "Plus Jakarta Sans", Rawline, Raleway, sans-serif;
+  --font-family-mono: "JetBrains Mono", "Fira Mono", monospace;
+
+  /* ---- SGF custom semantic tokens (mapeados sobre Gov.br) ---- */
+  --sgf-color-accent:          var(--color-primary-default);
+  --sgf-color-accent-hover:    var(--color-primary-darken-01);
+  --sgf-color-surface:         #0f172a; /* slate-900 — header dark  */
+  --sgf-color-surface-light:   var(--background-light);
+  --sgf-color-border:          #334155; /* slate-700  */
+  --sgf-color-border-light:    #e2e8f0; /* slate-200  */
+
+  /* Alias Gov.br spacing para uso no projeto */
+  --sgf-spacing-xs:  var(--spacing-scale-half);   /* 4px  */
+  --sgf-spacing-sm:  var(--spacing-scale-base);   /* 8px  */
+  --sgf-spacing-md:  var(--spacing-scale-3x);     /* 24px */
+  --sgf-spacing-lg:  var(--spacing-scale-5x);     /* 40px */
+  --sgf-spacing-xl:  var(--spacing-scale-8x);     /* 64px */
+
+  /* Alias Gov.br radius para uso no projeto */
+  --sgf-radius-sm:   var(--surface-rounder-sm);   /* 4px  */
+  --sgf-radius-md:   var(--surface-rounder-md);   /* 8px  */
+  --sgf-radius-lg:   var(--surface-rounder-lg);   /* 16px */
+  --sgf-radius-pill: var(--surface-rounder-pill);
+
+  /* Alias Gov.br shadow (modo claro) */
+  --sgf-shadow-sm:   var(--surface-shadow-sm);
+  --sgf-shadow-md:   var(--surface-shadow-md);
+  --sgf-shadow-lg:   var(--surface-shadow-lg);
+  --sgf-shadow-xl:   var(--surface-shadow-xl);
+
+  /* Alias Gov.br z-index layers */
+  --sgf-z-base:    var(--z-index-layer-0);  /* 0     */
+  --sgf-z-overlay: var(--z-index-layer-1);  /* 1000  */
+  --sgf-z-header:  var(--z-index-layer-2);  /* 2000  */
+  --sgf-z-modal:   var(--z-index-layer-3);  /* 3000  */
+  --sgf-z-toast:   var(--z-index-layer-4);  /* 4000  */
+
+  /* Alias Gov.br animation */
+  --sgf-duration-fast:     var(--duration-fast);      /* 0.3s */
+  --sgf-duration-moderate: var(--duration-moderate);  /* 0.5s */
+  --sgf-ease:              var(--animation-ease);
+  --sgf-ease-out:          var(--animation-ease-out);
+}
+
+/* ============================================================
+   4. Dark mode overrides — sombras e cores de superfície
+   ============================================================ */
+.dark {
+  --surface-shadow-color: 0, 0, 0;       /* sombras mais escuras no dark  */
+  --background-light:     #020617;        /* slate-950 como bg escuro      */
+  --color-light:          #f1f5f9;        /* slate-100 como texto claro    */
+  --border-color:         #334155;        /* slate-700                     */
+
+  /* Sombras gov.br mais intensas no dark para dar profundidade */
+  --sgf-shadow-sm: 0 1px 6px rgba(0,0,0,0.40);
+  --sgf-shadow-md: 0 3px 6px rgba(0,0,0,0.45);
+  --sgf-shadow-lg: 0 6px 6px rgba(0,0,0,0.50);
+  --sgf-shadow-xl: 0 9px 6px rgba(0,0,0,0.55);
+}
+
+/* ============================================================
+   5. Tailwind v4 @theme — expor tokens Gov.br como utilitários
+   ============================================================ */
+@theme {
+  /* Espaçamento Gov.br → utilitários Tailwind */
+  --spacing-govbr-xs:  4px;
+  --spacing-govbr-sm:  8px;
+  --spacing-govbr-md:  24px;
+  --spacing-govbr-lg:  40px;
+  --spacing-govbr-xl:  64px;
+
+  /* Border-radius Gov.br */
+  --radius-govbr-sm:   4px;
+  --radius-govbr-md:   8px;
+  --radius-govbr-lg:   16px;
+  --radius-govbr-pill: 999em;
+
+  /* Sombras Gov.br */
+  --shadow-govbr-sm:   0 1px 6px rgba(0,0,0,0.16);
+  --shadow-govbr-md:   0 3px 6px rgba(0,0,0,0.16);
+  --shadow-govbr-lg:   0 6px 6px rgba(0,0,0,0.16);
+  --shadow-govbr-xl:   0 9px 6px rgba(0,0,0,0.16);
+
+  /* Duração de animação Gov.br */
+  --duration-govbr-fast:     300ms;
+  --duration-govbr-moderate: 500ms;
+  --duration-govbr-slow:     800ms;
+
+  /* Easing Gov.br */
+  --ease-govbr:         cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-govbr-out:     cubic-bezier(0, 0, 0.58, 1);
+  --ease-govbr-in-out:  cubic-bezier(0.42, 0, 0.58, 1);
+
+  /* Cores semânticas Gov.br mapeadas como cores Tailwind */
+  --color-govbr-success:     #168821;
+  --color-govbr-warning:     #ffcd07;
+  --color-govbr-danger:      #e52207;
+  --color-govbr-info:        #155bcb;
+  --color-govbr-primary:     #10b981; /* emerald (override) */
+
+  /* Z-index Gov.br */
+  --z-govbr-overlay: 1000;
+  --z-govbr-header:  2000;
+  --z-govbr-modal:   3000;
+  --z-govbr-toast:   4000;
+
+  /* Font scale Gov.br */
+  --text-govbr-xs:   11.662px;
+  --text-govbr-sm:   14px;
+  --text-govbr-base: 16.8px;
+  --text-govbr-lg:   20.16px;
+  --text-govbr-xl:   24.192px;
+  --text-govbr-2xl:  29.036px;
+  --text-govbr-3xl:  34.832px;
+}
+
+/* ============================================================
+   6. Base styles — aplica tokens Gov.br na base do documento
+   ============================================================ */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-family-base);
+  line-height: var(--font-line-height-medium, 1.45);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mono para dados técnicos/fiscais — regra mandatória do projeto */
+.font-mono,
+code, pre,
+[data-fiscal], [data-metric], [data-value] {
+  font-family: var(--font-family-mono);
+}
+
+/* ============================================================
+   7. Utilitários de dashboard (full-screen, multi-resolução)
+   ============================================================ */
+
+/* Dashboard ocupa tela toda em qualquer resolução */
+.dashboard-full {
+  width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Card padrão Gov.br DS para painéis */
+.panel-govbr {
+  background: var(--background-light);
+  border-radius: var(--sgf-radius-md);
+  box-shadow: var(--sgf-shadow-sm);
+  transition: box-shadow var(--sgf-duration-fast) var(--sgf-ease);
+}
+.panel-govbr:hover {
+  box-shadow: var(--sgf-shadow-md);
+}
+.dark .panel-govbr {
+  background: #1e293b; /* slate-800 */
+  box-shadow: var(--sgf-shadow-sm);
+}
+
+/* KPI metric tile */
+.kpi-tile {
+  border-radius: var(--sgf-radius-sm);
+  box-shadow: var(--sgf-shadow-sm);
+  transition:
+    box-shadow var(--sgf-duration-fast) var(--sgf-ease-out),
+    transform   var(--sgf-duration-fast) var(--sgf-ease-out);
+}
+.kpi-tile:hover {
+  box-shadow: var(--sgf-shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Status badges usando cores semânticas Gov.br */
+.badge-success { color: #168821; background: rgba(22,136,33,0.12); }
+.badge-warning { color: #7a5900; background: rgba(255,205,7,0.20); }
+.badge-danger  { color: #c92100; background: rgba(229,34,7,0.12);  }
+.badge-info    { color: #155bcb; background: rgba(21,91,203,0.12); }
+
+.dark .badge-success { color: #70e17b; background: rgba(22,136,33,0.20); }
+.dark .badge-warning { color: #ffe396; background: rgba(255,205,7,0.18); }
+.dark .badge-danger  { color: #ff8d7b; background: rgba(229,34,7,0.20);  }
+.dark .badge-info    { color: #81aefc; background: rgba(21,91,203,0.20); }
+
+/* Focus ring Gov.br */
+:focus-visible {
+  outline: var(--surface-width-lg, 4px) dashed var(--focus-color-light, #f59e0b);
+  outline-offset: var(--spacing-scale-half, 4px);
+}
+.dark :focus-visible {
+  outline-color: var(--focus-color-dark, #fcd34d);
+}
+
+/* Scrollbar customizado para dashboards */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #475569; /* slate-600 */
+  border-radius: var(--sgf-radius-pill);
+}
+::-webkit-scrollbar-thumb:hover { background: #64748b; /* slate-500 */ }
+.dark ::-webkit-scrollbar-thumb { background: #334155; /* slate-700 */ }
+
+/* Ocultar scrollbar horizontal nas navs (scrollbar-none) */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* Animações de entrada Gov.br */
+@keyframes govbr-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes govbr-slide-in-top {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes govbr-slide-in-right {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.animate-govbr-fade-in       { animation: govbr-fade-in       var(--sgf-duration-fast) var(--sgf-ease-out) forwards; }
+.animate-govbr-slide-top     { animation: govbr-slide-in-top   var(--sgf-duration-fast) var(--sgf-ease-out) forwards; }
+.animate-govbr-slide-right   { animation: govbr-slide-in-right var(--sgf-duration-fast) var(--sgf-ease-out) forwards; }
+
+/* Tailwind animate-in (compatibilidade com classes existentes) */
+.animate-in { animation-fill-mode: both; }
+.fade-in    { animation-name: govbr-fade-in; }
+.slide-in-from-top-2 { animation-name: govbr-slide-in-top; }
+

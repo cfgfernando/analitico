@@ -228,7 +228,10 @@ export const Header: React.FC<HeaderProps> = ({
   const currentTabObj = tabs.find(t => t.id === activeTab) || tabs[0];
 
   return (
-    <div className="sticky top-0 z-50 shadow-md">
+    <div
+      className="sticky top-0"
+      style={{ zIndex: 'var(--sgf-z-header)', boxShadow: 'var(--sgf-shadow-md)' }}
+    >
       {/* Top Header - Deep Slate with Emerald Accent Line */}
       <header className="h-16 bg-slate-900 text-white flex items-center justify-between px-3 sm:px-6 lg:px-8 border-b-4 border-emerald-500">
         {/* Brand & Municipal Identity */}

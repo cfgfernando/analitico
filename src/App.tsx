@@ -485,7 +485,7 @@ export default function App() {
     (captacao?.emendas ? captacao.emendas.filter(e => isEmendaRecente(e.dataProcessamento)).length : 0);
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col antialiased selection:bg-emerald-500 selection:text-white relative">
+    <div className="dashboard-full min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col antialiased selection:bg-emerald-500 selection:text-white relative">
       {/* Dynamic Toast Notifications */}
       <ToastContainer
         toasts={toasts}
@@ -516,7 +516,15 @@ export default function App() {
 
       {/* Presentation Mode Slide & Control Dock (TCE-PR / Audiência Fiscal) */}
       {isPresentationMode && (
-        <div className="bg-slate-900 border-b-2 border-amber-500 text-white px-3 sm:px-6 py-2 shadow-xl sticky top-16 z-40 animate-in slide-in-from-top-2 duration-200">
+        <div
+          className="bg-slate-900 border-b-2 border-amber-500 text-white px-3 sm:px-6 py-2 animate-in slide-in-from-top-2"
+          style={{
+            boxShadow: 'var(--sgf-shadow-lg)',
+            position: 'sticky',
+            top: '4rem',
+            zIndex: 'var(--sgf-z-header)',
+          }}
+        >
           <div className="w-full flex flex-col md:flex-row items-center justify-between gap-2.5">
             {/* Left Info */}
             <div className="flex items-center gap-2">
