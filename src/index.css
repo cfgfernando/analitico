@@ -196,25 +196,22 @@ html {
   html { font-size: 14px; }
 }
 
-body {
-  font-family: var(--font-family-base);
-  line-height: var(--font-line-height-medium, 1.45);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  letter-spacing: 0.01em; /* Rawline tem letterforms um pouco condensados; leve tracking melhora leitura */
-}
+@layer base {
+  body {
+    font-family: var(--font-family-base);
+    line-height: var(--font-line-height-medium, 1.45);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: 0.01em;
+  }
 
-/* Headings — Rawline fica excelente em títulos com pesos bold/black */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-family-base);
-  line-height: var(--font-line-height-low, 1.15);
-  letter-spacing: -0.01em;
+  /* Headings base — utilitários Tailwind como text-xs/text-sm sobrescrevem normalmente */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-base);
+    line-height: var(--font-line-height-low, 1.15);
+    letter-spacing: -0.01em;
+  }
 }
-
-h1 { font-size: var(--font-size-scale-up-05, 34.832px); font-weight: 800; }
-h2 { font-size: var(--font-size-scale-up-03, 24.192px); font-weight: 700; }
-h3 { font-size: var(--font-size-scale-up-02, 20.16px);  font-weight: 700; }
-h4 { font-size: var(--font-size-scale-up-01, 16.8px);   font-weight: 600; }
 
 /* Mono para dados técnicos/fiscais — regra mandatória do projeto */
 .font-mono,

@@ -259,14 +259,14 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <h1 className="text-sm sm:text-base lg:text-lg font-bold leading-tight uppercase tracking-wider text-white">
+                <h1 className="text-xs sm:text-sm font-bold leading-tight uppercase tracking-wider text-white">
                   SGF {tenantInfo.cidade || 'Araucária'}
                 </h1>
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-sm bg-emerald-950 text-emerald-300 border border-emerald-500/40">
+                <span className="text-[8.5px] font-bold px-1.5 py-0.5 rounded-sm bg-emerald-950 text-emerald-300 border border-emerald-500/40">
                   {tenantInfo.uf || 'PR'}
                 </span>
               </div>
-              <p className="text-[9px] sm:text-[10px] text-emerald-400 font-mono uppercase tracking-[0.15em] sm:tracking-[0.2em] truncate max-w-[180px] sm:max-w-none">
+              <p className="text-[8.5px] sm:text-[9px] text-emerald-400 font-mono uppercase tracking-[0.12em] truncate max-w-[180px] sm:max-w-none">
                 Gestão Fiscal & Orçamentária
               </p>
             </div>
@@ -490,7 +490,7 @@ export const Header: React.FC<HeaderProps> = ({
         <nav
           ref={navScrollRef}
           id="main-desktop-navigation"
-          className="h-11 flex-1 flex items-center px-2 sm:px-4 gap-2 sm:gap-4 overflow-x-auto scrollbar-none scroll-smooth"
+          className="h-10 flex-1 flex items-center px-2 sm:px-3 gap-1.5 sm:gap-2.5 overflow-x-auto scrollbar-none scroll-smooth"
         >
           {tabs.map(tab => {
             const isActive = activeTab === tab.id;
@@ -502,7 +502,7 @@ export const Header: React.FC<HeaderProps> = ({
                 key={tab.id}
                 id={`tab-btn-${tab.id}`}
                 onClick={() => handleTabClick(tab.id)}
-                className={`text-xs uppercase tracking-wider py-2.5 px-2.5 sm:px-3 font-bold whitespace-nowrap cursor-pointer transition-all flex items-center gap-1.5 rounded-sm ${
+                className={`text-[11px] uppercase tracking-wide py-2 px-2 sm:px-2.5 font-bold whitespace-nowrap cursor-pointer transition-all flex items-center gap-1.5 rounded-sm ${
                   isActive
                     ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-b-2 border-emerald-600 dark:border-emerald-400 font-bold shadow-xs'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 border-b-2 border-transparent font-semibold'
@@ -510,22 +510,22 @@ export const Header: React.FC<HeaderProps> = ({
                 title={tab.desc}
               >
                 <div className="relative inline-flex items-center justify-center">
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
+                  <Icon className={`w-3 h-3 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
                   {isCaptacaoComNovas && (
                     <span
                       id="badge-icon-captacao-desktop"
-                      className="absolute -top-1.5 -right-1.5 flex h-2.5 w-2.5"
+                      className="absolute -top-1.5 -right-1.5 flex h-2 w-2"
                       title={`${novasEmendas7Dias} novas emendas processadas nos últimos 7 dias`}
                     >
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80" />
-                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 ring-1 ring-white dark:ring-slate-900" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 ring-1 ring-white dark:ring-slate-900" />
                     </span>
                   )}
                 </div>
                 <span>{tab.number}. {tab.label}</span>
                 {tab.badge && (
                   <span
-                    className={`inline-flex items-center gap-1 px-1.5 py-0.2 text-[9px] font-mono font-bold rounded-sm ml-1 ${
+                    className={`inline-flex items-center gap-1 px-1 py-0.2 text-[8px] font-mono font-bold rounded-sm ml-1 ${
                       tab.badgeColor === 'emerald'
                         ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40'
                         : 'bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/40'
@@ -533,7 +533,7 @@ export const Header: React.FC<HeaderProps> = ({
                     title={tab.badge}
                   >
                     {tab.badgeColor === 'emerald' && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                      <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse inline-block" />
                     )}
                     {tab.badge}
                   </span>
@@ -692,7 +692,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs font-bold font-mono tracking-wider uppercase text-white">
+                      <span className="text-[11px] font-bold font-mono tracking-wide uppercase text-white">
                         {tab.number}. {tab.label}
                       </span>
                       {isActive && (
