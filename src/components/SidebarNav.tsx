@@ -171,6 +171,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           number: '05',
           label: 'Captação & Convênios',
           shortLabel: 'Captação',
+          icon: HandCoins,
           badge: novasEmendas7Dias > 0 ? `+${novasEmendas7Dias} novas` : undefined,
           badgeColor: 'emerald',
           desc: 'Radar Transferegov, emendas parlamentares e contrapartida',
@@ -413,7 +414,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
                 <div className="space-y-1">
                   {filteredItems.map(item => {
-                    const Icon = item.icon;
+                    const Icon = item.icon || LayoutDashboard;
                     const isActive = activeTab === item.id;
 
                     return (
