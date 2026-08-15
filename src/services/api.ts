@@ -1,0 +1,320 @@
+import {
+  FiscalKPIs,
+  RevenueSource,
+  ExpenseNature,
+  ExpenseFunction,
+  LRFLimit,
+  FiscalAlert,
+  EmendaParlamentar,
+  ConvenioRecurso,
+  FundebData,
+  SiconfiApiStatus,
+  ObraAraucaria,
+  ObrasSummary,
+} from '../types/fiscal';
+
+export async function getSiconfiStatus(tenantId?: string): Promise<SiconfiApiStatus> {
+  const url = tenantId ? `/api/siconfi/status?tenantId=${encodeURIComponent(tenantId)}` : '/api/siconfi/status';
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Falha ao verificar status da API Siconfi');
+  return res.json();
+}
+
+export async function getFiscalSummary(ano: number = 2026, tenantId?: string): Promise<FiscalKPIs> {
+  const params = new URLSearchParams({ ano: String(ano) });
+  if (tenantId) params.append('tenantId', tenantId);
+  const res = await fetch(`/api/fiscal/summary?${params.toString()}`);
+  if (!res.ok) throw new Error('Falha ao carregar resumo fiscal');
+  return res.json();
+}
+
+export async function getReceitas(ano: number = 2026, tenantId?: string): Promise<{ ano: number; receitas: RevenueSource[] }> {
+  const params = new URLSearchParams({ ano: String(ano) });
+  if (tenantId) params.append('tenantId', tenantId);
+  const res = await fetch(`/api/fiscal/receitas?${params.toString()}`);
+  if (!res.ok) throw new Error('Falha ao carregar receitas');
+  return res.json();
+}
+
+export async function getDespesas(ano: number = 2026, tenantId?: string): Promise<{
+  ano: number;
+  porNatureza: ExpenseNature[];
+  porFuncao: ExpenseFunction[];
+}> {
+  const params = new URLSearchParams({ ano: String(ano) });
+  if (tenantId) params.append('tenantId', tenantId);
+  const res = await fetch(`/api/fiscal/despesas?${params.toString()}`);
+  if (!res.ok) throw new Error('Falha ao carregar despesas');
+  return res.json();
+}
+
+export async function getLimitesLRF(ano: number = 2026, tenantId?: string): Promise<{ ano: number; limites: LRFLimit[] }> {
+  const params = new URLSearchParams({ ano: String(ano) });
+  if (tenantId) params.append('tenantId', tenantId);
+  const res = await fetch(`/api/fiscal/lrf?${params.toString()}`);
+  if (!res.ok) throw new Error('Falha ao carregar limites LRF');
+  return res.json();
+}
+
+export async function getCaptacaoRecursos(tenantId?: string): Promise<{
+  metaAnual: number;
+  captadoAcumulado: number;
+  percentualAtingimento: string;
+  novasEmendas7Dias?: number;
+  emendas: EmendaParlamentar[];
+  convenios: ConvenioRecurso[];
+}> {
+  const url = tenantId ? `/api/fiscal/captacao?tenantId=${encodeURIComponent(tenantId)}` : '/api/fiscal/captacao';
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Falha ao carregar dados de captação');
+  return res.json();
+}
+
+export async function getFundebData(tenantId?: string): Promise<FundebData> {
+  const url = tenantId ? `/api/fiscal/fundeb?tenantId=${encodeURIComponent(tenantId)}` : '/api/fiscal/fundeb';
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Falha ao carregar dados do FUNDEB');
+  return res.json();
+}
+
+export async function getFiscalAlerts(tenantId?: string): Promise<FiscalAlert[]> {
+  const url = tenantId ? `/api/fiscal/alertas?tenantId=${encodeURIComponent(tenantId)}` : '/api/fiscal/alertas';
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Falha ao carregar alertas fiscais');
+  return res.json();
+}
+
+export async function querySiconfiProxy(endpoint: string, params: Record<string, string> = {}) {
+  const searchParams = new URLSearchParams({ endpoint, ...params });
+  const res = await fetch(`/api/siconfi/proxy?${searchParams.toString()}`);
+  if (!res.ok) throw new Error('Falha ao consultar Siconfi');
+  return res.json();
+}
+
+export async function getAIDiagnosis(question?: string, contextData?: any, tenantId?: string): Promise<{
+  success: boolean;
+  analise: string;
+  provedor: string;
+  timestamp: string;
+}> {
+  const res = await fetch('/api/fiscal/diagnostico-ia', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question, contextData, tenantId }),
+  });
+  if (!res.ok) throw new Error('Falha ao obter diagnóstico fiscal');
+  return res.json();
+}
+
+export async function getAnalisePreditiva(ano: number, ultimos6Meses: any[], tenantId?: string): Promise<{
+  success: boolean;
+  analise: string;
+  provedor: string;
+  timestamp: string;
+  ano: number;
+}> {
+  const res = await fetch('/api/fiscal/analise-preditiva', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ano, ultimos6Meses, tenantId }),
+  });
+  if (!res.ok) throw new Error('Falha ao obter análise preditiva de IA');
+  return res.json();
+}
+
+export async function getObrasAraucaria(tenantId?: string): Promise<{
+  obras: ObraAraucaria[];
+  summary: ObrasSummary;
+}> {
+  const url = tenantId ? `/api/fiscal/obras?tenantId=${encodeURIComponent(tenantId)}` : '/api/fiscal/obras';
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Falha ao carregar dados de obras');
+  return res.json();
+}
+
+// ==========================================
+// SAAS MULTI-TENANT & USER CLIENT SERVICES
+// ==========================================
+
+import { TenantSummary, SaaSUser, TenantApiConfig, SaaSInvoice, SaaSSummaryMetrics, AutoDiscoveredMunicipality } from '../types/saas';
+
+export async function searchMunicipiosLookup(query: string): Promise<{ success: boolean; municipality: AutoDiscoveredMunicipality; message: string }> {
+  const res = await fetch(`/api/saas/municipios/lookup?query=${encodeURIComponent(query)}`);
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Nenhum município localizado com o termo informado.');
+  }
+  return res.json();
+}
+
+export async function getMunicipiosSuggestions(q: string): Promise<{ success: boolean; suggestions: { codigoIbge: string; cidade: string; uf: string; cnpj: string; nomePrefeitura: string }[] }> {
+  const res = await fetch(`/api/saas/municipios/suggestions?q=${encodeURIComponent(q)}`);
+  if (!res.ok) return { success: false, suggestions: [] };
+  return res.json();
+}
+
+export async function getSaaSTenants(): Promise<{ success: boolean; tenants: TenantSummary[] }> {
+  const res = await fetch('/api/saas/tenants');
+  if (!res.ok) throw new Error('Falha ao carregar lista de prefeituras clientes');
+  return res.json();
+}
+
+export async function createSaaSTenant(data: any): Promise<{ success: boolean; tenant: TenantSummary; message: string }> {
+  const res = await fetch('/api/saas/tenants', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Falha ao cadastrar prefeitura');
+  }
+  return res.json();
+}
+
+export async function updateSaaSTenant(id: string, data: any): Promise<{ success: boolean; tenant: TenantSummary; message?: string }> {
+  const res = await fetch(`/api/saas/tenants/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Falha ao atualizar prefeitura');
+  }
+  return res.json();
+}
+
+export async function deleteSaaSTenant(id: string): Promise<{ success: boolean; message: string }> {
+  const res = await fetch(`/api/saas/tenants/${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Falha ao remover prefeitura');
+  }
+  return res.json();
+}
+
+export async function sendSolicitacaoUsuario(data: {
+  tenantId: string;
+  nomeSolicitante: string;
+  emailSolicitante: string;
+  nomeNovoUsuario: string;
+  emailNovoUsuario: string;
+  cargoNovoUsuario: string;
+  justificativa?: string;
+}): Promise<{ success: boolean; protocolo: string; message: string }> {
+  const res = await fetch('/api/saas/solicitacao-usuario', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Falha ao enviar solicitação');
+  return res.json();
+}
+
+export async function getTenantApis(tenantId: string): Promise<{ success: boolean; apis: TenantApiConfig[] }> {
+  const res = await fetch(`/api/saas/tenants/${tenantId}/apis`);
+  if (!res.ok) throw new Error('Falha ao carregar APIs da prefeitura');
+  return res.json();
+}
+
+export async function createTenantApi(tenantId: string, data: any): Promise<{ success: boolean; api: TenantApiConfig }> {
+  const res = await fetch(`/api/saas/tenants/${tenantId}/apis`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Falha ao cadastrar API');
+  }
+  return res.json();
+}
+
+export async function deleteTenantApi(tenantId: string, apiId: string): Promise<{ success: boolean }> {
+  const res = await fetch(`/api/saas/tenants/${tenantId}/apis/${apiId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Falha ao excluir API');
+  return res.json();
+}
+
+export async function triggerTenantApiSync(tenantId: string, apiId: string): Promise<{ success: boolean; api: TenantApiConfig; message: string }> {
+  const res = await fetch(`/api/saas/tenants/${tenantId}/apis/${apiId}/sync`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('Falha ao sincronizar API');
+  return res.json();
+}
+
+export async function getTenantUsers(tenantId: string): Promise<{
+  success: boolean;
+  users: SaaSUser[];
+  quota: {
+    userLimit: number;
+    totalAtivos: number;
+    usuariosInclusos: number;
+    usuariosExcedentes: number;
+    valorUsuarioExtra: number;
+    cobrancaExtraTotal: number;
+    valorMensalBase: number;
+    valorTotalMensalidade: number;
+  };
+}> {
+  const res = await fetch(`/api/saas/tenants/${tenantId}/users`);
+  if (!res.ok) throw new Error('Falha ao carregar usuários da prefeitura');
+  return res.json();
+}
+
+export async function createTenantUser(tenantId: string, data: any): Promise<{
+  success: boolean;
+  user: SaaSUser;
+  isExtraUser: boolean;
+  message: string;
+}> {
+  const res = await fetch(`/api/saas/tenants/${tenantId}/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Falha ao cadastrar usuário');
+  }
+  return res.json();
+}
+
+export async function updateTenantUser(tenantId: string, userId: string, data: any): Promise<{ success: boolean; user: SaaSUser }> {
+  const res = await fetch(`/api/saas/tenants/${tenantId}/users/${userId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Falha ao atualizar usuário');
+  return res.json();
+}
+
+export async function deleteTenantUser(tenantId: string, userId: string): Promise<{ success: boolean }> {
+  const res = await fetch(`/api/saas/tenants/${tenantId}/users/${userId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Falha ao excluir usuário');
+  return res.json();
+}
+
+export async function getSaaSInvoices(): Promise<{ success: boolean; invoices: SaaSInvoice[] }> {
+  const res = await fetch('/api/saas/invoices');
+  if (!res.ok) throw new Error('Falha ao carregar faturas do SaaS');
+  return res.json();
+}
+
+export async function getSaaSMetrics(): Promise<{ success: boolean; metrics: SaaSSummaryMetrics }> {
+  const res = await fetch('/api/saas/metrics');
+  if (!res.ok) throw new Error('Falha ao carregar métricas consolidadas do SaaS');
+  return res.json();
+}
+
+
+

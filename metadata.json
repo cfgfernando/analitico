@@ -1,0 +1,6 @@
+{
+  "name": "Dashboard Fiscal de Araucária",
+  "description": "Painel SaaS multi-tenant contábil-financeiro municipal com gestão de prefeituras, configuração dinâmica de APIs (Siconfi, Transferegov, TCEs), controle de cotas com 2 usuários inclusos no plano básico + adicionais, monitoramento de LRF, receitas, despesas e mapa georreferenciado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
