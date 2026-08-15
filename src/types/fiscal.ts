@@ -273,6 +273,28 @@ export interface SeloConformidadePayload {
   dataSource?: DataSourceMetadata;
 }
 
+export interface AlertaPrazoCritico {
+  id: string;
+  categoria: 'SICONFI' | 'CAUC' | 'LRF_PESSOAL' | 'ORCAMENTO' | 'CONVENIOS' | 'FUNDEB';
+  titulo: string;
+  descricao: string;
+  dataLimite: string;
+  diasRestantes: number;
+  severidade: 'CRITICO' | 'ALERTA' | 'INFORMATIVO';
+  sancaoPrevista: string;
+  acaoRecomendada: string;
+  orgaoFiscalizador: string;
+  status: 'PENDENTE' | 'RECONHECIDO' | 'CONCLUIDO';
+}
+
+export interface AlertasProativosPayload {
+  totalAlertas: number;
+  totalCriticos: number;
+  totalAtencao: number;
+  alertas: AlertaPrazoCritico[];
+  dataSource?: DataSourceMetadata;
+}
+
 export interface EmendaParlamentar {
   id: string;
   autor: string;

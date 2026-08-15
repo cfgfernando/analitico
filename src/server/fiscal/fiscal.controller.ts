@@ -116,4 +116,10 @@ export class FiscalController {
     const parsedAno = ano ? parseInt(ano, 10) : 2026;
     return this.fiscalService.getSeloConformidade(tenant, parsedAno);
   }
+
+  @Get('alertas-proativos')
+  getAlertasProativos(@Req() req: Request) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.getAlertasProativos(tenant);
+  }
 }

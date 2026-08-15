@@ -2182,3 +2182,107 @@ export function getMunicipalSeloConformidade(tenant: TenantInfo, ano: number = 2
     },
   };
 }
+
+// 15. Sistema de Alertas Proativos & Gestão de Prazos Críticos
+export function getMunicipalAlertasProativos(tenant: TenantInfo) {
+  const profile = getMunicipalFinancialProfile(tenant, 2026);
+
+  const alertas: any[] = [
+    {
+      id: 'alt-cauc-cnd',
+      categoria: 'CAUC' as const,
+      titulo: 'Renovação da Certidão Conjunta de Débitos Federais (CND / PGFN)',
+      descricao: `A Certidão de Regularidade Fiscal da Prefeitura de ${tenant.cidade} junto à Receita Federal e PGFN expira nos próximos 18 dias.`,
+      dataLimite: '2026-09-02',
+      diasRestantes: 18,
+      severidade: 'CRITICO' as const,
+      sancaoPrevista: 'Inadimplência imediata no CAUC e bloqueio de repasses de convênios federais e estaduais.',
+      acaoRecomendada: 'Solicitar emissão de guia de regularização ou renovação automática no portal e-CAC da Receita Federal.',
+      orgaoFiscalizador: 'Receita Federal / STN / CAUC',
+      status: 'PENDENTE' as const,
+    },
+    {
+      id: 'alt-siconfi-rgf',
+      categoria: 'SICONFI' as const,
+      titulo: 'Homologação e Publicação do RGF (2º Quadrimestre / 2026)',
+      descricao: 'Prazo legal para transmissão e assinatura eletrônica do Relatório de Gestão Fiscal no SICONFI.',
+      dataLimite: '2026-09-30',
+      diasRestantes: 46,
+      severidade: 'ALERTA' as const,
+      sancaoPrevista: 'Impedimento de contratação de operações de crédito e recebimento de transferências voluntárias (Art. 51 LRF).',
+      acaoRecomendada: 'Revisar balancetes da contabilidade e fechar demonstrativo de despesa com pessoal com a folha.',
+      orgaoFiscalizador: 'Secretaria do Tesouro Nacional (STN) / TCE',
+      status: 'PENDENTE' as const,
+    },
+    {
+      id: 'alt-orcamento-loa',
+      categoria: 'ORCAMENTO' as const,
+      titulo: 'Envio do Projeto da LOA 2027 à Câmara Municipal',
+      descricao: 'Protocolização obrigatória do Projeto de Lei Orçamentária Anual para o exercício de 2027.',
+      dataLimite: '2026-09-30',
+      diasRestantes: 46,
+      severidade: 'ALERTA' as const,
+      sancaoPrevista: 'Crime de responsabilidade do Chefe do Poder Executivo (Art. 35 ADCT).',
+      acaoRecomendada: 'Consolidar audiências públicas e fechar estimativa de receitas com a reestimativa da Reforma Tributária.',
+      orgaoFiscalizador: 'Câmara Municipal / Tribunal de Contas',
+      status: 'PENDENTE' as const,
+    },
+    {
+      id: 'alt-lrf-folha',
+      categoria: 'LRF_PESSOAL' as const,
+      titulo: `Alerta Preventivo LRF: Despesa com Pessoal em ${profile.despesaPessoalPct.toFixed(1)}% da RCL`,
+      descricao: profile.despesaPessoalPct > 51.3
+        ? 'Índice de folha ultrapassou o Limite Prudencial (51,30%). Vedações do Art. 22 parágrafo único da LRF ativadas.'
+        : 'Índice de folha próximo ao limite de alerta (48,60%). Recomenda-se contenção de horas extras e novas nomeações.',
+      dataLimite: '2026-12-31',
+      diasRestantes: 138,
+      severidade: profile.despesaPessoalPct > 51.3 ? ('CRITICO' as const) : ('ALERTA' as const),
+      sancaoPrevista: 'Proibição de concessão de vantagens, aumentos, criação de cargos e provimento de concurso público.',
+      acaoRecomendada: 'Auditar gratificações extraordinárias e reavaliar contratos temporários.',
+      orgaoFiscalizador: 'Tribunal de Contas do Estado / LRF',
+      status: 'PENDENTE' as const,
+    },
+    {
+      id: 'alt-convenio-prestacao',
+      categoria: 'CONVENIOS' as const,
+      titulo: 'Prestação de Contas Final de Convênio no Transferegov (MCid)',
+      descricao: 'Finalização do prazo de 60 dias após a vigência para envio do relatório final de execução e notas fiscais.',
+      dataLimite: '2026-09-10',
+      diasRestantes: 26,
+      severidade: 'ALERTA' as const,
+      sancaoPrevista: 'Instauração de Tomada de Contas Especial (TCE) e inclusão no CADIN.',
+      acaoRecomendada: 'Solicitar ao engenheiro fiscal a emissão do Termo de Recebimento Definitivo da Obra e upload de fotos.',
+      orgaoFiscalizador: 'Ministério das Cidades / Transferegov',
+      status: 'PENDENTE' as const,
+    },
+    {
+      id: 'alt-fundeb-magisterio',
+      categoria: 'FUNDEB' as const,
+      titulo: 'Acompanhamento do Piso de 70% do FUNDEB em Magistério',
+      descricao: 'Verificação da aplicação de no mínimo 70% dos recursos do FUNDEB na remuneração dos profissionais da educação básica.',
+      dataLimite: '2026-12-31',
+      diasRestantes: 138,
+      severidade: 'INFORMATIVO' as const,
+      sancaoPrevista: 'Devolução de recursos com juros e reprovação das contas anuais da Educação.',
+      acaoRecomendada: 'Monitorar folha dos professores nos meses de outubro e novembro para programar eventual rateio ou abono legal.',
+      orgaoFiscalizador: 'FNDE / SIOPE / CACS-FUNDEB',
+      status: 'PENDENTE' as const,
+    },
+  ];
+
+  const totalCriticos = alertas.filter(a => a.severidade === 'CRITICO').length;
+  const totalAtencao = alertas.filter(a => a.severidade === 'ALERTA').length;
+
+  return {
+    totalAlertas: alertas.length,
+    totalCriticos,
+    totalAtencao,
+    alertas,
+    dataSource: {
+      origin: 'DEMONSTRACAO',
+      source: `SICONFI / CAUC / STN / TCE-${tenant.uf} • Radar de Prazos e Riscos 2026`,
+      collectedAt: new Date().toISOString(),
+      confidence: 'ESTIMATIVA_ALTA_CONFIANCA',
+    },
+  };
+}

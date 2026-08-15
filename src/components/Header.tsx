@@ -30,6 +30,7 @@ import {
   Sun,
   Trophy,
   Award,
+  BellRing,
 } from 'lucide-react';
 import { SiconfiApiStatus } from '../types/fiscal';
 
@@ -192,8 +193,18 @@ export const Header: React.FC<HeaderProps> = ({
       desc: 'Certificado de gestão fiscal transparente e widget de transparência',
     },
     {
-      id: 'siconfi',
+      id: 'alertas_prazos',
       number: '09',
+      label: 'ALERTAS E PRAZOS',
+      shortLabel: 'Radar Riscos',
+      icon: BellRing,
+      badge: '2 Críticos',
+      badgeColor: 'amber',
+      desc: 'Monitoramento de certidões do CAUC, prazos SICONFI e riscos da LRF',
+    },
+    {
+      id: 'siconfi',
+      number: '10',
       label: 'API SICONFI LIVE',
       shortLabel: 'Siconfi API',
       icon: Database,

@@ -14,6 +14,7 @@ import { TenantUserManagement } from '../components/TenantUserManagement';
 import { PainelDoPrefeito } from '../components/PainelDoPrefeito';
 import { BenchmarkMunicipal } from '../components/BenchmarkMunicipal';
 import { SeloConformidade } from '../components/SeloConformidade';
+import { AlertasPrazosCriticos } from '../components/AlertasPrazosCriticos';
 import {
   FiscalKPIs,
   RevenueSource,
@@ -239,6 +240,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
         {activeTab === 'selo' && (
           <SeloConformidade cidade={activeTenant.cidade} uf={activeTenant.uf} ano={ano} />
+        )}
+
+        {activeTab === 'alertas_prazos' && (
+          <AlertasPrazosCriticos cidade={activeTenant.cidade} uf={activeTenant.uf} />
         )}
 
         {activeTab === 'siconfi' && (

@@ -16,6 +16,7 @@ import {
   getMunicipalSimuladorReforma,
   getMunicipalBenchmark,
   getMunicipalSeloConformidade,
+  getMunicipalAlertasProativos,
 } from '../municipalFiscalEngine';
 
 @Injectable()
@@ -74,5 +75,9 @@ export class FiscalService {
 
   getSeloConformidade(tenant: TenantInfo, ano: number = 2026) {
     return getMunicipalSeloConformidade(tenant, ano);
+  }
+
+  getAlertasProativos(tenant: TenantInfo) {
+    return getMunicipalAlertasProativos(tenant);
   }
 }
