@@ -14,6 +14,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { EmendaParlamentar, ConvenioRecurso } from '../types/fiscal';
+import { RadarCaptacao } from './RadarCaptacao';
 import {
   formatCurrency,
   formatCompactCurrency,
@@ -41,7 +42,7 @@ export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
   convenios,
   searchQuery,
 }) => {
-  const [activeTab, setActiveTab] = useState<'emendas' | 'convenios'>('emendas');
+  const [activeTab, setActiveTab] = useState<'radar' | 'emendas' | 'convenios'>('radar');
   const [selectedEsfera, setSelectedEsfera] = useState<'todas' | 'Federal' | 'Estadual' | 'recentes'>('todas');
 
   const novasEmendasCount = emendas.filter(e => isEmendaRecente(e.dataProcessamento)).length;
@@ -232,6 +233,17 @@ export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
         <div className="flex items-center gap-2">
           <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-sm border border-slate-200 dark:border-slate-700">
             <button
+              onClick={() => setActiveTab('radar')}
+              className={`px-3 py-1 text-xs font-mono font-bold uppercase tracking-wider rounded-sm transition flex items-center gap-1.5 ${
+                activeTab === 'radar'
+                  ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+              <span>Radar de Editais (Transferegov)</span>
+            </button>
+            <button
               onClick={() => setActiveTab('emendas')}
               className={`px-3 py-1 text-xs font-mono font-bold uppercase tracking-wider rounded-sm transition ${
                 activeTab === 'emendas'
@@ -282,19 +294,24 @@ export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
           )}
         </div>
 
-        <button
-          onClick={handleExportCSV}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 transition"
-        >
-          <FileSpreadsheet className="w-3.5 h-3.5" />
-          <span>Exportar Planilha (CSV)</span>
-        </button>
+        {activeTab !== 'radar' && (
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-sm hover:bg-emerald-100 transition"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Exportar Planilha (CSV)</span>
+          </button>
+        )}
       </div>
 
-      {/* Table Section */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          {activeTab === 'emendas' ? (
+      {/* Renderização Condicional: Radar ou Tabelas */}
+      {activeTab === 'radar' ? (
+        <RadarCaptacao />
+      ) : (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            {activeTab === 'emendas' ? (
             <table className="w-full text-left text-xs text-slate-600 dark:text-slate-300 font-mono">
               <thead className="bg-slate-50 dark:bg-slate-800/80 text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
                 <tr>
@@ -436,6 +453,7 @@ export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
           )}
         </div>
       </div>
+      )}
     </div>
   );
 };

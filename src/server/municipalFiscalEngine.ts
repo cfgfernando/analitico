@@ -1517,3 +1517,172 @@ export function getPainelPrefeito(tenant: TenantInfo, ano: number = 2026) {
     },
   };
 }
+
+// 11. Radar de Captação & Elegibilidade
+export function getMunicipalRadarCaptacao(tenant: TenantInfo) {
+  const profile = getMunicipalFinancialProfile(tenant, 2026);
+  const now = new Date();
+
+  const addDays = (d: number) => {
+    const target = new Date(now.getTime() + d * 24 * 60 * 60 * 1000);
+    return target.toISOString().split('T')[0];
+  };
+
+  const isCapagA = tenant.codigoIbge === '4101804' || tenant.codigoIbge === '4106902' || tenant.codigoIbge === '4115200';
+
+  const programas: any[] = [
+    {
+      id: 'prog-transf-01',
+      codigoPrograma: '3600020260012',
+      orgaoConcedente: 'Fundo Nacional de Saúde (FNS)',
+      ministerio: 'Saúde',
+      titulo: 'Estruturação da Rede de Serviços de Atenção Primária à Saúde — UBS Porte III',
+      areaTematica: 'Construção e Equipamentos de Saúde',
+      objeto: `Construção, ampliação e reforma de Unidades Básicas de Saúde (UBS) e aquisição de equipamentos odontológicos e médicos em ${tenant.cidade}.`,
+      valorMinimo: 850000,
+      valorMaximo: 4500000,
+      percentualContrapartidaMinima: 2.0,
+      dataInicioInscricao: '2026-01-15',
+      dataFimInscricao: addDays(12),
+      diasRestantes: 12,
+      statusPrazo: 'MODERADO',
+      elegibilidade: {
+        status: 'ELEGIVEL',
+        motivos: ['CAUC 100% adimplente', 'CAPAG compatível (A/B)', 'Piso constitucional da Saúde (21,8%) superado'],
+        capagMinima: 'B',
+        caucExigido: true,
+      },
+      linkTransferegov: 'https://transferegov.sistema.gov.br/portal/consultarPrograma/3600020260012',
+    },
+    {
+      id: 'prog-transf-02',
+      codigoPrograma: '5600020260005',
+      orgaoConcedente: 'Ministério das Cidades / Caixa',
+      ministerio: 'Cidades / Infraestrutura',
+      titulo: 'Programa Avançar Cidades — Pavimentação, Drenagem e Acessibilidade Urbana',
+      areaTematica: 'Infraestrutura Urbana e Mobilidade',
+      objeto: `Execução de obras de drenagem pluvial, pavimentação asfáltica de vias coletoras e implantação de calçadas acessíveis em bairros periféricos de ${tenant.cidade}.`,
+      valorMinimo: 2000000,
+      valorMaximo: 25000000,
+      percentualContrapartidaMinima: 5.0,
+      dataInicioInscricao: '2026-02-01',
+      dataFimInscricao: addDays(6),
+      diasRestantes: 6,
+      statusPrazo: 'URGENTE',
+      elegibilidade: {
+        status: isCapagA ? 'ELEGIVEL' : 'RESTRICAO',
+        motivos: isCapagA
+          ? ['Capacidade de endividamento LRF comprovada (12,8% DCL)', 'Plano Diretor Municipal atualizado']
+          : ['Necessária autorização legislativa para contrapartida de grande porte'],
+        capagMinima: 'A',
+        caucExigido: true,
+      },
+      linkTransferegov: 'https://transferegov.sistema.gov.br/portal/consultarPrograma/5600020260005',
+    },
+    {
+      id: 'prog-transf-03',
+      codigoPrograma: '2600020260088',
+      orgaoConcedente: 'Fundo Nacional de Desenvolvimento da Educação (FNDE)',
+      ministerio: 'Educação',
+      titulo: 'Construção de Creches e Centros de Educação Infantil — Proinfância Tipo 1',
+      areaTematica: 'Educação Infantil e Primeira Infância',
+      objeto: `Construção de Centro Municipal de Educação Infantil (CMEI) com capacidade para atendimento de 376 crianças em dois turnos em ${tenant.cidade}.`,
+      valorMinimo: 3200000,
+      valorMaximo: 8900000,
+      percentualContrapartidaMinima: 1.0,
+      dataInicioInscricao: '2026-01-20',
+      dataFimInscricao: addDays(28),
+      diasRestantes: 28,
+      statusPrazo: 'MODERADO',
+      elegibilidade: {
+        status: 'ELEGIVEL',
+        motivos: ['Cumprimento de 27,4% em MDE (Piso 25%)', 'Terreno com registro imobiliário regularizado'],
+        capagMinima: 'B',
+        caucExigido: true,
+      },
+      linkTransferegov: 'https://transferegov.sistema.gov.br/portal/consultarPrograma/2600020260088',
+    },
+    {
+      id: 'prog-transf-04',
+      codigoPrograma: '4400020260019',
+      orgaoConcedente: 'Ministério do Meio Ambiente e Mudança do Clima',
+      ministerio: 'Meio Ambiente',
+      titulo: 'Cidades Verdes e Resilientes — Gestão de Resíduos Sólidos e Ecopontos',
+      areaTematica: 'Saneamento e Meio Ambiente',
+      objeto: `Implantação de Usina de Triagem Mecanizada de Resíduos e ecopontos inteligentes em ${tenant.cidade}.`,
+      valorMinimo: 1200000,
+      valorMaximo: 6000000,
+      percentualContrapartidaMinima: 3.0,
+      dataInicioInscricao: '2026-02-10',
+      dataFimInscricao: addDays(45),
+      diasRestantes: 45,
+      statusPrazo: 'CONFORTAVEL',
+      elegibilidade: {
+        status: 'ELEGIVEL',
+        motivos: ['Licenciamento prévio emitido pelo órgão ambiental', 'Consórcio intermunicipal aderido'],
+        capagMinima: 'C',
+        caucExigido: true,
+      },
+      linkTransferegov: 'https://transferegov.sistema.gov.br/portal/consultarPrograma/4400020260019',
+    },
+  ];
+
+  const totalPotencial = programas.reduce((acc, p) => acc + p.valorMaximo, 0);
+
+  return {
+    municipio: {
+      nome: tenant.nomePrefeitura,
+      cidade: tenant.cidade,
+      uf: tenant.uf,
+      codigoIbge: tenant.codigoIbge,
+    },
+    resumo: {
+      totalProgramasAbertos: programas.length,
+      programasElegiveis: programas.filter(p => p.elegibilidade.status === 'ELEGIVEL').length,
+      potencialGlobalCaptacao: totalPotencial,
+      programasUrgentesPrazo: programas.filter(p => p.statusPrazo === 'URGENTE').length,
+      caucStatus: 'ADIMPLENTE_100',
+      capagScore: isCapagA ? 'A (Capacidade Plena)' : 'B (Capacidade Regular)',
+    },
+    programas,
+    dataSource: {
+      origin: 'DEMONSTRACAO',
+      source: `Radar de Oportunidades Transferegov / ${tenant.cidade}`,
+      collectedAt: new Date().toISOString(),
+      confidence: 'ESTIMATIVA_ALTA_CONFIANCA',
+    },
+  };
+}
+
+export function simularContrapartida(tenant: TenantInfo, valorGlobal: number, percentualContrapartida: number = 5.0) {
+  const profile = getMunicipalFinancialProfile(tenant, 2026);
+  const caixaLivre = Math.round(profile.orcamento * 0.125 * 0.38);
+
+  const pct = Math.max(1.0, Math.min(50.0, percentualContrapartida));
+  const valorContrapartida = Math.round(valorGlobal * (pct / 100));
+  const valorRepasse = valorGlobal - valorContrapartida;
+
+  const impactoPct = Number(((valorContrapartida / caixaLivre) * 100).toFixed(2));
+
+  let viabilidade: 'ALTA' | 'MODERADA' | 'CRITICA' = 'ALTA';
+  let recomendacao = `Contrapartida de R$ ${(valorContrapartida / 1_000_000).toFixed(2)}M representa ${impactoPct}% do caixa livre municipal. Plena viabilidade financeira sem risco à folha.`;
+
+  if (impactoPct > 25.0) {
+    viabilidade = 'CRITICA';
+    recomendacao = `Atenção: A contrapartida consome ${impactoPct}% da reserva livre da prefeitura. Recomendado solicitar redução do percentual ou parcelamento de desembolso na LDO.`;
+  } else if (impactoPct > 10.0) {
+    viabilidade = 'MODERADA';
+    recomendacao = `Contrapartida requer reserva prévia de dotação orçamentária na Secretaria de Planejamento.`;
+  }
+
+  return {
+    valorGlobal,
+    percentualContrapartida: pct,
+    valorRepasseFederal: valorRepasse,
+    valorContrapartidaMunicipal: valorContrapartida,
+    saldoCaixaLivreDisponivel: caixaLivre,
+    impactoCaixaLivrePercentual: impactoPct,
+    viabilidade,
+    recomendacaoTecnica: recomendacao,
+  };
+}

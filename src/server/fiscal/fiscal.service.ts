@@ -11,6 +11,8 @@ import {
   getMunicipalAlertas,
   getMunicipalObras,
   getPainelPrefeito,
+  getMunicipalRadarCaptacao,
+  simularContrapartida,
 } from '../municipalFiscalEngine';
 
 @Injectable()
@@ -49,5 +51,13 @@ export class FiscalService {
 
   getPainelPrefeito(tenant: TenantInfo, ano: number = 2026) {
     return getPainelPrefeito(tenant, ano);
+  }
+
+  getRadarCaptacao(tenant: TenantInfo) {
+    return getMunicipalRadarCaptacao(tenant);
+  }
+
+  simularContrapartida(tenant: TenantInfo, valorGlobal: number, percentualContrapartida?: number) {
+    return simularContrapartida(tenant, valorGlobal, percentualContrapartida);
   }
 }

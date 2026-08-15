@@ -126,6 +126,41 @@ export interface FiscalAlert {
   acaoRecomendada: string;
 }
 
+export interface ProgramaTransferegov {
+  id: string;
+  codigoPrograma: string;
+  orgaoConcedente: string;
+  ministerio: 'Saúde' | 'Educação' | 'Cidades / Infraestrutura' | 'Desenvolvimento Social' | 'Meio Ambiente' | 'Segurança / Justiça' | 'Agricultura';
+  titulo: string;
+  areaTematica: string;
+  objeto: string;
+  valorMinimo: number;
+  valorMaximo: number;
+  percentualContrapartidaMinima: number;
+  dataInicioInscricao: string;
+  dataFimInscricao: string;
+  diasRestantes: number;
+  statusPrazo: 'URGENTE' | 'MODERADO' | 'CONFORTAVEL' | 'ENCERRADO';
+  elegibilidade: {
+    status: 'ELEGIVEL' | 'RESTRICAO' | 'INELEGIVEL';
+    motivos: string[];
+    capagMinima: 'A' | 'B' | 'C';
+    caucExigido: boolean;
+  };
+  linkTransferegov: string;
+}
+
+export interface SimulacaoContrapartida {
+  valorGlobal: number;
+  percentualContrapartida: number;
+  valorRepasseFederal: number;
+  valorContrapartidaMunicipal: number;
+  saldoCaixaLivreDisponivel: number;
+  impactoCaixaLivrePercentual: number;
+  viabilidade: 'ALTA' | 'MODERADA' | 'CRITICA';
+  recomendacaoTecnica: string;
+}
+
 export interface EmendaParlamentar {
   id: string;
   autor: string;

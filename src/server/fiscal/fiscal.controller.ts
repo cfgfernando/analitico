@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req, Inject, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Req, Inject, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { FiscalService } from './fiscal.service';
 import { resolveTenant } from '../municipalFiscalEngine';
@@ -77,5 +77,17 @@ export class FiscalController {
     const tenant = this.extractTenant(req);
     const parsedAno = ano ? parseInt(ano, 10) : 2026;
     return this.fiscalService.getPainelPrefeito(tenant, parsedAno);
+  }
+
+  @Get('radar-captacao')
+  getRadarCaptacao(@Req() req: Request) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.getRadarCaptacao(tenant);
+  }
+
+  @Post('radar-captacao/simular')
+  simularContrapartida(@Req() req: Request, @Body() body: { valorGlobal: number; percentualContrapartida?: number }) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.simularContrapartida(tenant, body.valorGlobal, body.percentualContrapartida);
   }
 }
