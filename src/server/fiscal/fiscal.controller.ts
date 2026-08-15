@@ -1,19 +1,21 @@
-import { Controller, Get, Query, Req, Inject } from '@nestjs/common';
+import { Controller, Get, Query, Req, Inject, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { FiscalService } from './fiscal.service';
 import { resolveTenant } from '../municipalFiscalEngine';
+import { TenantGuard } from '../auth/guards/tenant.guard';
 
+@UseGuards(TenantGuard)
 @Controller('api/fiscal')
 export class FiscalController {
   constructor(@Inject(FiscalService) private readonly fiscalService: FiscalService) {}
 
-  private extractTenant(req: Request): any {
+  private extractTenant(req: any): any {
     const tenantIdOrIbge =
-      (req.query.tenantId as string) ||
-      (req.query.codigoIbge as string) ||
-      (req.headers['x-tenant-id'] as string) ||
-      (req.query.ibge as string) ||
-      (req.body?.tenantId as string) ||
+      req.tenantId ||
+      req.user?.tenantId ||
+      (req.query?.tenantId as string) ||
+      (req.query?.codigoIbge as string) ||
+      (req.headers ? req.headers['x-tenant-id'] : undefined) ||
       '4101804';
     return resolveTenant(tenantIdOrIbge, []);
   }

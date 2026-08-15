@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, Inject, UseGuards } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { MunicipiosService } from '../municipios/municipios.service';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/saas')
 export class TenantsController {
@@ -9,6 +11,7 @@ export class TenantsController {
     @Inject(MunicipiosService) private readonly municipiosService: MunicipiosService
   ) {}
 
+  @Public()
   @Get('municipios/lookup')
   lookupMunicipio(@Query('termo') termo: string, @Query('codigoIbge') codigoIbge: string) {
     const q = termo || codigoIbge || '';
