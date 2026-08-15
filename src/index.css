@@ -57,9 +57,9 @@
   --active:    #064e3b; /* emerald-900  */
   --selected:  #10b981; /* emerald-500  */
 
-  /* ---- Fonte base: mantém Plus Jakarta Sans ---- */
-  --font-family-base: "Plus Jakarta Sans", Rawline, Raleway, sans-serif;
-  --font-family-mono: "JetBrains Mono", "Fira Mono", monospace;
+  /* ---- Fonte base: Rawline (Gov.br oficial) → Raleway (fallback Gov.br) → Plus Jakarta Sans → sans-serif ---- */
+  --font-family-base: "rawline", Raleway, "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-family-mono: "JetBrains Mono", "Fira Mono", "Courier New", monospace;
 
   /* ---- SGF custom semantic tokens (mapeados sobre Gov.br) ---- */
   --sgf-color-accent:          var(--color-primary-default);
@@ -181,6 +181,19 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Tamanho base Gov.br é 14px. Para dashboards, 15px melhora a legibilidade
+     em monitores grandes sem comprometer densidade em telas menores */
+  font-size: 15px;
+}
+
+@media (min-width: 1280px) {
+  /* Em telas largas (>1280px — TV, monitor ultrawide) sobe para 15.5px */
+  html { font-size: 15.5px; }
+}
+
+@media (max-width: 768px) {
+  /* Em telas pequenas mantém 14px (padrão Gov.br) */
+  html { font-size: 14px; }
 }
 
 body {
@@ -188,7 +201,20 @@ body {
   line-height: var(--font-line-height-medium, 1.45);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.01em; /* Rawline tem letterforms um pouco condensados; leve tracking melhora leitura */
 }
+
+/* Headings — Rawline fica excelente em títulos com pesos bold/black */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-base);
+  line-height: var(--font-line-height-low, 1.15);
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: var(--font-size-scale-up-05, 34.832px); font-weight: 800; }
+h2 { font-size: var(--font-size-scale-up-03, 24.192px); font-weight: 700; }
+h3 { font-size: var(--font-size-scale-up-02, 20.16px);  font-weight: 700; }
+h4 { font-size: var(--font-size-scale-up-01, 16.8px);   font-weight: 600; }
 
 /* Mono para dados técnicos/fiscais — regra mandatória do projeto */
 .font-mono,
