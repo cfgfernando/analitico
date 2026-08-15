@@ -647,10 +647,10 @@ export default function App() {
 
       {/* Main Content Area - Expands to full screen width in Presentation Mode */}
       <main
-        className={`flex-1 w-full mx-auto transition-all duration-300 ${
+        className={`flex-1 w-full transition-all duration-300 ${
           isPresentationMode
-            ? 'max-w-none px-3 sm:px-6 lg:px-10 xl:px-12 py-3'
-            : 'max-w-7xl px-4 sm:px-6 lg:px-8 py-6'
+            ? 'px-2 sm:px-4 py-2'
+            : 'px-3 sm:px-4 lg:px-6 py-4 pb-20 lg:pb-6'
         }`}
       >
         {/* Global Filter Bar - Hidden in Presentation Mode */}
@@ -890,7 +890,10 @@ export default function App() {
 
       {/* Mobile Floating Quick Navigation Bar - Hidden in Presentation Mode */}
       {!isPresentationMode && (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-1.5 flex items-center justify-around shadow-2xl">
+        <div
+          className="lg:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-2 py-1.5 flex items-center justify-around shadow-2xl"
+          style={{ zIndex: 'var(--sgf-z-overlay)' }}
+        >
           <button
             type="button"
             id="mobile-bottom-nav-modulo1"
