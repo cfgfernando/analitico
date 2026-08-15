@@ -29,6 +29,7 @@ import {
   Moon,
   Sun,
   Trophy,
+  Award,
 } from 'lucide-react';
 import { SiconfiApiStatus } from '../types/fiscal';
 
@@ -181,8 +182,18 @@ export const Header: React.FC<HeaderProps> = ({
       desc: 'Comparativo regional pareado, RCL per capita e eficiência fiscal',
     },
     {
-      id: 'siconfi',
+      id: 'selo',
       number: '08',
+      label: 'SELO DE CONFORMIDADE',
+      shortLabel: 'Selo Fiscal',
+      icon: Award,
+      badge: 'Oficial',
+      badgeColor: 'emerald',
+      desc: 'Certificado de gestão fiscal transparente e widget de transparência',
+    },
+    {
+      id: 'siconfi',
+      number: '09',
       label: 'API SICONFI LIVE',
       shortLabel: 'Siconfi API',
       icon: Database,

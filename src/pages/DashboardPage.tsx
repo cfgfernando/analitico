@@ -13,6 +13,7 @@ import { SaaSAdminPanel } from '../components/SaaSAdminPanel';
 import { TenantUserManagement } from '../components/TenantUserManagement';
 import { PainelDoPrefeito } from '../components/PainelDoPrefeito';
 import { BenchmarkMunicipal } from '../components/BenchmarkMunicipal';
+import { SeloConformidade } from '../components/SeloConformidade';
 import {
   FiscalKPIs,
   RevenueSource,
@@ -234,6 +235,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
         {activeTab === 'benchmark' && (
           <BenchmarkMunicipal cidade={activeTenant.cidade} uf={activeTenant.uf} />
+        )}
+
+        {activeTab === 'selo' && (
+          <SeloConformidade cidade={activeTenant.cidade} uf={activeTenant.uf} ano={ano} />
         )}
 
         {activeTab === 'siconfi' && (

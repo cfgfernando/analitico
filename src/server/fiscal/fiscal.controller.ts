@@ -109,4 +109,11 @@ export class FiscalController {
     const tenant = this.extractTenant(req);
     return this.fiscalService.getBenchmark(tenant);
   }
+
+  @Get('selo-conformidade')
+  getSeloConformidade(@Req() req: Request, @Query('ano') ano?: string) {
+    const tenant = this.extractTenant(req);
+    const parsedAno = ano ? parseInt(ano, 10) : 2026;
+    return this.fiscalService.getSeloConformidade(tenant, parsedAno);
+  }
 }

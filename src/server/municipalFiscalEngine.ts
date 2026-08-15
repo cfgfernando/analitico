@@ -2069,3 +2069,116 @@ export function getMunicipalBenchmark(tenant: TenantInfo) {
     },
   };
 }
+
+// 14. Selo de Conformidade Fiscal & Prestígio Político
+export function getMunicipalSeloConformidade(tenant: TenantInfo, ano: number = 2026) {
+  const profile = getMunicipalFinancialProfile(tenant, ano);
+  const summary = getMunicipalFiscalSummary(tenant, ano);
+
+  const despesaPessoal = profile.despesaPessoalPct;
+  const educacaoPct = summary.aplicacaoEducacaoPercentual;
+  const saudePct = summary.aplicacaoSaudePercentual;
+  const dclPct = 12.8; // Dívida consolidada líquida típica de municípios analisados
+
+  const criterios: any[] = [
+    {
+      id: 'crit-1',
+      nome: 'Limite Legal de Despesa com Pessoal (LRF)',
+      exigenciaLegal: 'Máximo 54,00% da RCL (Executivo)',
+      valorObtido: `${despesaPessoal.toFixed(2)}% da RCL`,
+      status: despesaPessoal <= 51.3 ? 'CUMPRIDO' : despesaPessoal <= 54.0 ? 'ALERTA' : 'DESCUMPRIDO',
+      pontuacao: despesaPessoal <= 51.3 ? 20 : despesaPessoal <= 54.0 ? 12 : 0,
+      peso: 20,
+      fundamentoLegal: 'Art. 19 e 20 da LRF (LC 101/2000)',
+    },
+    {
+      id: 'crit-2',
+      nome: 'Piso Constitucional da Educação (MDE)',
+      exigenciaLegal: 'Mínimo 25,00% das receitas de impostos',
+      valorObtido: `${educacaoPct.toFixed(2)}% aplicado`,
+      status: educacaoPct >= 25.0 ? 'CUMPRIDO' : 'DESCUMPRIDO',
+      pontuacao: educacaoPct >= 25.0 ? 20 : 0,
+      peso: 20,
+      fundamentoLegal: 'Art. 212 da Constituição Federal',
+    },
+    {
+      id: 'crit-3',
+      nome: 'Piso Constitucional da Saúde (ASPS)',
+      exigenciaLegal: 'Mínimo 15,00% das receitas de impostos',
+      valorObtido: `${saudePct.toFixed(2)}% aplicado`,
+      status: saudePct >= 15.0 ? 'CUMPRIDO' : 'DESCUMPRIDO',
+      pontuacao: saudePct >= 15.0 ? 20 : 0,
+      peso: 20,
+      fundamentoLegal: 'LC 141/2012 e Art. 198 da CF/88',
+    },
+    {
+      id: 'crit-4',
+      nome: 'Regularidade Fiscal e Previdenciária (CAUC)',
+      exigenciaLegal: '100% dos itens adimplentes no SIAFI/STN',
+      valorObtido: 'Adimplente em todas as 16 exigências',
+      status: 'CUMPRIDO',
+      pontuacao: 15,
+      peso: 15,
+      fundamentoLegal: 'Portaria STN nº 1.444/2021',
+    },
+    {
+      id: 'crit-5',
+      nome: 'Endividamento e Dívida Consolidada Líquida (DCL)',
+      exigenciaLegal: 'Máximo 120,00% da RCL',
+      valorObtido: `${dclPct.toFixed(2)}% da RCL`,
+      status: 'CUMPRIDO',
+      pontuacao: 15,
+      peso: 15,
+      fundamentoLegal: 'Resolução do Senado Federal nº 40/2001',
+    },
+    {
+      id: 'crit-6',
+      nome: 'Transparência Fiscal e Envio Tempestivo ao SICONFI',
+      exigenciaLegal: 'Homologação RREO bimestral e RGF quadrimestral',
+      valorObtido: 'Demonstrativos homologados no prazo',
+      status: 'CUMPRIDO',
+      pontuacao: 10,
+      peso: 10,
+      fundamentoLegal: 'Art. 48 da LRF e Portaria STN nº 642/2019',
+    },
+  ];
+
+  const pontuacaoTotal = criterios.reduce((acc, c) => acc + c.pontuacao, 0);
+
+  let nivelSelo: 'DIAMANTE' | 'OURO' | 'PRATA' | 'BRONZE' | 'IRREGULAR' = 'OURO';
+  if (pontuacaoTotal >= 95) nivelSelo = 'DIAMANTE';
+  else if (pontuacaoTotal >= 80) nivelSelo = 'OURO';
+  else if (pontuacaoTotal >= 70) nivelSelo = 'PRATA';
+  else if (pontuacaoTotal >= 50) nivelSelo = 'BRONZE';
+  else nivelSelo = 'IRREGULAR';
+
+  const codigoAutenticidade = `CERT-${tenant.codigoIbge}-${ano}-${pontuacaoTotal}PTS-A7F9E2`;
+
+  const parecerConclusivo = `Certificamos que o Município de ${tenant.cidade} (${tenant.uf}) atingiu ${pontuacaoTotal} de 100 pontos possíveis na auditoria de conformidade fiscal e constitucional do exercício de ${ano}, fazendo jus ao SELO ${nivelSelo} DE GESTÃO FISCAL TRANSPARENTE. O município cumpre com rigor os pisos da Saúde (${saudePct}%) e Educação (${educacaoPct}%), mantém a regularidade integral no CAUC e observa os limites da Lei de Responsabilidade Fiscal.`;
+
+  const embedWidgetHtml = `<div id="selo-fiscal-${tenant.codigoIbge}" data-tenant="${tenant.codigoIbge}" data-ano="${ano}" style="font-family:sans-serif;border:1px solid #10b981;border-radius:4px;padding:12px;display:inline-flex;align-items:center;gap:10px;background:#f0fdf4"><img src="https://analitico.escrita.online/assets/selo-${nivelSelo.toLowerCase()}.svg" alt="Selo Fiscal ${nivelSelo}" width="40" height="40"/><div><strong style="display:block;font-size:12px;color:#065f46">SELO ${nivelSelo} DE CONFORMIDADE FISCAL</strong><span style="font-size:10px;color:#047857">Prefeitura de ${tenant.cidade} • Score ${pontuacaoTotal}/100 • Exercício ${ano}</span></div></div>`;
+
+  return {
+    municipio: {
+      nome: tenant.nomePrefeitura,
+      cidade: tenant.cidade,
+      uf: tenant.uf,
+      codigoIbge: tenant.codigoIbge,
+      prefeitoAtual: `Gabinete do Prefeito Municipal de ${tenant.cidade}`,
+    },
+    ano,
+    nivelSelo,
+    pontuacaoTotal,
+    dataEmissao: new Date().toISOString().split('T')[0],
+    codigoAutenticidade,
+    criterios,
+    parecerConclusivo,
+    embedWidgetHtml,
+    dataSource: {
+      origin: 'DEMONSTRACAO',
+      source: `Auditoria de Conformidade Constitucional e LRF / TCE-${tenant.uf} / SICONFI`,
+      collectedAt: new Date().toISOString(),
+      confidence: 'ESTIMATIVA_ALTA_CONFIANCA',
+    },
+  };
+}

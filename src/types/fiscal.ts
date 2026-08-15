@@ -243,6 +243,36 @@ export interface BenchmarkPayload {
   dataSource?: DataSourceMetadata;
 }
 
+export interface CriterioConformidade {
+  id: string;
+  nome: string;
+  exigenciaLegal: string;
+  valorObtido: string;
+  status: 'CUMPRIDO' | 'ALERTA' | 'DESCUMPRIDO';
+  pontuacao: number;
+  peso: number;
+  fundamentoLegal: string;
+}
+
+export interface SeloConformidadePayload {
+  municipio: {
+    nome: string;
+    cidade: string;
+    uf: string;
+    codigoIbge: string;
+    prefeitoAtual: string;
+  };
+  ano: number;
+  nivelSelo: 'DIAMANTE' | 'OURO' | 'PRATA' | 'BRONZE' | 'IRREGULAR';
+  pontuacaoTotal: number;
+  dataEmissao: string;
+  codigoAutenticidade: string;
+  criterios: CriterioConformidade[];
+  parecerConclusivo: string;
+  embedWidgetHtml: string;
+  dataSource?: DataSourceMetadata;
+}
+
 export interface EmendaParlamentar {
   id: string;
   autor: string;

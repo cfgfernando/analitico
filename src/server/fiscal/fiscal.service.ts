@@ -15,6 +15,7 @@ import {
   simularContrapartida,
   getMunicipalSimuladorReforma,
   getMunicipalBenchmark,
+  getMunicipalSeloConformidade,
 } from '../municipalFiscalEngine';
 
 @Injectable()
@@ -69,5 +70,9 @@ export class FiscalService {
 
   getBenchmark(tenant: TenantInfo) {
     return getMunicipalBenchmark(tenant);
+  }
+
+  getSeloConformidade(tenant: TenantInfo, ano: number = 2026) {
+    return getMunicipalSeloConformidade(tenant, ano);
   }
 }
