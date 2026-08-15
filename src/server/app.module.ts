@@ -1,0 +1,30 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { HealthModule } from './health/health.module';
+import { AuthModule } from './auth/auth.module';
+import { MunicipiosModule } from './municipios/municipios.module';
+import { TenantsModule } from './tenants/tenants.module';
+import { UsersModule } from './users/users.module';
+import { FiscalModule } from './fiscal/fiscal.module';
+import { SiconfiModule } from './siconfi/siconfi.module';
+import { BillingModule } from './billing/billing.module';
+import { DiagnosticoModule } from './diagnostico/diagnostico.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    HealthModule,
+    AuthModule,
+    MunicipiosModule,
+    TenantsModule,
+    UsersModule,
+    FiscalModule,
+    SiconfiModule,
+    BillingModule,
+    DiagnosticoModule,
+  ],
+})
+export class AppModule {}
