@@ -90,4 +90,17 @@ export class FiscalController {
     const tenant = this.extractTenant(req);
     return this.fiscalService.simularContrapartida(tenant, body.valorGlobal, body.percentualContrapartida);
   }
+
+  @Get('simulador-reforma')
+  getSimuladorReforma(@Req() req: Request, @Query('ajusteProprio') ajusteProprio?: string) {
+    const tenant = this.extractTenant(req);
+    const parsedAjuste = ajusteProprio ? parseFloat(ajusteProprio) : 0;
+    return this.fiscalService.getSimuladorReforma(tenant, parsedAjuste);
+  }
+
+  @Post('simulador-reforma/ajustar')
+  ajustarSimulacaoReforma(@Req() req: Request, @Body() body: { variacaoArrecadacaoPropriaPct: number }) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.getSimuladorReforma(tenant, body.variacaoArrecadacaoPropriaPct || 0);
+  }
 }

@@ -20,6 +20,8 @@ import {
 import { RevenueSource, ComparativeAnalysis, ComparativeMode, MonthlyComparativeAnalysis, QuarterlyComparativeAnalysis } from '../types/fiscal';
 import { formatCompactCurrency, formatCurrency, formatPercent, exportToCSV } from '../utils/formatters';
 import { DataSourceBadge } from './DataSourceBadge';
+import { SimuladorReformaTributaria } from './SimuladorReformaTributaria';
+import { Sparkles, Layers } from 'lucide-react';
 
 interface Module2ReceitasProps {
   receitas: RevenueSource[];
@@ -46,6 +48,7 @@ export const Module2Receitas: React.FC<Module2ReceitasProps> = ({
 }) => {
   const [selectedCategoria, setSelectedCategoria] = useState<string>('todas');
   const [selectedFonteId, setSelectedFonteId] = useState<string>('todas');
+  const [visao, setVisao] = useState<'execucao' | 'reforma'>('execucao');
 
   const activeMode: ComparativeMode = activeModeProp || comparativeMode || (isComparativoAnual ? 'anual' : 'nenhum');
 
@@ -184,8 +187,41 @@ export const Module2Receitas: React.FC<Module2ReceitasProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Revenue Macro Summary & Reestimation Alert */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Top View Selector: Execução vs Reforma Tributária */}
+      <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-800/60 p-1 rounded-sm border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setVisao('execucao')}
+            className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider rounded-sm transition cursor-pointer flex items-center gap-1.5 ${
+              visao === 'execucao'
+                ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>Execução Orçamentária LOA {ano}</span>
+          </button>
+
+          <button
+            onClick={() => setVisao('reforma')}
+            className={`px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider rounded-sm transition cursor-pointer flex items-center gap-1.5 ${
+              visao === 'reforma'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : 'text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Simulador Reforma Tributária EC 132 (IBS)</span>
+          </button>
+        </div>
+      </div>
+
+      {visao === 'reforma' ? (
+        <SimuladorReformaTributaria />
+      ) : (
+        <>
+          {/* Revenue Macro Summary & Reestimation Alert */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-4 shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ORÇADO INICIAL LOA</span>
@@ -544,7 +580,8 @@ export const Module2Receitas: React.FC<Module2ReceitasProps> = ({
           </table>
         </div>
       </div>
+    </>
+    )}
     </div>
   );
 };
-

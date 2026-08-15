@@ -161,6 +161,50 @@ export interface SimulacaoContrapartida {
   recomendacaoTecnica: string;
 }
 
+export interface ProjecaoReformaAno {
+  ano: number;
+  icmsSemReforma: number;
+  issSemReforma: number;
+  ibsProjetado: number;
+  fundoCompensacaoFederativo: number;
+  receitaTotalSemReforma: number;
+  receitaTotalComReforma: number;
+  diferencaNominal: number;
+  diferencaPercentual: number;
+  faseTransicao: string;
+}
+
+export interface MedidaCompensatoria {
+  id: string;
+  titulo: string;
+  categoria: 'IPTU' | 'ISSQN' | 'DÍVIDA ATIVA' | 'CIP / COSIP' | 'TAXAS MUNICIPAIS';
+  impactoAnualEstimado: number;
+  complexidade: 'BAIXA' | 'MEDIA' | 'ALTA';
+  prazoMeses: number;
+  descricao: string;
+  acaoPratica: string;
+}
+
+export interface SimuladorReformaPayload {
+  municipio: {
+    nome: string;
+    cidade: string;
+    uf: string;
+    codigoIbge: string;
+    perfilEconomico: string;
+  };
+  resumo: {
+    perdaOuGanhoAcumulado2033: number;
+    anoPicoImpacto: number;
+    mediaVariacaoAnualPct: number;
+    recomendacaoGeral: string;
+    fatorDestinoConsumo: number;
+  };
+  projecoes: ProjecaoReformaAno[];
+  medidasCompensatorias: MedidaCompensatoria[];
+  dataSource?: DataSourceMetadata;
+}
+
 export interface EmendaParlamentar {
   id: string;
   autor: string;

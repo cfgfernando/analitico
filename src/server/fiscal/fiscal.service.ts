@@ -13,6 +13,7 @@ import {
   getPainelPrefeito,
   getMunicipalRadarCaptacao,
   simularContrapartida,
+  getMunicipalSimuladorReforma,
 } from '../municipalFiscalEngine';
 
 @Injectable()
@@ -59,5 +60,9 @@ export class FiscalService {
 
   simularContrapartida(tenant: TenantInfo, valorGlobal: number, percentualContrapartida?: number) {
     return simularContrapartida(tenant, valorGlobal, percentualContrapartida);
+  }
+
+  getSimuladorReforma(tenant: TenantInfo, variacaoArrecadacaoPropriaPct: number = 0) {
+    return getMunicipalSimuladorReforma(tenant, variacaoArrecadacaoPropriaPct);
   }
 }

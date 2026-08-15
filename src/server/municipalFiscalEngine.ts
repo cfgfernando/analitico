@@ -1686,3 +1686,166 @@ export function simularContrapartida(tenant: TenantInfo, valorGlobal: number, pe
     recomendacaoTecnica: recomendacao,
   };
 }
+
+// 12. Simulador de Reforma Tributária (EC 132/2023 - Transição ICMS/ISS para IBS)
+export function getMunicipalSimuladorReforma(tenant: TenantInfo, variacaoArrecadacaoPropriaPct: number = 0) {
+  const profile = getMunicipalFinancialProfile(tenant, 2026);
+  const baseOrcamento = profile.orcamento;
+
+  const isIndustrial = profile.perfilEconomico.includes('Industrial') || tenant.codigoIbge === '4101804';
+  const isCapitalOuMetropole = tenant.codigoIbge === '4106902' || tenant.codigoIbge === '4113700';
+
+  // Fator Destino vs Origem:
+  // Se é polo industrial exportador, perde cota de valor adicionado na origem e ganha por população
+  // Se é capital consumidora/serviços, ganha por destino
+  const fatorIbsDestino = isIndustrial ? 0.82 : isCapitalOuMetropole ? 1.08 : 0.96;
+
+  const icmsBase2026 = Math.round(baseOrcamento * (isIndustrial ? 0.38 : 0.22));
+  const issBase2026 = Math.round(baseOrcamento * (isCapitalOuMetropole ? 0.25 : 0.12));
+
+  const anosTransicao = [2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033];
+
+  const fasesNomes: Record<number, string> = {
+    2026: 'Início de Teste Alíquota 0,1% IBS',
+    2027: 'Entrada da CBS Federal / Ajuste Alíquotas',
+    2028: 'Homologação Comitê Gestor do IBS',
+    2029: 'Início Redução ICMS/ISS (-10% / IBS 10%)',
+    2030: 'Redução ICMS/ISS (-20% / IBS 20%)',
+    2031: 'Redução ICMS/ISS (-30% / IBS 30%)',
+    2032: 'Redução ICMS/ISS (-40% / IBS 40%)',
+    2033: 'Extinção do ICMS/ISS • Pleno IBS Destino',
+  };
+
+  const pctSubstituicaoIbs: Record<number, number> = {
+    2026: 0.0,
+    2027: 0.02,
+    2028: 0.05,
+    2029: 0.10,
+    2030: 0.20,
+    2031: 0.30,
+    2032: 0.40,
+    2033: 1.0,
+  };
+
+  let perdaOuGanhoTotal = 0;
+
+  const projecoes = anosTransicao.map((ano, index) => {
+    // Crescimento vegetativo da economia estimado em 2.5% a.a.
+    const fatorCrescimento = Math.pow(1.025, index);
+
+    const icmsSem = Math.round(icmsBase2026 * fatorCrescimento);
+    const issSem = Math.round(issBase2026 * fatorCrescimento);
+    const receitaSem = icmsSem + issSem;
+
+    const pctIbs = pctSubstituicaoIbs[ano];
+    const pctMantido = 1.0 - pctIbs;
+
+    const icmsCom = Math.round(icmsSem * pctMantido);
+    const issCom = Math.round(issSem * pctMantido);
+
+    // IBS projetado com base no princípio do destino
+    const ibsCalculado = Math.round((icmsSem + issSem) * pctIbs * fatorIbsDestino);
+
+    // Regra do Fundo de Compensação de Perdas da EC 132 (Art. 131 ADCT)
+    // Garante 100% da média histórica corrigida nos primeiros anos para entes perdedores
+    let fundoCompensacao = 0;
+    const receitaComBruta = icmsCom + issCom + ibsCalculado;
+    if (receitaComBruta < receitaSem) {
+      // Cobertura pelo Fundo de Transição Federativo (100% até 2030, 80% até 2033)
+      const taxaCobertura = ano <= 2030 ? 0.90 : 0.70;
+      fundoCompensacao = Math.round((receitaSem - receitaComBruta) * taxaCobertura);
+    }
+
+    // Impacto do ajuste de arrecadação própria simulado
+    const ajusteProprio = Math.round(receitaSem * (variacaoArrecadacaoPropriaPct / 100));
+    const receitaCom = icmsCom + issCom + ibsCalculado + fundoCompensacao + ajusteProprio;
+
+    const diferencaNominal = receitaCom - receitaSem;
+    const diferencaPercentual = Number(((diferencaNominal / receitaSem) * 100).toFixed(2));
+
+    perdaOuGanhoTotal += diferencaNominal;
+
+    return {
+      ano,
+      icmsSemReforma: icmsSem,
+      issSemReforma: issSem,
+      ibsProjetado: ibsCalculado,
+      fundoCompensacaoFederativo: fundoCompensacao,
+      receitaTotalSemReforma: receitaSem,
+      receitaTotalComReforma: receitaCom,
+      diferencaNominal,
+      diferencaPercentual,
+      faseTransicao: fasesNomes[ano],
+    };
+  });
+
+  const medidasCompensatorias: any[] = [
+    {
+      id: 'medida-1',
+      titulo: 'Atualização da Planta Genérica de Valores (PGV) e Georreferenciamento de Imóveis',
+      categoria: 'IPTU',
+      impactoAnualEstimado: Math.round(baseOrcamento * 0.028),
+      complexidade: 'MEDIA',
+      prazoMeses: 12,
+      descricao: `Revisão do cadastro imobiliário com sobrevoo e inteligência artificial para identificar ampliações prediais não averbadas em ${tenant.cidade}.`,
+      acaoPratica: 'Encaminhar Projeto de Lei Complementar à Câmara Municipal revisando a PGV e lançando recadastramento digital.',
+    },
+    {
+      id: 'medida-2',
+      titulo: 'Modernização e Expansão da CIP / COSIP (Iluminação Pública Inteligente)',
+      categoria: 'CIP / COSIP',
+      impactoAnualEstimado: Math.round(baseOrcamento * 0.012),
+      complexidade: 'BAIXA',
+      prazoMeses: 6,
+      descricao: `Adesão a PPP de telegestão em LED e reajuste da base tarifária da contribuição de iluminação pública conforme STF (Tema 696).`,
+      acaoPratica: 'Publicar Decreto regulamentando a taxa de custeio e eficiência energética.',
+    },
+    {
+      id: 'medida-3',
+      titulo: 'Programa de Recuperação Fiscal (REFIS) e Cobrança Extrajudicial de Dívida Ativa',
+      categoria: 'DÍVIDA ATIVA',
+      impactoAnualEstimado: Math.round(baseOrcamento * 0.022),
+      complexidade: 'BAIXA',
+      prazoMeses: 4,
+      descricao: `Protesto de CDA em cartórios de títulos e protestos e parcelamento incentivado de débitos de IPTU/ISS.`,
+      acaoPratica: 'Firmar convênio com Instituto de Estudos de Protesto de Títulos do Brasil (IEPTB).',
+    },
+    {
+      id: 'medida-4',
+      titulo: 'Auditoria de ISSQN sobre Instituições Financeiras e Plataformas Digitais (DIF-e)',
+      categoria: 'ISSQN',
+      impactoAnualEstimado: Math.round(baseOrcamento * 0.018),
+      complexidade: 'MEDIA',
+      prazoMeses: 8,
+      descricao: `Cruzamento de dados da Declaração de Informações Fiscais dos Bancos (DES-IF) para apurar subdeclaração de tarifas bancárias e cartões de crédito.`,
+      acaoPratica: 'Contratar módulo de inteligência fiscal bancária para a Secretaria de Finanças.',
+    },
+  ];
+
+  return {
+    municipio: {
+      nome: tenant.nomePrefeitura,
+      cidade: tenant.cidade,
+      uf: tenant.uf,
+      codigoIbge: tenant.codigoIbge,
+      perfilEconomico: profile.perfilEconomico,
+    },
+    resumo: {
+      perdaOuGanhoAcumulado2033: perdaOuGanhoTotal,
+      anoPicoImpacto: 2033,
+      mediaVariacaoAnualPct: Number(((perdaOuGanhoTotal / (icmsBase2026 * 8)) * 100).toFixed(2)),
+      recomendacaoGeral: isIndustrial
+        ? `Município com forte base industrial (VAF na origem). Recomenda-se acionar o Comitê Gestor do IBS para assegurar retenção federativa e implementar o Plano de Medidas Compensatórias de IPTU e ISS.`
+        : `Município com economia de serviços e perfil consumidor. Ganho gradual de arrecadação no IBS com a migração para o princípio do destino.`,
+      fatorDestinoConsumo: fatorIbsDestino,
+    },
+    projecoes,
+    medidasCompensatorias,
+    dataSource: {
+      origin: 'DEMONSTRACAO',
+      source: `Simulador Reforma Tributária EC 132/2023 / STN / IPEA / ${tenant.cidade}`,
+      collectedAt: new Date().toISOString(),
+      confidence: 'ESTIMATIVA_ALTA_CONFIANCA',
+    },
+  };
+}
