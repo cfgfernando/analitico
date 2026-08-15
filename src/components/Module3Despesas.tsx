@@ -63,19 +63,23 @@ export const Module3Despesas: React.FC<Module3DespesasProps> = ({
 
   const activeMode: ComparativeMode = activeModeProp || comparativeMode || (isComparativoAnual ? 'anual' : 'nenhum');
 
+  // Safe arrays
+  const safeFuncao = Array.isArray(porFuncao) ? porFuncao : [];
+  const safeNatureza = Array.isArray(porNatureza) ? porNatureza : [];
+
   // Filter lists based on search
-  const filteredFuncoes = porFuncao.filter(
-    f => searchQuery === '' || f.funcao.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredFuncoes = safeFuncao.filter(
+    f => !f || searchQuery === '' || (f.funcao && f.funcao.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const filteredNaturezas = porNatureza.filter(
-    n => searchQuery === '' || n.categoria.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredNaturezas = safeNatureza.filter(
+    n => !n || searchQuery === '' || (n.categoria && n.categoria.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const totalEmpenhado = porNatureza.reduce((a, b) => a + b.empenhado, 0);
-  const totalLiquidado = porNatureza.reduce((a, b) => a + b.liquidado, 0);
-  const totalPago = porNatureza.reduce((a, b) => a + b.pago, 0);
-  const totalOrcado = porNatureza.reduce((a, b) => a + b.orcado, 0);
+  const totalEmpenhado = safeNatureza.reduce((a, b) => a + (b?.empenhado || 0), 0);
+  const totalLiquidado = safeNatureza.reduce((a, b) => a + (b?.liquidado || 0), 0);
+  const totalPago = safeNatureza.reduce((a, b) => a + (b?.pago || 0), 0);
+  const totalOrcado = safeNatureza.reduce((a, b) => a + (b?.orcado || 0), 0);
 
   // Monthly ratio for expenses
   const monthlyRatio = monthlyComparativeData && monthlyComparativeData.despesaTotalLiquidada.anterior > 0

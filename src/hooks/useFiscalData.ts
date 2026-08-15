@@ -100,15 +100,21 @@ export function useFiscalData(
       ]);
 
       if (summaryRes) setSummary(summaryRes);
-      if (receitasRes) setReceitas(receitasRes);
-      if (despesasRes) {
-        setPorNatureza(despesasRes.porNatureza || []);
-        setPorFuncao(despesasRes.porFuncao || []);
+      if (receitasRes) {
+        setReceitas(Array.isArray(receitasRes) ? receitasRes : (receitasRes.receitas || []));
       }
-      if (lrfRes) setLimites(lrfRes);
+      if (despesasRes) {
+        setPorNatureza(Array.isArray(despesasRes.porNatureza) ? despesasRes.porNatureza : (Array.isArray(despesasRes) ? despesasRes : []));
+        setPorFuncao(Array.isArray(despesasRes.porFuncao) ? despesasRes.porFuncao : []);
+      }
+      if (lrfRes) {
+        setLimites(Array.isArray(lrfRes) ? lrfRes : (lrfRes.limites || []));
+      }
       if (captacaoRes) setCaptacao(captacaoRes);
       if (fundebRes) setFundeb(fundebRes);
-      if (alertasRes) setAlerts(alertasRes);
+      if (alertasRes) {
+        setAlerts(Array.isArray(alertasRes) ? alertasRes : (alertasRes.alertas || []));
+      }
       if (obrasRes) setObrasData(obrasRes);
       if (siconfiRes) setSiconfiStatus(siconfiRes);
 
@@ -120,16 +126,23 @@ export function useFiscalData(
         ]);
 
         if (summaryRes && prevSummary) {
+          const currRecArray = Array.isArray(receitasRes) ? receitasRes : (receitasRes?.receitas || []);
+          const prevRecArray = Array.isArray(prevReceitas) ? prevReceitas : (prevReceitas?.receitas || []);
+          const currNatArray = Array.isArray(despesasRes?.porNatureza) ? despesasRes.porNatureza : (Array.isArray(despesasRes) ? despesasRes : []);
+          const prevNatArray = Array.isArray(prevDespesas?.porNatureza) ? prevDespesas.porNatureza : (Array.isArray(prevDespesas) ? prevDespesas : []);
+          const currFuncArray = Array.isArray(despesasRes?.porFuncao) ? despesasRes.porFuncao : [];
+          const prevFuncArray = Array.isArray(prevDespesas?.porFuncao) ? prevDespesas.porFuncao : [];
+
           const comp = buildComparativeAnalysis(
             ano,
             summaryRes,
             prevSummary,
-            receitasRes || [],
-            prevReceitas || [],
-            despesasRes?.porNatureza || [],
-            prevDespesas?.porNatureza || [],
-            despesasRes?.porFuncao || [],
-            prevDespesas?.porFuncao || []
+            currRecArray,
+            prevRecArray,
+            currNatArray,
+            prevNatArray,
+            currFuncArray,
+            prevFuncArray
           );
           setComparativeData(comp);
         }

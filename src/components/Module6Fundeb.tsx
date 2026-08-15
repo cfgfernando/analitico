@@ -37,7 +37,7 @@ export const Module6Fundeb: React.FC<Module6FundebProps> = ({ fundebData }) => {
     { name: 'Manutenção e Desenvolvimento da Educação (MDE)', value: fundebData.gastoManutencaoDesenvolvimento, percent: fundebData.percentualManutencao },
   ];
 
-  const monthlyData = fundebData.repassesMensais.map(r => ({
+  const monthlyData = (fundebData?.repassesMensais || []).map(r => ({
     mes: r.mes,
     VAAF: +(r.vaaf / 1_000_000).toFixed(2),
     VAAT: +(r.vaat / 1_000_000).toFixed(2),

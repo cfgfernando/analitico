@@ -45,15 +45,19 @@ export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
   const [activeTab, setActiveTab] = useState<'radar' | 'emendas' | 'convenios'>('radar');
   const [selectedEsfera, setSelectedEsfera] = useState<'todas' | 'Federal' | 'Estadual' | 'recentes'>('todas');
 
-  const novasEmendasCount = emendas.filter(e => isEmendaRecente(e.dataProcessamento)).length;
+  const safeEmendas = Array.isArray(emendas) ? emendas : [];
+  const safeConvenios = Array.isArray(convenios) ? convenios : [];
 
-  const filteredEmendas = emendas.filter(e => {
+  const novasEmendasCount = safeEmendas.filter(e => e && isEmendaRecente(e.dataProcessamento)).length;
+
+  const filteredEmendas = safeEmendas.filter(e => {
+    if (!e) return false;
     const matchesSearch =
       searchQuery === '' ||
-      e.autor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.objeto.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.partido.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.tipo.toLowerCase().includes(searchQuery.toLowerCase());
+      (e.autor && e.autor.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (e.objeto && e.objeto.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (e.partido && e.partido.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (e.tipo && e.tipo.toLowerCase().includes(searchQuery.toLowerCase()));
 
     if (selectedEsfera === 'recentes') {
       return matchesSearch && isEmendaRecente(e.dataProcessamento);
@@ -62,17 +66,18 @@ export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
     return matchesSearch && matchesEsfera;
   });
 
-  const filteredConvenios = convenios.filter(
+  const filteredConvenios = safeConvenios.filter(
     c =>
+      !c ||
       searchQuery === '' ||
-      c.objeto.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.ministerio.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.concedente.toLowerCase().includes(searchQuery.toLowerCase())
+      (c.objeto && c.objeto.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (c.ministerio && c.ministerio.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (c.concedente && c.concedente.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  const totalEmendasPagas = emendas.reduce((a, b) => a + b.valorPago, 0);
-  const totalEmendasEmpenhadas = emendas.reduce((a, b) => a + b.valorEmpenhado, 0);
-  const totalConveniosRepasse = convenios.reduce((a, b) => a + b.valorRepasse, 0);
+  const totalEmendasPagas = safeEmendas.reduce((a, b) => a + (b?.valorPago || 0), 0);
+  const totalEmendasEmpenhadas = safeEmendas.reduce((a, b) => a + (b?.valorEmpenhado || 0), 0);
+  const totalConveniosRepasse = safeConvenios.reduce((a, b) => a + (b?.valorRepasse || 0), 0);
 
   const handleExportCSV = () => {
     if (activeTab === 'emendas') {

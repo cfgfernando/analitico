@@ -142,7 +142,7 @@ export const Module4LRF: React.FC<Module4LRFProps> = ({ limites, ano, onTriggerT
 
       {/* LRF Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {limites.map(item => {
+        {(Array.isArray(limites) ? limites : ((limites as any)?.limites || [])).map(item => {
           const isAtencao = item.status === 'ATENCAO';
           const isCritico = item.status === 'CRITICO';
           const isOk = item.status === 'OK';

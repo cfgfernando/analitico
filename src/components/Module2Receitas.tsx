@@ -55,12 +55,16 @@ export const Module2Receitas: React.FC<Module2ReceitasProps> = ({
   // Categories list
   const categorias = ['todas', 'Transferências do Estado', 'Tributária Própria', 'Transferências da União', 'Royalties/Compensações', 'Outras'];
 
+  // Safe list of receitas
+  const safeReceitas = Array.isArray(receitas) ? receitas : ((receitas as any)?.receitas || []);
+
   // Filtered list
-  const filteredReceitas = receitas.filter(r => {
+  const filteredReceitas = safeReceitas.filter(r => {
+    if (!r) return false;
     const matchesSearch =
       searchQuery === '' ||
-      r.nome.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.categoria.toLowerCase().includes(searchQuery.toLowerCase());
+      (r.nome && r.nome.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (r.categoria && r.categoria.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategoria = selectedCategoria === 'todas' || r.categoria === selectedCategoria;
     const matchesFonte = selectedFonteId === 'todas' || r.id === selectedFonteId;
     return matchesSearch && matchesCategoria && matchesFonte;
