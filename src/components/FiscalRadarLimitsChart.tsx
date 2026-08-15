@@ -73,8 +73,8 @@ export const FiscalRadarLimitsChart: React.FC<FiscalRadarLimitsChartProps> = ({
       aderenciaPct: Number(((summary.aplicacaoEducacaoPercentual / 25.0) * 100).toFixed(1)), // ~106.7%
       limiteNormPct: 100.0,
       valorNominal: summary.aplicacaoEducacaoValor,
-      valorReferenciaNominal: summary.receitaCorrenteLiquida * 0.25,
-      folgaOuExcessoNominal: summary.aplicacaoEducacaoValor - (summary.receitaCorrenteLiquida * 0.25),
+      valorReferenciaNominal: summary.rcl * 0.25,
+      folgaOuExcessoNominal: summary.aplicacaoEducacaoValor - (summary.rcl * 0.25),
       status: summary.aplicacaoEducacaoPercentual >= 25.0 ? 'EM_CONFORMIDADE' : 'CRITICO',
       statusDesc: `Piso Constitucional Superado (+${(summary.aplicacaoEducacaoPercentual - 25.0).toFixed(2)} p.p.)`,
       descricao: 'Aplicação mínima em Manutenção e Desenvolvimento do Ensino (MDE) sobre a receita resultante de impostos.',
@@ -92,8 +92,8 @@ export const FiscalRadarLimitsChart: React.FC<FiscalRadarLimitsChartProps> = ({
       aderenciaPct: Number(((summary.aplicacaoSaudePercentual / 15.0) * 100).toFixed(1)), // ~135.3%
       limiteNormPct: 100.0,
       valorNominal: summary.aplicacaoSaudeValor,
-      valorReferenciaNominal: summary.receitaCorrenteLiquida * 0.15,
-      folgaOuExcessoNominal: summary.aplicacaoSaudeValor - (summary.receitaCorrenteLiquida * 0.15),
+      valorReferenciaNominal: summary.rcl * 0.15,
+      folgaOuExcessoNominal: summary.aplicacaoSaudeValor - (summary.rcl * 0.15),
       status: summary.aplicacaoSaudePercentual >= 15.0 ? 'EM_CONFORMIDADE' : 'CRITICO',
       statusDesc: `Piso Constitucional Superado (+${(summary.aplicacaoSaudePercentual - 15.0).toFixed(2)} p.p.)`,
       descricao: 'Ações e Serviços Públicos de Saúde (ASPS) financiados com recursos próprios do tesouro municipal.',
@@ -111,8 +111,8 @@ export const FiscalRadarLimitsChart: React.FC<FiscalRadarLimitsChartProps> = ({
       aderenciaPct: Number(((summary.despesaPessoalPercentualRCL / 54.0) * 100).toFixed(1)), // ~92.9% do teto
       limiteNormPct: 100.0,
       valorNominal: summary.despesaPessoalTotal,
-      valorReferenciaNominal: summary.receitaCorrenteLiquida * 0.54,
-      folgaOuExcessoNominal: (summary.receitaCorrenteLiquida * 0.54) - summary.despesaPessoalTotal,
+      valorReferenciaNominal: summary.rcl * 0.54,
+      folgaOuExcessoNominal: (summary.rcl * 0.54) - summary.despesaPessoalTotal,
       status: summary.despesaPessoalPercentualRCL > 51.3 ? 'CRITICO' : summary.despesaPessoalPercentualRCL > 48.6 ? 'ALERTA' : 'EM_CONFORMIDADE',
       statusDesc: summary.despesaPessoalPercentualRCL > 48.6 ? 'Acima do Limite de Alerta (48,60% TCE-PR)' : 'Dentro da Faixa Segura',
       descricao: 'Limite máximo legal de 54,00% da Receita Corrente Líquida (RCL 12 meses) para o Poder Executivo Municipal.',
@@ -129,9 +129,9 @@ export const FiscalRadarLimitsChart: React.FC<FiscalRadarLimitsChartProps> = ({
       executadoPct: 92.5, // 92.5% executado do cronograma atuarial
       aderenciaPct: 92.5,
       limiteNormPct: 100.0,
-      valorNominal: summary.aportesPrevidenciarios, // R$ 82.000.000
+      valorNominal: summary.aportePrevidenciarioFPMA, // R$ 82.000.000
       valorReferenciaNominal: 88648000,
-      folgaOuExcessoNominal: summary.aportesPrevidenciarios - 88648000,
+      folgaOuExcessoNominal: summary.aportePrevidenciarioFPMA - 88648000,
       status: 'EM_CONFORMIDADE',
       statusDesc: 'Equacionamento Atuarial Conforme Cronograma',
       descricao: 'Plano de amortização suplementar para equacionamento do déficit atuarial do Fundo de Previdência de Araucária.',

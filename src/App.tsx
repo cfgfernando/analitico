@@ -83,12 +83,87 @@ export default function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Active Tenant state for SaaS Multi-Tenant
+  const [activeTenant, setActiveTenant] = useState<{
+    id: string;
+    nomePrefeitura: string;
+    cidade: string;
+    uf: string;
+    codigoIbge: string;
+  }>({
+    id: 'tenant-araucaria',
+    nomePrefeitura: 'Prefeitura Municipal de Araucária',
+    cidade: 'Araucária',
+    uf: 'PR',
+    codigoIbge: '4101804',
+  });
+
+  // Authentication & RBAC role state (SaaS Master vs Prefeitura Cliente)
+  const [authRole, setAuthRole] = useState<'EMPRESA_MASTER' | 'PREFEITURA_CLIENTE'>(() => {
+    try {
+      const saved = localStorage.getItem('sgf_auth_role');
+      if (saved === 'PREFEITURA_CLIENTE' || saved === 'EMPRESA_MASTER') {
+        return saved;
+      }
+    } catch (e) {}
+    return 'EMPRESA_MASTER';
+  });
+
+  // Presentation mode state
+  const [isPresentationMode, setIsPresentationMode] = useState<boolean>(false);
+  const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
+
+  // Toast notifications state
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  // Toast handlers
+  const addToast = (toastData: Omit<ToastMessage, 'id' | 'timestamp'>) => {
+    try {
+      const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      const newToast: ToastMessage = {
+        ...toastData,
+        id,
+        timestamp: Date.now(),
+      };
+      setToasts(prev => {
+        const filtered = prev.filter(
+          t => !(t.title === newToast.title && t.limitName === newToast.limitName && t.ano === newToast.ano)
+        );
+        return [newToast, ...filtered].slice(0, 4);
+      });
+    } catch (err) {
+      console.warn('Toast error:', err);
+    }
+  };
+
+  const handleDismissToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  const handleClearAllToasts = () => {
+    setToasts([]);
+  };
+
+  const handleRoleChange = (newRole: 'EMPRESA_MASTER' | 'PREFEITURA_CLIENTE') => {
+    setAuthRole(newRole);
+    try {
+      localStorage.setItem('sgf_auth_role', newRole);
+    } catch (e) {}
+
+    addToast({
+      type: newRole === 'EMPRESA_MASTER' ? 'info' : 'success',
+      title: `Perfil Alternado: ${newRole === 'EMPRESA_MASTER' ? '🏢 Empresa SaaS (Master)' : `🏛️ ${activeTenant?.cidade || 'Prefeitura'} (Cliente)`}`,
+      message: newRole === 'EMPRESA_MASTER'
+        ? 'Acesso total ativado: Gerenciamento global de prefeituras, parametrização de APIs e credenciamento de usuários.'
+        : `Acesso municipal ativado para ${activeTenant?.nomePrefeitura || 'Prefeitura Municipal'}. Módulos fiscais liberados em modo de governança.`,
+    });
+  };
+
   // Dark Mode state with localStorage persistence
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('sgf_dark_mode');
       if (saved !== null) return saved === 'true';
-      // Default: prefer system dark mode
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
     } catch (e) {}
     return false;
@@ -109,54 +184,6 @@ export default function App() {
 
   const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
-  // Authentication & RBAC role state (SaaS Master vs Prefeitura Cliente)
-  const [authRole, setAuthRole] = useState<'EMPRESA_MASTER' | 'PREFEITURA_CLIENTE'>(() => {
-    try {
-      const saved = localStorage.getItem('sgf_auth_role');
-      if (saved === 'PREFEITURA_CLIENTE' || saved === 'EMPRESA_MASTER') {
-        return saved;
-      }
-    } catch (e) {}
-    return 'EMPRESA_MASTER';
-  });
-
-  const handleRoleChange = (newRole: 'EMPRESA_MASTER' | 'PREFEITURA_CLIENTE') => {
-    setAuthRole(newRole);
-    try {
-      localStorage.setItem('sgf_auth_role', newRole);
-    } catch (e) {}
-
-    addToast({
-      type: newRole === 'EMPRESA_MASTER' ? 'info' : 'success',
-      title: `Perfil Alternado: ${newRole === 'EMPRESA_MASTER' ? '🏢 Empresa SaaS (Master)' : `🏛️ ${activeTenant.cidade} (Cliente)`}`,
-      message: newRole === 'EMPRESA_MASTER'
-        ? 'Acesso total ativado: Gerenciamento global de prefeituras, parametrização de APIs e credenciamento de usuários.'
-        : `Acesso municipal ativado para ${activeTenant.nomePrefeitura}. Módulos fiscais liberados em modo de governança.`,
-    });
-  };
-
-  // Active Tenant state for SaaS Multi-Tenant
-  const [activeTenant, setActiveTenant] = useState<{
-    id: string;
-    nomePrefeitura: string;
-    cidade: string;
-    uf: string;
-    codigoIbge: string;
-  }>({
-    id: 'tenant-araucaria',
-    nomePrefeitura: 'Prefeitura Municipal de Araucária',
-    cidade: 'Araucária',
-    uf: 'PR',
-    codigoIbge: '4101804',
-  });
-
-  // Presentation mode state
-  const [isPresentationMode, setIsPresentationMode] = useState<boolean>(false);
-  const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
-
-  // Toast notifications state
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-
   // Comparative analysis state
   const [comparativeMode, setComparativeMode] = useState<ComparativeMode>('nenhum');
   const [selectedMonth, setSelectedMonth] = useState<number>(8); // Agosto default
@@ -175,6 +202,7 @@ export default function App() {
     metaAnual: number;
     captadoAcumulado: number;
     percentualAtingimento: string;
+    novasEmendas7Dias?: number;
     emendas: EmendaParlamentar[];
     convenios: ConvenioRecurso[];
   } | null>(null);
@@ -189,7 +217,6 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('todos');
   const [selectedUnidade, setSelectedUnidade] = useState<string>('todas');
-
   const [mobileMoreOpen, setMobileMoreOpen] = useState<boolean>(false);
 
   const togglePresentationMode = () => {
@@ -251,30 +278,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const addToast = (toastData: Omit<ToastMessage, 'id' | 'timestamp'>) => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    const newToast: ToastMessage = {
-      ...toastData,
-      id,
-      timestamp: Date.now(),
-    };
-    setToasts(prev => {
-      // Avoid exact duplicates
-      const filtered = prev.filter(
-        t => !(t.title === newToast.title && t.limitName === newToast.limitName && t.ano === newToast.ano)
-      );
-      return [newToast, ...filtered].slice(0, 4);
-    });
-  };
-
-  const handleDismissToast = (id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  };
-
-  const handleClearAllToasts = () => {
-    setToasts([]);
-  };
-
   // Inspect LRF limits and trigger proactive toast notifications
   const notifyLRFLimits = (limitesData: LRFLimit[], selectedYear: number) => {
     if (!limitesData || limitesData.length === 0) return;
@@ -288,7 +291,7 @@ export default function App() {
           addToast({
             type: 'danger',
             title: 'LRF: Limite Legal Ultrapassado!',
-            message: `${limite.nome} atingiu ${val.toFixed(2)}% da ${limite.baseCalculoNome} no exercício ${selectedYear}, ultrapassando o teto legal de ${limite.limiteLegal}%. Risco iminente de sanções fiscais do TCE-PR.`,
+            message: `${limite.nome} atingiu ${val.toFixed(2)}% da ${limite.baseCalculoNome} no exercício ${selectedYear}, ultrapassando o teto legal de ${limite.limiteLegal}%.`,
             limitName: limite.nome,
             metricValue: `${val.toFixed(2)}%`,
             threshold: `Teto Legal: ${limite.limiteLegal}%`,
@@ -301,7 +304,7 @@ export default function App() {
           addToast({
             type: 'danger',
             title: 'LRF: Limite Prudencial Ultrapassado!',
-            message: `${limite.nome} atingiu ${val.toFixed(2)}% da ${limite.baseCalculoNome} no exercício ${selectedYear}, ultrapassando o Limite Prudencial da LRF (${limite.limitePrudencial}%). Vedações do art. 22 ativadas.`,
+            message: `${limite.nome} atingiu ${val.toFixed(2)}% da ${limite.baseCalculoNome} no exercício ${selectedYear}, ultrapassando o Limite Prudencial da LRF (${limite.limitePrudencial}%).`,
             limitName: limite.nome,
             metricValue: `${val.toFixed(2)}%`,
             threshold: `Prudencial: ${limite.limitePrudencial}% (Legal: ${limite.limiteLegal}%)`,
@@ -309,34 +312,6 @@ export default function App() {
             actionLabel: 'Ver no Módulo 4: Limites LRF',
             actionTabId: 'modulo4',
             duration: 9000,
-          });
-        } else if (limite.limiteAlerta && val >= limite.limiteAlerta) {
-          addToast({
-            type: 'warning',
-            title: 'LRF: Limite de Alerta Ultrapassado',
-            message: `${limite.nome} atingiu ${val.toFixed(2)}% da ${limite.baseCalculoNome} no exercício ${selectedYear}, superando o Limite de Alerta (${limite.limiteAlerta}%) e entrando na faixa de vigilância prudencial (${limite.limitePrudencial}%).`,
-            limitName: limite.nome,
-            metricValue: `${val.toFixed(2)}%`,
-            threshold: `Alerta: ${limite.limiteAlerta}% | Prudencial: ${limite.limitePrudencial}%`,
-            ano: selectedYear,
-            actionLabel: 'Ver no Módulo 4: Limites LRF',
-            actionTabId: 'modulo4',
-            duration: 8000,
-          });
-        }
-      } else {
-        if (val < limite.limiteLegal) {
-          addToast({
-            type: 'danger',
-            title: 'Piso Constitucional Não Atingido!',
-            message: `${limite.nome} atingiu ${val.toFixed(2)}% no exercício ${selectedYear}, ficando abaixo da aplicação mínima obrigatória de ${limite.limiteLegal}%.`,
-            limitName: limite.nome,
-            metricValue: `${val.toFixed(2)}%`,
-            threshold: `Mínimo Constitucional: ${limite.limiteLegal}%`,
-            ano: selectedYear,
-            actionLabel: 'Ver no Módulo 4: Limites LRF',
-            actionTabId: 'modulo4',
-            duration: 9500,
           });
         }
       }
@@ -365,32 +340,53 @@ export default function App() {
         obrasRes,
       ] = await Promise.all([
         getSiconfiStatus(tenantId).catch(() => null),
-        getFiscalSummary(selectedYear, tenantId),
-        getReceitas(selectedYear, tenantId),
-        getDespesas(selectedYear, tenantId),
-        getLimitesLRF(selectedYear, tenantId),
-        getCaptacaoRecursos(tenantId),
-        getFundebData(tenantId),
-        getFiscalAlerts(tenantId),
+        getFiscalSummary(selectedYear, tenantId).catch(err => {
+          console.warn('getFiscalSummary error:', err);
+          return null;
+        }),
+        getReceitas(selectedYear, tenantId).catch(err => {
+          console.warn('getReceitas error:', err);
+          return { ano: selectedYear, receitas: [] };
+        }),
+        getDespesas(selectedYear, tenantId).catch(err => {
+          console.warn('getDespesas error:', err);
+          return { ano: selectedYear, porNatureza: [], porFuncao: [] };
+        }),
+        getLimitesLRF(selectedYear, tenantId).catch(err => {
+          console.warn('getLimitesLRF error:', err);
+          return { ano: selectedYear, limites: [] };
+        }),
+        getCaptacaoRecursos(tenantId).catch(err => {
+          console.warn('getCaptacaoRecursos error:', err);
+          return null;
+        }),
+        getFundebData(tenantId).catch(err => {
+          console.warn('getFundebData error:', err);
+          return null;
+        }),
+        getFiscalAlerts(tenantId).catch(err => {
+          console.warn('getFiscalAlerts error:', err);
+          return [];
+        }),
         getFiscalSummary(anoAnterior, tenantId).catch(() => null),
-        getReceitas(anoAnterior, tenantId).catch(() => ({ receitas: [] })),
-        getDespesas(anoAnterior, tenantId).catch(() => ({ porNatureza: [], porFuncao: [] })),
+        getReceitas(anoAnterior, tenantId).catch(() => ({ ano: anoAnterior, receitas: [] })),
+        getDespesas(anoAnterior, tenantId).catch(() => ({ ano: anoAnterior, porNatureza: [], porFuncao: [] })),
         getObrasAraucaria(tenantId).catch(() => ({ obras: [], summary: null })),
       ]);
 
       if (statusRes) setSiconfiStatus(statusRes);
-      setSummary(summaryRes);
-      setReceitas(receitasRes.receitas);
-      setPorNatureza(despesasRes.porNatureza);
-      setPorFuncao(despesasRes.porFuncao);
-      setLimites(limitesRes.limites);
-      setCaptacao(captacaoRes);
-      setFundeb(fundebRes);
-      setAlerts(alertsRes);
+      if (summaryRes) setSummary(summaryRes);
+      if (receitasRes?.receitas) setReceitas(receitasRes.receitas);
+      if (despesasRes?.porNatureza) setPorNatureza(despesasRes.porNatureza);
+      if (despesasRes?.porFuncao) setPorFuncao(despesasRes.porFuncao);
+      if (limitesRes?.limites) setLimites(limitesRes.limites);
+      if (captacaoRes) setCaptacao(captacaoRes);
+      if (fundebRes) setFundeb(fundebRes);
+      if (alertsRes) setAlerts(alertsRes);
       if (obrasRes) setObrasData(obrasRes);
 
       // Build comparative analysis between selectedYear and selectedYear - 1
-      if (summaryRes) {
+      if (summaryRes && receitasRes?.receitas && despesasRes?.porNatureza && despesasRes?.porFuncao) {
         const comp = buildComparativeAnalysis(
           selectedYear,
           summaryRes,
@@ -713,6 +709,7 @@ export default function App() {
                   activeMode={comparativeMode}
                   monthlyComparativeData={monthlyComparativeData}
                   quarterlyComparativeData={quarterlyComparativeData}
+                  tenantInfo={activeTenant}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 space-y-3">

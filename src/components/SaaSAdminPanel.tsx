@@ -151,11 +151,19 @@ export const SaaSAdminPanel: React.FC<SaaSAdminPanelProps> = ({
   const [isSavingUser, setIsSavingUser] = useState(false);
 
   // Form State - New API
-  const [newApiForm, setNewApiForm] = useState({
-    providerName: 'SICONFI' as const,
+  const [newApiForm, setNewApiForm] = useState<{
+    providerName: 'SICONFI' | 'TRANSFEREGOV' | 'TCE_PR' | 'PORTAL_TRANSPARENCIA' | 'ERP_LOCAL';
+    label: string;
+    baseUrl: string;
+    authType: 'NONE' | 'API_KEY' | 'BEARER' | 'BASIC' | 'CERTIFICATE';
+    apiKey: string;
+    syncFrequency: string;
+    customHeaders: string;
+  }>({
+    providerName: 'SICONFI',
     label: '',
     baseUrl: '',
-    authType: 'API_KEY' as const,
+    authType: 'API_KEY',
     apiKey: '',
     syncFrequency: '0 6,18 * * *',
     customHeaders: '',

@@ -46,6 +46,13 @@ interface Module1KPIsProps {
   comparativeMode?: ComparativeMode;
   monthlyComparativeData?: MonthlyComparativeAnalysis | null;
   quarterlyComparativeData?: QuarterlyComparativeAnalysis | null;
+  tenantInfo?: {
+    id?: string;
+    nomePrefeitura?: string;
+    cidade?: string;
+    uf?: string;
+    codigoIbge?: string;
+  };
 }
 
 export const Module1KPIs: React.FC<Module1KPIsProps> = ({
@@ -59,6 +66,7 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
   comparativeMode = 'nenhum',
   monthlyComparativeData = null,
   quarterlyComparativeData = null,
+  tenantInfo,
 }) => {
   const [isPredictiveModalOpen, setIsPredictiveModalOpen] = useState<boolean>(false);
   const chosenMode = activeModeProp || comparativeMode;
@@ -194,14 +202,16 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
               <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                 EXERCÍCIO {ano} {ano === 2026 && '— ORÇAMENTO REESTIMADO'}
               </span>
-              <span className="text-[10px] text-slate-400 font-mono">IBGE: 4101804 (ARAUCÁRIA/PR)</span>
+              <span className="text-[10px] text-slate-400 font-mono">
+                IBGE: {tenantInfo?.codigoIbge || '4101804'} ({(tenantInfo?.cidade || 'ARAUCÁRIA').toUpperCase()}/{tenantInfo?.uf || 'PR'})
+              </span>
             </div>
             <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white uppercase">
-              PAINEL EXECUTIVO DE GESTÃO FISCAL & ORÇAMENTÁRIA
+              PAINEL EXECUTIVO DE GESTÃO FISCAL & ORÇAMENTÁRIA — {tenantInfo?.cidade || 'ARAUCÁRIA'}
             </h2>
             <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
-              Consolidação contábil via API Siconfi do Tesouro Nacional. Monitoramento da reestimativa orçamentária (R$ 1,70 bi),
-              folha de pessoal ({summary.despesaPessoalPercentualRCL}% da RCL) e receitas afetadas pela REPAR.
+              Consolidação contábil via API Siconfi do Tesouro Nacional. Monitoramento da execução orçamentária,
+              folha de pessoal ({summary.despesaPessoalPercentualRCL}% da RCL) e indicadores constitucionais de {tenantInfo?.nomePrefeitura || 'Araucária'}.
             </p>
           </div>
 
@@ -723,7 +733,7 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
               </div>
               <div>
                 <h3 className="font-bold text-slate-900 dark:text-white text-sm">
-                  Painel de Análise Comparativa Trimestral ({quarterlyComparativeData.trimestreNome}: {quarterlyComparativeData.mesesDoTrimestre.join(', ')} — {quarterlyComparativeData.ano} vs {quarterlyComparativeData.anoAnterior})
+                  Painel de Análise Comparativa Trimestral ({quarterlyComparativeData.trimestreNome}: {quarterlyComparativeData.meses?.join(', ') || ''} — {quarterlyComparativeData.ano} vs {quarterlyComparativeData.anoAnterior})
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Visão consolidada de execução trimestral com arrecadação de 3 meses, liquidações agregadas e deltas YoY homólogos
@@ -821,7 +831,7 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
                 Matriz Comparativa dos Trimestres ({quarterlyComparativeData.ano} vs {quarterlyComparativeData.anoAnterior})
               </span>
               <span className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 font-semibold">
-                Trimestre Selecionado: <strong>{quarterlyComparativeData.trimestreNome} ({quarterlyComparativeData.mesesDoTrimestre.join('-')})</strong>
+                Trimestre Selecionado: <strong>{quarterlyComparativeData.trimestreNome} ({quarterlyComparativeData.meses?.join('-') || ''})</strong>
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -841,7 +851,7 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                  {quarterlyComparativeData.trimestresMatriz.map(q => {
+                  {quarterlyComparativeData.historicoTrimestral?.map(q => {
                     const isSelected = q.trimestre === quarterlyComparativeData.trimestre;
                     return (
                       <tr
@@ -852,22 +862,22 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
                           {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>}
                           <span>{q.trimestreNome}</span>
                         </td>
-                        <td className="py-2 px-2.5 text-slate-500 dark:text-slate-400 text-[11px]">{q.meses.join(', ')}</td>
+                        <td className="py-2 px-2.5 text-slate-500 dark:text-slate-400 text-[11px]">{q.meses}</td>
                         <td className="py-2 px-2.5 text-right">{formatCompactCurrency(q.receitaAtual)}</td>
                         <td className="py-2 px-2.5 text-right text-slate-400">{formatCompactCurrency(q.receitaAnterior)}</td>
-                        <td className={`py-2 px-2.5 text-right font-bold ${q.variacaoReceitaPct >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {q.variacaoReceitaPct >= 0 ? '+' : ''}{q.variacaoReceitaPct.toFixed(1)}%
+                        <td className={`py-2 px-2.5 text-right font-bold ${q.variacaoReceitaYoY >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                          {q.variacaoReceitaYoY >= 0 ? '+' : ''}{q.variacaoReceitaYoY.toFixed(1)}%
                         </td>
                         <td className="py-2 px-2.5 text-right">{formatCompactCurrency(q.despesaAtual)}</td>
                         <td className="py-2 px-2.5 text-right text-slate-400">{formatCompactCurrency(q.despesaAnterior)}</td>
-                        <td className={`py-2 px-2.5 text-right font-bold ${q.variacaoDespesaPct <= 0 ? 'text-emerald-600' : 'text-indigo-600'}`}>
-                          {q.variacaoDespesaPct >= 0 ? '+' : ''}{q.variacaoDespesaPct.toFixed(1)}%
+                        <td className={`py-2 px-2.5 text-right font-bold ${q.variacaoDespesaYoY <= 0 ? 'text-emerald-600' : 'text-indigo-600'}`}>
+                          {q.variacaoDespesaYoY >= 0 ? '+' : ''}{q.variacaoDespesaYoY.toFixed(1)}%
                         </td>
                         <td className="py-2 px-2.5 text-right font-semibold text-emerald-600 dark:text-emerald-400">
                           +{formatCompactCurrency(q.resultadoAtual)}
                         </td>
                         <td className="py-2 px-2.5 text-right font-mono text-slate-700 dark:text-slate-300">
-                          {q.folhaRclAtual.toFixed(1)}%
+                          {q.pessoalPercentAtual.toFixed(1)}%
                         </td>
                       </tr>
                     );

@@ -39,6 +39,7 @@ interface Module3DespesasProps {
   searchQuery: string;
   isComparativoAnual?: boolean;
   comparativeMode?: ComparativeMode;
+  activeMode?: ComparativeMode;
   comparativeData?: ComparativeAnalysis | null;
   monthlyComparativeData?: MonthlyComparativeAnalysis | null;
   quarterlyComparativeData?: QuarterlyComparativeAnalysis | null;
@@ -53,13 +54,14 @@ export const Module3Despesas: React.FC<Module3DespesasProps> = ({
   searchQuery,
   isComparativoAnual = false,
   comparativeMode,
+  activeMode: activeModeProp,
   comparativeData = null,
   monthlyComparativeData = null,
   quarterlyComparativeData = null,
 }) => {
   const [viewMode, setViewMode] = useState<'funcao' | 'natureza'>('funcao');
 
-  const activeMode: ComparativeMode = comparativeMode || (isComparativoAnual ? 'anual' : 'nenhum');
+  const activeMode: ComparativeMode = activeModeProp || comparativeMode || (isComparativoAnual ? 'anual' : 'nenhum');
 
   // Filter lists based on search
   const filteredFuncoes = porFuncao.filter(
@@ -89,7 +91,7 @@ export const Module3Despesas: React.FC<Module3DespesasProps> = ({
   if (comparativeData?.despesasPorNatureza) {
     comparativeData.despesasPorNatureza.forEach(item => {
       natCompMap.set(item.id, {
-        deltaNominal: item.deltaNominal,
+        deltaNominal: item.diferencaNominal,
         variacaoPct: item.variacaoPct,
         anterior: item.anterior,
       });
@@ -100,7 +102,7 @@ export const Module3Despesas: React.FC<Module3DespesasProps> = ({
   if (comparativeData?.despesasPorFuncao) {
     comparativeData.despesasPorFuncao.forEach(item => {
       funcCompMap.set(item.id, {
-        deltaNominal: item.deltaNominal,
+        deltaNominal: item.diferencaNominal,
         variacaoPct: item.variacaoPct,
         anterior: item.anterior,
       });
@@ -296,7 +298,7 @@ export const Module3Despesas: React.FC<Module3DespesasProps> = ({
                 {activeMode === 'anual' && comparativeData
                   ? `Evolução anual do valor liquidado por pasta/função de governo`
                   : activeMode === 'trimestral' && quarterlyComparativeData
-                  ? `Variação trimestral acumulada (${quarterlyComparativeData.mesesDoTrimestre.join(', ')}) comparando os exercícios`
+                  ? `Variação trimestral acumulada (${quarterlyComparativeData.meses?.join(', ') || ''}) comparando os exercícios`
                   : activeMode === 'mensal' && monthlyComparativeData
                   ? `Variação mês a mês do valor liquidado por pasta/função de governo`
                   : 'Educação e Saúde concentram quase 50% dos gastos municipais'}

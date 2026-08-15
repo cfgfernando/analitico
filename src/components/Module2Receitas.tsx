@@ -26,6 +26,7 @@ interface Module2ReceitasProps {
   searchQuery: string;
   isComparativoAnual?: boolean;
   comparativeMode?: ComparativeMode;
+  activeMode?: ComparativeMode;
   comparativeData?: ComparativeAnalysis | null;
   monthlyComparativeData?: MonthlyComparativeAnalysis | null;
   quarterlyComparativeData?: QuarterlyComparativeAnalysis | null;
@@ -37,6 +38,7 @@ export const Module2Receitas: React.FC<Module2ReceitasProps> = ({
   searchQuery,
   isComparativoAnual = false,
   comparativeMode,
+  activeMode: activeModeProp,
   comparativeData = null,
   monthlyComparativeData = null,
   quarterlyComparativeData = null,
@@ -44,7 +46,7 @@ export const Module2Receitas: React.FC<Module2ReceitasProps> = ({
   const [selectedCategoria, setSelectedCategoria] = useState<string>('todas');
   const [selectedFonteId, setSelectedFonteId] = useState<string>('todas');
 
-  const activeMode: ComparativeMode = comparativeMode || (isComparativoAnual ? 'anual' : 'nenhum');
+  const activeMode: ComparativeMode = activeModeProp || comparativeMode || (isComparativoAnual ? 'anual' : 'nenhum');
 
   // Categories list
   const categorias = ['todas', 'Transferências do Estado', 'Tributária Própria', 'Transferências da União', 'Royalties/Compensações', 'Outras'];
@@ -65,7 +67,7 @@ export const Module2Receitas: React.FC<Module2ReceitasProps> = ({
   if (comparativeData?.receitasPorFonte) {
     comparativeData.receitasPorFonte.forEach(item => {
       compMap.set(item.id, {
-        deltaNominal: item.deltaNominal,
+        deltaNominal: item.diferencaNominal,
         variacaoPct: item.variacaoPct,
         anterior: item.anterior,
       });
@@ -286,7 +288,7 @@ export const Module2Receitas: React.FC<Module2ReceitasProps> = ({
                 {activeMode === 'anual' && comparativeData
                   ? `Variação percentual anual (YoY) e evolução das fontes de arrecadação`
                   : activeMode === 'trimestral' && quarterlyComparativeData
-                  ? `Variação percentual trimestral (${quarterlyComparativeData.mesesDoTrimestre.join(', ')}) comparando os exercícios`
+                  ? `Variação percentual trimestral (${quarterlyComparativeData.meses?.join(', ') || ''}) comparando os exercícios`
                   : activeMode === 'mensal' && monthlyComparativeData
                   ? `Variação percentual mês a mês (MoM) das principais fontes de arrecadação`
                   : 'Visualização do impacto nas transferências e tributos'}

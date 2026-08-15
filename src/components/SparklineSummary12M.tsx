@@ -318,7 +318,7 @@ export const SparklineSummary12M: React.FC<SparklineSummary12MProps> = ({
               margin={{ top: 10, right: 15, left: -10, bottom: 5 }}
               onClick={(state) => {
                 if (state && state.activeTooltipIndex !== undefined) {
-                  setSelectedMonthIndex(state.activeTooltipIndex);
+                  setSelectedMonthIndex(Number(state.activeTooltipIndex));
                 }
               }}
             >
