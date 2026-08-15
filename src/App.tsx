@@ -224,7 +224,7 @@ function MainDashboardApp() {
         className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
           !isPresentationMode
             ? isSidebarPinned && isSidebarOpen
-              ? 'pl-72'
+              ? 'pl-80'
               : 'pl-16'
             : 'pl-0'
         }`}

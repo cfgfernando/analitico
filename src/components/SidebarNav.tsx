@@ -23,6 +23,7 @@ import {
   Layers,
   HelpCircle,
   Zap,
+  X,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -140,7 +141,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           label: 'Receitas & Reforma Tributária',
           shortLabel: 'Receitas & IBS',
           icon: TrendingUp,
-          badge: 'EC 132/23',
+          badge: 'EC 132',
           badgeColor: 'blue',
           desc: 'Arrecadação LOA, ICMS/ISS e Simulador da Reforma Tributária',
           shortcut: '2',
@@ -170,7 +171,6 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           number: '05',
           label: 'Captação & Convênios',
           shortLabel: 'Captação',
-          icon: HandCoins,
           badge: novasEmendas7Dias > 0 ? `+${novasEmendas7Dias} novas` : undefined,
           badgeColor: 'emerald',
           desc: 'Radar Transferegov, emendas parlamentares e contrapartida',
@@ -205,7 +205,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'obras',
           number: 'GEO',
-          label: 'Mapa Georreferenciado de Obras',
+          label: 'Mapa de Obras Municipal',
           shortLabel: 'Obras',
           icon: MapPin,
           desc: 'Visualização geográfica de investimentos e infraestrutura',
@@ -217,7 +217,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           label: 'Console API SICONFI Live',
           shortLabel: 'Siconfi Live',
           icon: Database,
-          badge: authRole === 'PREFEITURA_CLIENTE' ? 'Consulta' : 'Configuração',
+          badge: authRole === 'PREFEITURA_CLIENTE' ? 'Consulta' : 'Live Sync',
           badgeColor: 'slate',
           desc: 'Console de dados abertos e payloads JSON do Tesouro Nacional',
           shortcut: 'C',
@@ -249,7 +249,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           label: `Usuários de ${cidade}`,
           shortLabel: 'Usuários',
           icon: Users,
-          badge: 'RBAC',
+          badge: 'Acessos',
           badgeColor: 'blue' as const,
           desc: 'Gestão de acessos municipais e controle de papéis',
           shortcut: 'U',
@@ -261,7 +261,6 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignora se o usuário estiver digitando em um input
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) {
         return;
       }
@@ -272,7 +271,6 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         return;
       }
 
-      // Atalhos rápidos
       const key = e.key.toUpperCase();
       for (const group of navGroups) {
         const matched = group.items.find(item => item.shortcut === key);
@@ -291,15 +289,15 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   const badgeStyle = (color?: string) => {
     switch (color) {
       case 'rose':
-        return 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+        return 'bg-rose-500/25 text-rose-200 border-rose-500/50 font-bold';
       case 'amber':
-        return 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+        return 'bg-amber-500/25 text-amber-200 border-amber-500/50 font-bold';
       case 'blue':
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/40';
+        return 'bg-blue-500/25 text-blue-200 border-blue-500/50 font-bold';
       case 'emerald':
-        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+        return 'bg-emerald-500/25 text-emerald-200 border-emerald-500/50 font-bold';
       default:
-        return 'bg-slate-700/50 text-slate-300 border-slate-600';
+        return 'bg-slate-800 text-slate-200 border-slate-700 font-bold';
     }
   };
 
@@ -309,15 +307,15 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       {isOpen && !isPinned && (
         <div
           onClick={onToggleOpen}
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-300"
         />
       )}
 
-      {/* Sidebar Container */}
+      {/* Sidebar Container: w-80 quando aberta para legibilidade impecável */}
       <aside
         id="sidebar-navigation"
-        className={`fixed top-0 left-0 h-full z-50 bg-slate-950 border-r border-slate-800/80 text-white transition-all duration-300 ease-in-out flex flex-col shadow-2xl ${
-          isOpen ? 'w-72' : 'w-16'
+        className={`fixed top-0 left-0 h-full z-50 bg-slate-950 border-r border-slate-800 text-white transition-all duration-300 ease-in-out flex flex-col shadow-2xl ${
+          isOpen ? 'w-80' : 'w-16'
         }`}
         onMouseEnter={() => {
           if (!isPinned && !isOpen) onToggleOpen();
@@ -327,18 +325,18 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         }}
       >
         {/* Sidebar Header */}
-        <div className="h-14 border-b border-slate-800/80 flex items-center justify-between px-3 shrink-0 bg-slate-900/60">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-sm bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center font-bold text-slate-950 text-xs shrink-0 shadow-xs">
+        <div className="h-14 border-b border-slate-800 flex items-center justify-between px-3.5 shrink-0 bg-slate-900/90">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-8 h-8 rounded-sm bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center font-bold text-slate-950 text-sm shrink-0 shadow-sm">
               🏛️
             </div>
             {isOpen && (
               <div className="flex flex-col min-w-0 transition-opacity duration-200">
                 <span className="text-xs font-bold font-mono tracking-tight text-white uppercase truncate">
-                  SAAS FISCAL
+                  MONITORAMENTO FISCAL
                 </span>
-                <span className="text-[10px] text-emerald-400 font-mono font-semibold truncate">
-                  {cidade}
+                <span className="text-[11px] text-emerald-300 font-mono font-bold truncate">
+                  Prefeitura de {cidade}
                 </span>
               </div>
             )}
@@ -350,18 +348,18 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 onClick={onTogglePinned}
                 className={`p-1.5 rounded-sm transition cursor-pointer ${
                   isPinned
-                    ? 'text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                    ? 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/40'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent'
                 }`}
                 title={isPinned ? 'Desafixar menu (fechar automático)' : 'Fixar menu aberto'}
               >
-                {isPinned ? <Pin className="w-3.5 h-3.5" /> : <PinOff className="w-3.5 h-3.5" />}
+                {isPinned ? <Pin className="w-3.5 h-3.5 text-emerald-400" /> : <PinOff className="w-3.5 h-3.5" />}
               </button>
 
               <button
                 onClick={onToggleOpen}
                 className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-sm transition cursor-pointer"
-                title="Recolher menu lateral"
+                title="Recolher menu lateral ([)"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -371,22 +369,30 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
         {/* Search in Sidebar (Only when open) */}
         {isOpen && (
-          <div className="p-2.5 border-b border-slate-800/60 bg-slate-950/40 shrink-0">
+          <div className="p-3 border-b border-slate-800/80 bg-slate-950/60 shrink-0">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={searchFilter}
                 onChange={e => setSearchFilter(e.target.value)}
-                placeholder="Buscar módulo (atalhos 1..9)..."
-                className="w-full pl-8 pr-2.5 py-1 text-xs bg-slate-900 border border-slate-800 rounded-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
+                placeholder="Buscar módulos (atalhos 1..9, P, B)..."
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-500 font-mono"
               />
+              {searchFilter && (
+                <button
+                  onClick={() => setSearchFilter('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
         )}
 
-        {/* Nav Items List */}
-        <div className="flex-1 overflow-y-auto py-2.5 px-1.5 space-y-4 custom-scrollbar">
+        {/* Nav Items List com Altíssima Legibilidade */}
+        <div className="flex-1 overflow-y-auto py-3 px-2 space-y-4 custom-scrollbar">
           {navGroups.map(group => {
             const filteredItems = group.items.filter(
               item =>
@@ -398,14 +404,14 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             if (filteredItems.length === 0) return null;
 
             return (
-              <div key={group.id} className="space-y-1">
+              <div key={group.id} className="space-y-1.5">
                 {isOpen && (
-                  <div className="px-2 py-1 text-[9px] font-mono font-bold tracking-widest text-slate-400 uppercase">
+                  <div className="px-2.5 py-1 text-[11px] font-mono font-bold tracking-wider text-slate-300 uppercase border-b border-slate-800/60 pb-1">
                     {group.title}
                   </div>
                 )}
 
-                <div className="space-y-0.5">
+                <div className="space-y-1">
                   {filteredItems.map(item => {
                     const Icon = item.icon;
                     const isActive = activeTab === item.id;
@@ -424,30 +430,32 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                               onToggleOpen();
                             }
                           }}
-                          className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-sm text-xs font-mono transition-all duration-150 cursor-pointer text-left group ${
+                          className={`w-full flex items-center gap-3 px-2.5 py-2 rounded-sm text-xs transition-all duration-150 cursor-pointer text-left group ${
                             isActive
-                              ? 'bg-emerald-500/15 text-emerald-300 font-bold border-l-4 border-l-emerald-500 shadow-xs'
-                              : 'text-slate-300 hover:bg-slate-900 hover:text-white border-l-4 border-l-transparent'
+                              ? 'bg-emerald-500/20 text-white font-bold border-l-4 border-l-emerald-500 shadow-xs'
+                              : 'text-slate-200 hover:bg-slate-900 hover:text-white border-l-4 border-l-transparent'
                           }`}
                         >
                           <div
                             className={`p-1.5 rounded-sm shrink-0 transition-colors ${
                               isActive
-                                ? 'bg-emerald-500 text-slate-950 font-bold'
-                                : 'bg-slate-900 text-slate-400 group-hover:text-slate-200 group-hover:bg-slate-800'
+                                ? 'bg-emerald-500 text-slate-950 font-bold shadow-xs'
+                                : 'bg-slate-900 text-slate-300 group-hover:text-white group-hover:bg-slate-800 border border-slate-800'
                             }`}
                           >
                             <Icon className="w-4 h-4" />
                           </div>
 
                           {isOpen && (
-                            <div className="flex-1 min-w-0 flex items-center justify-between gap-1.5 overflow-hidden">
-                              <span className="truncate">{item.label}</span>
+                            <div className="flex-1 min-w-0 flex items-center justify-between gap-2 overflow-hidden">
+                              <span className="text-[13px] font-medium text-slate-100 group-hover:text-white truncate">
+                                {item.label}
+                              </span>
 
-                              <div className="flex items-center gap-1 shrink-0">
+                              <div className="flex items-center gap-1.5 shrink-0">
                                 {item.badge && (
                                   <span
-                                    className={`px-1.5 py-0.2 text-[9px] font-mono font-bold uppercase rounded-xs border ${badgeStyle(
+                                    className={`px-2 py-0.5 text-[10px] font-mono rounded-xs border ${badgeStyle(
                                       item.badgeColor
                                     )}`}
                                   >
@@ -455,7 +463,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                                   </span>
                                 )}
                                 {item.shortcut && (
-                                  <kbd className="hidden lg:inline-block px-1 py-0.2 bg-slate-800 border border-slate-700 rounded-xs text-[8px] text-slate-400 font-mono">
+                                  <kbd className="hidden lg:inline-block px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded-xs text-[10px] text-slate-300 font-mono font-bold">
                                     {item.shortcut}
                                   </kbd>
                                 )}
@@ -466,19 +474,19 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
                         {/* Floating Tooltip when Collapsed */}
                         {!isOpen && hoveredTab === item.id && (
-                          <div className="fixed left-16 ml-2 z-50 bg-slate-900 border border-slate-700 text-white rounded-sm py-1.5 px-3 shadow-xl pointer-events-none min-w-[200px] animate-in fade-in zoom-in-95 duration-150">
-                            <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-1 mb-1">
+                          <div className="fixed left-16 ml-2 z-50 bg-slate-900 border border-slate-700 text-white rounded-sm py-2 px-3.5 shadow-2xl pointer-events-none min-w-[240px] animate-in fade-in zoom-in-95 duration-150">
+                            <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-1.5 mb-1.5">
                               <span className="font-bold text-xs font-mono text-emerald-300">{item.label}</span>
                               {item.shortcut && (
-                                <kbd className="px-1 bg-slate-800 border border-slate-700 rounded-xs text-[9px] text-slate-300 font-mono">
+                                <kbd className="px-1.5 bg-slate-800 border border-slate-700 rounded-xs text-[10px] text-slate-200 font-mono font-bold">
                                   {item.shortcut}
                                 </kbd>
                               )}
                             </div>
-                            <p className="text-[10px] text-slate-400 leading-tight">{item.desc}</p>
+                            <p className="text-xs text-slate-200 leading-relaxed font-sans">{item.desc}</p>
                             {item.badge && (
                               <span
-                                className={`inline-block mt-1.5 px-1.5 py-0.2 text-[8px] font-mono font-bold uppercase rounded-xs border ${badgeStyle(
+                                className={`inline-block mt-2 px-2 py-0.5 text-[10px] font-mono uppercase rounded-xs border ${badgeStyle(
                                   item.badgeColor
                                 )}`}
                               >
@@ -497,19 +505,19 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-2 border-t border-slate-800/80 bg-slate-950/60 shrink-0 text-center">
+        <div className="p-2.5 border-t border-slate-800 bg-slate-900/80 shrink-0 text-center">
           {!isOpen ? (
             <button
               onClick={onToggleOpen}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-900 rounded-sm w-full flex justify-center transition cursor-pointer"
+              className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-sm w-full flex justify-center transition cursor-pointer"
               title="Expandir menu lateral ([)"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
-            <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 px-1">
-              <span>Atalhos: [ ou 1..9</span>
-              <span className="text-emerald-500 font-bold">V4.0.0</span>
+            <div className="flex items-center justify-between text-[11px] font-mono text-slate-300 px-1">
+              <span>Atalhos: [ ou 1..9, P, B</span>
+              <span className="text-emerald-400 font-bold bg-emerald-950/60 border border-emerald-800/80 px-1.5 py-0.5 rounded-xs">V4.0.0</span>
             </div>
           )}
         </div>
