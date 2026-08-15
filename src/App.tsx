@@ -196,7 +196,7 @@ function MainDashboardApp() {
   };
 
   return (
-    <div className="dashboard-full min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col antialiased selection:bg-emerald-500 selection:text-white relative">
+    <div className="dashboard-full min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col antialiased selection:bg-emerald-500 selection:text-white relative overflow-x-hidden max-w-full">
       <ToastContainer
         toasts={toasts}
         onDismiss={(id) => setToasts(prev => prev.filter(t => t.id !== id))}
@@ -311,7 +311,7 @@ function MainDashboardApp() {
           </div>
         )}
 
-        <main className="flex-1 w-full px-2 sm:px-4 lg:px-6 py-4 transition-all duration-300 pb-16">
+        <main className="flex-1 w-full max-w-full px-2 sm:px-4 lg:px-6 py-3 sm:py-4 transition-all duration-300 pb-16 overflow-x-hidden">
           <DashboardPage
             activeTab={activeTab}
             ano={ano}

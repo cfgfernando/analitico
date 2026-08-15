@@ -136,7 +136,7 @@ export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
           </div>
 
           {/* Progress Box */}
-          <div className="bg-slate-950 border border-slate-800 rounded-sm p-4 min-w-[280px]">
+          <div className="bg-slate-950 border border-slate-800 rounded-sm p-4 w-full md:w-auto md:min-w-[280px]">
             <div className="flex justify-between items-baseline mb-1.5 font-mono">
               <span className="text-[10px] text-slate-400 uppercase">Meta Anual:</span>
               <span className="text-sm font-bold text-white">{formatCompactCurrency(metaAnual)}</span>
