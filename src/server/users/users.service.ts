@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { TenantsService } from '../tenants/tenants.service';
+import { UsersRepository } from '../repositories/users.repository';
 
 export interface MockUser {
   id: string;
@@ -63,7 +64,10 @@ export class UsersService {
     },
   ];
 
-  constructor(@Inject(TenantsService) private readonly tenantsService: TenantsService) {}
+  constructor(
+    @Inject(TenantsService) private readonly tenantsService: TenantsService,
+    @Inject(UsersRepository) private readonly usersRepository: UsersRepository
+  ) {}
 
   getUsersForTenant(tenantId: string) {
     const tenant = this.tenantsService.getTenantById(tenantId);

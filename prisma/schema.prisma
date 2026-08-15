@@ -1,0 +1,269 @@
+// Prisma Schema para SaaS Fiscal Multi-Tenant para Prefeituras (V4)
+// Suporte a MySQL 8 com Multi-Tenancy estrito por tenant_id
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum TenantStatus {
+  ATIVO
+  SUSPENSO
+  INADIMPLENTE
+  CANCELADO
+  EM_IMPLANTACAO
+}
+
+enum UserRole {
+  MASTER_ADMIN
+  PREFEITO
+  SECRETARIO_FINANCAS
+  CONTROLADORIA
+  SECRETARIA_SETORIAL
+  VISUALIZADOR_GERAL
+  CUSTOMIZADO
+}
+
+enum ApiProviderName {
+  SICONFI
+  TRANSFEREGOV
+  TCE_PR
+  PORTAL_TRANSPARENCIA
+  ERP_LOCAL
+  OBRASGOV
+  SIOPE
+}
+
+enum AuthType {
+  NONE
+  BEARER
+  API_KEY
+  BASIC
+  CERTIFICATE
+}
+
+enum SyncStatus {
+  PENDENTE
+  EM_EXECUCAO
+  SUCESSO
+  ERRO
+}
+
+enum InvoiceStatus {
+  PAGO
+  PENDENTE
+  ATRASADO
+  CANCELADO
+}
+
+enum FinancialCategory {
+  RECEITA
+  DESPESA
+  RGF
+  RREO
+  FUNDEB
+  OBRAS
+}
+
+// 1. Prefeitura Cliente (Tenant)
+model Tenant {
+  id                   String       @id @default(cuid())
+  codigoIbge           String       @unique @db.VarChar(7)
+  nomePrefeitura       String       @db.VarChar(255)
+  cnpj                 String       @unique @db.VarChar(18)
+  estadoUf             String       @db.VarChar(2)
+  cidade               String       @db.VarChar(100)
+  status               TenantStatus @default(ATIVO)
+  planoNome            String       @default("Plano Gestão Fiscal Completo") @db.VarChar(100)
+  valorMensalBase      Decimal      @default(1890.00) @db.Decimal(12, 2)
+  userLimit            Int          @default(2)
+  valorPorUsuarioExtra Decimal      @default(150.00) @db.Decimal(10, 2)
+  diaVencimento        Int          @default(10)
+  emailFaturamento     String       @db.VarChar(255)
+  telefoneContato      String       @db.VarChar(50)
+  isDemonstracao       Boolean      @default(false)
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  users            User[]
+  apiConfigs       TenantApiConfig[]
+  syncConfigs      TenantSyncConfig[]
+  invoices         SaaSInvoice[]
+  financialRecords FinancialRecord[]
+  syncLogs         SyncLog[]
+  auditLogs        AuditLog[]
+
+  @@map("tenants")
+}
+
+// 2. Usuário da Prefeitura ou Admin SaaS
+model User {
+  id                 String    @id @default(cuid())
+  tenantId           String
+  nomeCompleto       String    @db.VarChar(255)
+  cpf                String    @unique @db.VarChar(14)
+  email              String    @unique @db.VarChar(255)
+  senhaHash          String    @db.VarChar(255)
+  role               UserRole  @default(SECRETARIA_SETORIAL)
+  cargo              String?   @db.VarChar(150)
+  secretaria         String?   @db.VarChar(100)
+  ativo              Boolean   @default(true)
+  isExtra            Boolean   @default(false)
+  ultimoAcesso       DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+  auditLogs     AuditLog[]
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+// 3. Conexões de APIs por Prefeitura
+model TenantApiConfig {
+  id                          String          @id @default(cuid())
+  tenantId                    String
+  providerName                ApiProviderName
+  label                       String          @db.VarChar(200)
+  baseUrl                     String          @db.VarChar(500)
+  authType                    AuthType        @default(NONE)
+  encryptedApiKey             String?         @db.Text
+  encryptedSecretKey          String?         @db.Text
+  customHeadersJson           String?         @db.Text
+  syncFrequency               String          @default("0 6,18 * * *") @db.VarChar(100)
+  ativo                       Boolean         @default(true)
+  ultimoStatus                SyncStatus      @default(PENDENTE)
+  ultimaSincronizacao         DateTime?
+  totalRegistrosSincronizados Int             @default(0)
+  createdAt                   DateTime        @default(now())
+  updatedAt                   DateTime        @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("tenant_api_configs")
+}
+
+// 4. Configuração de Agendamentos de Sincronização
+model TenantSyncConfig {
+  id              String     @id @default(cuid())
+  tenantId        String
+  fonteDado       String     @db.VarChar(100)
+  cronExpression  String     @default("0 6,18 * * *") @db.VarChar(100)
+  ultimaExecucao  DateTime?
+  proximaExecucao DateTime?
+  ultimoStatus    SyncStatus @default(PENDENTE)
+  logMensagem     String?    @db.Text
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("tenant_sync_configs")
+}
+
+// 5. Faturas de Cobrança SaaS
+model SaaSInvoice {
+  id                  String        @id @default(cuid())
+  tenantId            String
+  mesReferencia       Int
+  anoReferencia       Int
+  valorBase           Decimal       @db.Decimal(12, 2)
+  quantidadeUsuarios  Int           @default(2)
+  usuariosExcedentes  Int           @default(0)
+  valorUsuariosExtras Decimal       @default(0.00) @db.Decimal(12, 2)
+  valorTotal          Decimal       @db.Decimal(12, 2)
+  dataVencimento      DateTime
+  dataPagamento       DateTime?
+  status              InvoiceStatus @default(PENDENTE)
+  numeroNfse          String?       @db.VarChar(100)
+  linkBoletoPix       String?       @db.VarChar(500)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("saas_invoices")
+}
+
+// 6. Dados Fiscais e Contábeis Sincronizados (Siconfi / Transferegov / TCE)
+model FinancialRecord {
+  id              String            @id @default(cuid())
+  tenantId        String
+  sourceKey       String            @db.VarChar(100)
+  exercicioAno    Int
+  periodo         String            @db.VarChar(20)
+  categoria       FinancialCategory
+  accountCode     String            @db.VarChar(100)
+  accountName     String            @db.VarChar(255)
+  valor           Decimal           @db.Decimal(16, 2)
+  secretaria      String?           @db.VarChar(100)
+  dadosOrigemJson String?           @db.LongText
+  isDemonstracao  Boolean           @default(false)
+  syncedAt        DateTime          @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, exercicioAno, categoria])
+  @@index([tenantId, accountCode])
+  @@map("financial_records")
+}
+
+// 7. Logs de Sincronização
+model SyncLog {
+  id              String     @id @default(cuid())
+  tenantId        String
+  sourceKey       String     @db.VarChar(100)
+  status          SyncStatus
+  recordsImported Int        @default(0)
+  errorMessage    String?    @db.Text
+  startedAt       DateTime   @default(now())
+  finishedAt      DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("sync_logs")
+}
+
+// 8. Log de Auditoria
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String?
+  action    String   @db.VarChar(100)
+  entity    String   @db.VarChar(100)
+  entityId  String?  @db.VarChar(100)
+  ip        String?  @db.VarChar(50)
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@map("audit_logs")
+}
+
+// 9. Tokens de Atualização (JWT Refresh Tokens)
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique @db.VarChar(255)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}

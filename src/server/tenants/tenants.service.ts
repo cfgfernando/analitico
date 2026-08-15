@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import { MunicipiosService } from '../municipios/municipios.service';
+import { TenantsRepository } from '../repositories/tenants.repository';
 
 export interface MockTenant {
   id: string;
@@ -167,7 +168,10 @@ export class TenantsService {
     },
   ];
 
-  constructor(@Inject(MunicipiosService) private readonly municipiosService: MunicipiosService) {}
+  constructor(
+    @Inject(MunicipiosService) private readonly municipiosService: MunicipiosService,
+    @Inject(TenantsRepository) private readonly tenantsRepository: TenantsRepository
+  ) {}
 
   getAllTenants() {
     return this.saasTenants.map(t => this.getTenantWithStats(t));

@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from './database/database.module';
+import { RepositoriesModule } from './repositories/repositories.module';
 import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { MunicipiosModule } from './municipios/municipios.module';
@@ -16,6 +18,8 @@ import { DiagnosticoModule } from './diagnostico/diagnostico.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    DatabaseModule,
+    RepositoriesModule,
     HealthModule,
     AuthModule,
     MunicipiosModule,
