@@ -131,6 +131,7 @@ export interface ProgramaTransferegov {
   codigoPrograma: string;
   orgaoConcedente: string;
   ministerio: 'Saúde' | 'Educação' | 'Cidades / Infraestrutura' | 'Desenvolvimento Social' | 'Meio Ambiente' | 'Segurança / Justiça' | 'Agricultura';
+  eixo?: string;
   titulo: string;
   areaTematica: string;
   objeto: string;
@@ -141,6 +142,8 @@ export interface ProgramaTransferegov {
   dataFimInscricao: string;
   diasRestantes: number;
   statusPrazo: 'URGENTE' | 'MODERADO' | 'CONFORTAVEL' | 'ENCERRADO';
+  probabilidade?: 'ALTA' | 'MEDIA' | 'BAIXA';
+  valorPonderado?: number;
   elegibilidade: {
     status: 'ELEGIVEL' | 'RESTRICAO' | 'INELEGIVEL';
     motivos: string[];
@@ -150,6 +153,29 @@ export interface ProgramaTransferegov {
   linkTransferegov: string;
 }
 
+export interface ProjetoPronto {
+  id: string;
+  titulo: string;
+  secretaria: string;
+  valorEstimado: number;
+  etpStatus: 'PRONTO' | 'EM_ELABORACAO' | 'REVISAO';
+  projetoExecutivoStatus: 'PRONTO' | 'EM_ELABORACAO' | 'DISPENSADO';
+  licencaAmbiental: 'EMITIDA' | 'DISPENSADA' | 'EM_ANALISE';
+  maturidade: 'PRONTO_SUBMISSAO' | 'EM_PREPARACAO' | 'SUBMETIDO';
+  potencialConcedente: string;
+}
+
+export interface ChamadaCalendario {
+  id: string;
+  ministerio: string;
+  eixo: string;
+  periodoAbertura: string;
+  mesAbertura: string;
+  status: 'ABERTO' | 'EM_BREVE' | 'ENCERRADO';
+  diasRestantes?: number;
+  valorEstimadoGlobal: number;
+}
+
 export interface SimulacaoContrapartida {
   valorGlobal: number;
   percentualContrapartida: number;
@@ -157,6 +183,7 @@ export interface SimulacaoContrapartida {
   valorContrapartidaMunicipal: number;
   saldoCaixaLivreDisponivel: number;
   impactoCaixaLivrePercentual: number;
+  percentualComprometimentoCaixaLivre?: number;
   viabilidade: 'ALTA' | 'MODERADA' | 'CRITICA';
   recomendacaoTecnica: string;
 }
@@ -216,10 +243,16 @@ export interface MunicipioBenchmark {
   rclPerCapita: number;
   despesaPessoalPct: number;
   arrecadacaoPropriaPerCapita: number;
+  arrecadacaoPropriaPct?: number;
+  captacaoPerCapita?: number;
+  gastoSaudePct?: number;
+  gastoEducacaoPct?: number;
+  gastoObrasPct?: number;
   investimentoPerCapita: number;
   dependenciaTransferenciasPct: number;
   scoreEficienciaFiscal: number;
   posicaoRanking: number;
+  autonomiaRankingPosicao?: number;
   isMunicipioAtivo?: boolean;
 }
 
@@ -232,8 +265,13 @@ export interface BenchmarkPayload {
     mediaRclPerCapita: number;
     mediaDespesaPessoalPct: number;
     mediaArrecadacaoPropriaPerCapita: number;
+    mediaArrecadacaoPropriaPct?: number;
     mediaInvestimentoPerCapita: number;
+    mediaCaptacaoPerCapita?: number;
+    mediaGastoSaudePct?: number;
+    mediaGastoEducacaoPct?: number;
     scoreMedio: number;
+    resumoComparativo?: string;
   };
   ranking: MunicipioBenchmark[];
   destaques: {
@@ -287,11 +325,40 @@ export interface AlertaPrazoCritico {
   status: 'PENDENTE' | 'RECONHECIDO' | 'CONCLUIDO';
 }
 
+export interface ChecklistFundebItem {
+  id: string;
+  obrigacao: string;
+  orgao: string;
+  frequencia: 'MENSAL' | 'BIMESTRAL' | 'ANUAL';
+  prazoLimite: string;
+  diasRestantes: number;
+  status: 'URGENTE' | 'PENDENTE' | 'CONCLUIDO' | 'HOMOLOGADO';
+  impactoVaat: string;
+  fundamentoLegal: string;
+}
+
+export interface MapaRiscoVaat {
+  habilitaVaatStatus: 'REGULAR' | 'EM_RISCO';
+  percentualComplementacaoVaat: number;
+  valorEstimadoEmRisco: number;
+  alertaExecutivo: string;
+  requisitos: Array<{
+    id: string;
+    nome: string;
+    status: 'REGULAR' | 'EM_ANDAMENTO' | 'CRITICO';
+    prazo: string;
+    diasRestantes: number;
+    detalhes: string;
+  }>;
+}
+
 export interface AlertasProativosPayload {
   totalAlertas: number;
   totalCriticos: number;
   totalAtencao: number;
   alertas: AlertaPrazoCritico[];
+  checklistFundeb?: ChecklistFundebItem[];
+  mapaRiscoVaat?: MapaRiscoVaat;
   dataSource?: DataSourceMetadata;
 }
 

@@ -2,7 +2,11 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import env from '../../../config/env';
-import { JwtPayload, AuthenticatedUser } from '../interfaces/jwt-payload.interface';
+import {
+  JwtPayload,
+  AuthenticatedUser,
+  ROLE_PERMISSIONS,
+} from '../interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -10,16 +14,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
-        (req: any) => {
-          let token = null;
-          if (req && req.headers && req.headers['authorization']) {
-            const parts = req.headers['authorization'].split(' ');
-            if (parts.length === 2 && parts[0] === 'Bearer') {
-              token = parts[1];
-            }
-          }
-          return token;
-        },
+        // Extrai de cookie httpOnly (para futura implementação de cookie-based auth)
+        (req: any) => req?.cookies?.['access_token'] ?? null,
       ]),
       ignoreExpiration: false,
       secretOrKey: env.JWT_SECRET || 'saas_fiscal_default_jwt_secret_change_in_production_min_32_chars',
@@ -31,13 +27,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Token de autenticação com formato inválido.');
     }
 
+    // Sempre recalcula permissões a partir do role no token
+    // (garante permissões atualizadas mesmo para tokens emitidos antes de uma mudança de role)
+    const permissions = payload.permissions ?? ROLE_PERMISSIONS[payload.role] ?? [];
+
     return {
       id: payload.userId,
       email: payload.email,
       nomeCompleto: payload.nomeCompleto,
       tenantId: payload.tenantId,
       role: payload.role,
+      permissions,
       secretaria: payload.secretaria,
+      sessionId: payload.sessionId,
     };
   }
 }

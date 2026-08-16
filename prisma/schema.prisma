@@ -36,6 +36,12 @@ enum ApiProviderName {
   ERP_LOCAL
   OBRASGOV
   SIOPE
+  TCE_SC
+  TCE_RS
+  TCE_SP
+  SIOPE_EDUCACAO
+  SIOPS_SAUDE
+  EMENDAS_PARLAMENTARES
 }
 
 enum AuthType {

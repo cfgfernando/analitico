@@ -13,11 +13,12 @@ async function runAllSuites() {
     { name: 'Fase 4: DataSourceBadge e Rastreabilidade de Dados', file: 'src/components/datasource.spec.ts' },
     { name: 'Fase 5: Conexão Real com SICONFI & Ingestão', file: 'src/server/siconfi/siconfi.spec.ts' },
     { name: 'Fase 6: Painel do Prefeito & Top 3 Decisões Urgentes', file: 'src/server/fiscal/painel-prefeito.spec.ts' },
-    { name: 'Fase 7: Radar de Captação & Simulador de Contrapartida', file: 'src/server/fiscal/radar-captacao.spec.ts' },
-    { name: 'Fase 8: Simulador da Reforma Tributária (EC 132/2023)', file: 'src/server/fiscal/simulador-reforma.spec.ts' },
-    { name: 'Fase 9: Benchmark Municipal & Eficiência Fiscal', file: 'src/server/fiscal/benchmark.spec.ts' },
-    { name: 'Fase 10: Selo de Conformidade & Certificado Oficial', file: 'src/server/fiscal/selo-conformidade.spec.ts' },
-    { name: 'Fase 11: Sistema Proativo de Alertas & Riscos Fiscais', file: 'src/server/fiscal/alertas-proativos.spec.ts' },
+    { name: 'Fase 7: Simulador da Reforma Tributária (EC 132/2023)', file: 'src/server/fiscal/simulador-reforma.spec.ts' },
+    { name: 'Fase 8: Radar de Captação & Simulador de Contrapartida', file: 'src/server/fiscal/radar-captacao.spec.ts' },
+    { name: 'Fase 9: Simulador de Cenários LOA ("E Se")', file: 'src/server/fiscal/simulador-cenarios.spec.ts' },
+    { name: 'Fase 10: Benchmark Municipal & Eficiência Fiscal', file: 'src/server/fiscal/benchmark.spec.ts' },
+    { name: 'Fase 11: Selo de Conformidade & Certificado Oficial', file: 'src/server/fiscal/selo-conformidade.spec.ts' },
+    { name: 'Fase 12: Sistema Proativo de Alertas, FUNDEB, SIOPE & MSC', file: 'src/server/fiscal/alertas-proativos.spec.ts' },
   ];
 
   let totalSuites = suites.length;

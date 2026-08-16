@@ -12,6 +12,7 @@ import { FiscalModule } from './fiscal/fiscal.module';
 import { SiconfiModule } from './siconfi/siconfi.module';
 import { BillingModule } from './billing/billing.module';
 import { DiagnosticoModule } from './diagnostico/diagnostico.module';
+import { IntegrationModule } from '../integration/integration.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { DiagnosticoModule } from './diagnostico/diagnostico.module';
     SiconfiModule,
     BillingModule,
     DiagnosticoModule,
+    IntegrationModule,
   ],
 })
 export class AppModule {}

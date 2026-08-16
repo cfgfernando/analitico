@@ -23,6 +23,7 @@ import {
   Layers,
   HelpCircle,
   Zap,
+  Sliders,
   X,
 } from 'lucide-react';
 
@@ -119,6 +120,17 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           badgeColor: 'rose',
           desc: 'Vencimento de certidões do CAUC, prazos SICONFI e limites LRF',
           shortcut: 'A',
+        },
+        {
+          id: 'simulador_loa',
+          number: 'E SE',
+          label: 'Simulador LOA ("E Se")',
+          shortLabel: 'Simulador LOA',
+          icon: Sliders,
+          badge: 'Decisão',
+          badgeColor: 'blue',
+          desc: 'Simulação preditiva de alíquotas de ISS/ITBI, PGV e corte de custeio na LRF',
+          shortcut: 'E',
         },
       ],
     },

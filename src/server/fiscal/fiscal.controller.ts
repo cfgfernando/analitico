@@ -1,22 +1,25 @@
 import { Controller, Get, Post, Body, Query, Req, Inject, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { FiscalService } from './fiscal.service';
+import { DataProvenanceService } from './data-provenance.service';
 import { resolveTenant } from '../municipalFiscalEngine';
 import { TenantGuard } from '../auth/guards/tenant.guard';
 
 @UseGuards(TenantGuard)
 @Controller('api/fiscal')
 export class FiscalController {
-  constructor(@Inject(FiscalService) private readonly fiscalService: FiscalService) {}
+  constructor(
+    @Inject(FiscalService) private readonly fiscalService: FiscalService,
+    @Inject(DataProvenanceService) private readonly provenanceService: DataProvenanceService,
+  ) {}
 
   private extractTenant(req: any): any {
-    const tenantIdOrIbge =
-      req.tenantId ||
-      req.user?.tenantId ||
+    const explicitTenant =
       (req.query?.tenantId as string) ||
       (req.query?.codigoIbge as string) ||
-      (req.headers ? req.headers['x-tenant-id'] : undefined) ||
-      '4101804';
+      (req.headers ? (req.headers['x-tenant-id'] as string) : undefined);
+
+    const tenantIdOrIbge = explicitTenant || req.tenantId || req.user?.tenantId || '4101804';
     return resolveTenant(tenantIdOrIbge, []);
   }
 
@@ -91,6 +94,37 @@ export class FiscalController {
     return this.fiscalService.simularContrapartida(tenant, body.valorGlobal, body.percentualContrapartida);
   }
 
+  @Get('simulador-cenarios')
+  getSimuladorCenarios(
+    @Req() req: Request,
+    @Query('variacaoIssPct') variacaoIssPct?: string,
+    @Query('recadastramentoPgvPct') recadastramentoPgvPct?: string,
+    @Query('corteCusteioPct') corteCusteioPct?: string,
+    @Query('variacaoItbiPct') variacaoItbiPct?: string,
+  ) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.getSimuladorCenarios(tenant, {
+      variacaoIssPct: variacaoIssPct ? parseFloat(variacaoIssPct) : 0,
+      recadastramentoPgvPct: recadastramentoPgvPct ? parseFloat(recadastramentoPgvPct) : 0,
+      corteCusteioPct: corteCusteioPct ? parseFloat(corteCusteioPct) : 0,
+      variacaoItbiPct: variacaoItbiPct ? parseFloat(variacaoItbiPct) : 0,
+    });
+  }
+
+  @Post('simulador-cenarios/simular')
+  simularCenariosLoa(
+    @Req() req: Request,
+    @Body() body: {
+      variacaoIssPct?: number;
+      recadastramentoPgvPct?: number;
+      corteCusteioPct?: number;
+      variacaoItbiPct?: number;
+    }
+  ) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.getSimuladorCenarios(tenant, body);
+  }
+
   @Get('simulador-reforma')
   getSimuladorReforma(@Req() req: Request, @Query('ajusteProprio') ajusteProprio?: string) {
     const tenant = this.extractTenant(req);
@@ -121,5 +155,62 @@ export class FiscalController {
   getAlertasProativos(@Req() req: Request) {
     const tenant = this.extractTenant(req);
     return this.fiscalService.getAlertasProativos(tenant);
+  }
+
+  @Get('alertas-proativos/parametros')
+  getParametrosAlertas(@Req() req: Request) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.getParametrosAlertas(tenant);
+  }
+
+  @Post('alertas-proativos/parametros')
+  salvarParametrosAlertas(@Req() req: Request, @Body() body: { regras: any[] }) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.salvarParametrosAlertas(tenant, body.regras || []);
+  }
+
+  @Get('decisoes-gabinete')
+  getDecisoesGabinete(@Req() req: Request) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.getDecisoesGabinete(tenant);
+  }
+
+  @Post('decisoes-gabinete/despachar')
+  despacharDecisaoGabinete(
+    @Req() req: Request,
+    @Body() body: { decisaoId: string; acao: 'MARCAR_TOMADA' | 'REPROGRAMAR_PROXIMA_SEMANA'; dadosDespacho?: any }
+  ) {
+    const tenant = this.extractTenant(req);
+    return this.fiscalService.despacharDecisaoGabinete(tenant, body.decisaoId, body.acao, body.dadosDespacho);
+  }
+
+  /**
+   * GET /api/fiscal/proveniencia
+   * Retorna o status de rastreabilidade de todas as fontes de dados do tenant.
+   * Usado pelo DataProvenancePanel no frontend.
+   */
+  @Get('proveniencia')
+  async getProveniencia(@Req() req: Request) {
+    const tenantId = (req as any).tenantId
+      || (req as any).user?.tenantId
+      || (req.query?.tenantId as string)
+      || 'tenant-demo';
+    const sources = await this.provenanceService.getSourcesStatus(tenantId);
+    return { success: true, tenantId, sources };
+  }
+
+  /**
+   * GET /api/fiscal/proveniencia/historico
+   * Retorna o histórico de sincronizações do tenant (últimas 50 entradas).
+   */
+  @Get('proveniencia/historico')
+  async getProvenienciaHistorico(@Req() req: Request, @Query('limit') limitStr?: string) {
+    const tenantId = (req as any).tenantId
+      || (req as any).user?.tenantId
+      || (req.query?.tenantId as string)
+      || 'tenant-demo';
+    const limit = limitStr ? Math.min(parseInt(limitStr, 10), 100) : 50;
+    const logs = await this.provenanceService.getSyncHistory(tenantId, limit);
+    return { success: true, tenantId, logs };
   }
 }

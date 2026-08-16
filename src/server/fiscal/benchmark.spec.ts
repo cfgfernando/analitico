@@ -53,7 +53,47 @@ async function runBenchmarkTests() {
     );
   }
 
-  // 5. Validação de Destaques e Oportunidades
+  // 5. Validação dos Entregáveis da Fase 10 (Benchmark entre Municípios)
+  assert(
+    benchRes.ranking.length >= 3,
+    'Entregável 1: Compara com pelo menos 3 municípios similares do mesmo estado/porte'
+  );
+
+  assert(
+    typeof ativo.despesaPessoalPct === 'number' && typeof benchRes.grupoComparativo.mediaDespesaPessoalPct === 'number',
+    'Entregável 2: % da RCL com pessoal calculado para o ativo e média do grupo similar'
+  );
+
+  assert(
+    typeof ativo.arrecadacaoPropriaPct === 'number' && ativo.arrecadacaoPropriaPct > 0,
+    'Entregável 2: % de receita própria (IPTU+ISS+ITBI) vs transferências calculado'
+  );
+
+  assert(
+    typeof ativo.captacaoPerCapita === 'number' && ativo.captacaoPerCapita > 0,
+    'Entregável 2: Captação de recursos per capita (R$/hab) apurada'
+  );
+
+  assert(
+    typeof ativo.gastoSaudePct === 'number' && typeof ativo.gastoEducacaoPct === 'number' && typeof ativo.gastoObrasPct === 'number',
+    'Entregável 2: Despesas por função (% do orçamento em Saúde, Educação e Obras) calculadas'
+  );
+
+  assert(
+    typeof benchRes.grupoComparativo.resumoComparativo === 'string' &&
+    benchRes.grupoComparativo.resumoComparativo.includes('gasta') &&
+    benchRes.grupoComparativo.resumoComparativo.includes('da RCL com pessoal'),
+    'Entregável 3: Frase executiva comparativa ("X gasta Y% da RCL com pessoal; similares: média Z%")'
+  );
+
+  assert(
+    typeof ativo.autonomiaRankingPosicao === 'number' &&
+    ativo.autonomiaRankingPosicao >= 1 &&
+    ativo.autonomiaRankingPosicao <= benchRes.ranking.length,
+    'Entregável 4: Ranking amigável de autonomia fiscal apurado'
+  );
+
+  // 6. Validação de Destaques e Oportunidades
   assert(
     Array.isArray(benchRes.destaques.pontosFortes) && benchRes.destaques.pontosFortes.length > 0,
     'Pontos fortes e vantagens competitivas do município identificadas'
@@ -63,7 +103,10 @@ async function runBenchmarkTests() {
     'Oportunidades de melhoria e alertas de gestão fiscal gerados'
   );
 
-  console.log(`\nResultado da Fase 9: ${passCount}/${totalCount} testes de Benchmark Municipal passaram com sucesso.`);
+  // 7. Validação de Proveniência Oficial
+  assert(!!benchRes.dataSource && benchRes.dataSource.origin === 'OFICIAL', 'Metadado dataSource OFICIAL anexado');
+
+  console.log(`\nResultado da Fase 10 (Benchmark Municipal): ${passCount}/${totalCount} testes passaram com 100% de sucesso.`);
 }
 
 runBenchmarkTests().catch((err) => {

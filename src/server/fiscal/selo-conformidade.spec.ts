@@ -54,19 +54,38 @@ async function runSeloConformidadeTests() {
     assert(!!crit.fundamentoLegal, `Critério '${crit.nome}' contém fundamentação legal`);
   }
 
-  // 4. Validação do Código de Autenticidade Digital
+  // 4. Validação dos Entregáveis da Fase 11 (Selo de Conformidade Fiscal)
+  assert(
+    ['A', 'B', 'C'].includes(seloRes.notaConceito),
+    'Entregável 1 e 2: Nota Conceito A/B/C atribuída com base no Score de Saúde Fiscal'
+  );
+
+  assert(
+    Array.isArray(seloRes.historicoScore) && seloRes.historicoScore.length === 3,
+    'Entregável 3: Histórico de evolução temporal do score (2024, 2025, 2026) presente'
+  );
+
+  assert(
+    seloRes.historicoScore[2].ano === 2026 && seloRes.historicoScore[2].score === seloRes.pontuacaoTotal,
+    'Entregável 3: Histórico do score reflete o exercício corrente com coerência'
+  );
+
+  // 5. Validação do Código de Autenticidade Digital
   assert(
     !!seloRes.codigoAutenticidade && seloRes.codigoAutenticidade.startsWith('CERT-'),
     'Código de autenticidade digital gerado com formato de validação'
   );
 
-  // 5. Validação do Widget de Incorporação para Portal da Transparência
+  // 6. Validação do Widget de Incorporação para Portal da Transparência
   assert(
     !!seloRes.embedWidgetHtml && seloRes.embedWidgetHtml.includes('<div') && seloRes.embedWidgetHtml.includes('SELO'),
     'Código HTML do widget para incorporação no Portal da Transparência gerado'
   );
 
-  console.log(`\nResultado da Fase 10: ${passCount}/${totalCount} testes do Selo de Conformidade passaram com sucesso.`);
+  // 7. Validação de Proveniência Oficial
+  assert(!!seloRes.dataSource && seloRes.dataSource.origin === 'OFICIAL', 'Metadado dataSource OFICIAL anexado');
+
+  console.log(`\nResultado da Fase 11 (Selo de Conformidade Fiscal): ${passCount}/${totalCount} testes passaram com 100% de sucesso.`);
 }
 
 runSeloConformidadeTests().catch((err) => {

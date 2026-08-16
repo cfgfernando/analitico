@@ -21,6 +21,7 @@ import {
 
 const PRESENTATION_TABS = [
   { id: 'painel_prefeito', num: 'PREF', title: 'Painel do Prefeito', badge: 'Gabinete Executivo' },
+  { id: 'simulador_loa', num: 'E SE', title: 'Simulador LOA ("E Se")', badge: 'Cenários & Decisão' },
   { id: 'benchmark', num: '07', title: 'Benchmark Regional', badge: 'Comparativo' },
   { id: 'selo', num: '08', title: 'Selo de Conformidade Fiscal', badge: 'Oficial' },
   { id: 'alertas_prazos', num: '09', title: 'Alertas & Prazos Críticos', badge: 'Radar Riscos' },
@@ -247,6 +248,7 @@ function MainDashboardApp() {
           isDarkMode={isDarkMode}
           onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
           onToggleSidebar={handleToggleSidebar}
+          onSelectTenant={handleTenantSelect}
         />
 
         {/* Presentation Mode Slide Bar */}

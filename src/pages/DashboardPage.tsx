@@ -15,6 +15,7 @@ import { PainelDoPrefeito } from '../components/PainelDoPrefeito';
 import { BenchmarkMunicipal } from '../components/BenchmarkMunicipal';
 import { SeloConformidade } from '../components/SeloConformidade';
 import { AlertasPrazosCriticos } from '../components/AlertasPrazosCriticos';
+import { SimuladorCenariosLoa } from '../components/SimuladorCenariosLoa';
 import {
   FiscalKPIs,
   RevenueSource,
@@ -147,6 +148,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       <div>
         {activeTab === 'painel_prefeito' && (
           <PainelDoPrefeito
+            activeTenant={activeTenant}
             ano={ano}
             onNavigateToTab={onNavigateToTab}
           />
@@ -235,15 +237,25 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         )}
 
         {activeTab === 'benchmark' && (
-          <BenchmarkMunicipal cidade={activeTenant.cidade} uf={activeTenant.uf} />
+          <BenchmarkMunicipal activeTenant={activeTenant} cidade={activeTenant.cidade} uf={activeTenant.uf} />
         )}
 
         {activeTab === 'selo' && (
-          <SeloConformidade cidade={activeTenant.cidade} uf={activeTenant.uf} ano={ano} />
+          <SeloConformidade activeTenant={activeTenant} cidade={activeTenant.cidade} uf={activeTenant.uf} ano={ano} />
         )}
 
         {activeTab === 'alertas_prazos' && (
-          <AlertasPrazosCriticos cidade={activeTenant.cidade} uf={activeTenant.uf} />
+          <AlertasPrazosCriticos activeTenant={activeTenant} cidade={activeTenant.cidade} uf={activeTenant.uf} />
+        )}
+
+        {activeTab === 'simulador_loa' && (
+          <SimuladorCenariosLoa
+            cidade={activeTenant.cidade}
+            uf={activeTenant.uf}
+            orcamentoBase={summary?.receitaTotal?.orcada || 1910000000}
+            rclBase={summary?.rcl?.valor || 1354000000}
+            despesaPessoalBase={summary?.despesaPessoal?.valor || 679029000}
+          />
         )}
 
         {activeTab === 'siconfi' && (

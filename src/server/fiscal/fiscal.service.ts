@@ -13,10 +13,16 @@ import {
   getPainelPrefeito,
   getMunicipalRadarCaptacao,
   simularContrapartida,
+  getMunicipalSimuladorCenarios,
+  ParametrosSimulacaoLoa,
   getMunicipalSimuladorReforma,
   getMunicipalBenchmark,
   getMunicipalSeloConformidade,
   getMunicipalAlertasProativos,
+  getParametrosAlertas,
+  salvarParametrosAlertas,
+  getDecisoesGabinete,
+  despacharDecisaoGabinete,
 } from '../municipalFiscalEngine';
 
 @Injectable()
@@ -65,6 +71,10 @@ export class FiscalService {
     return simularContrapartida(tenant, valorGlobal, percentualContrapartida);
   }
 
+  getSimuladorCenarios(tenant: TenantInfo, params?: ParametrosSimulacaoLoa) {
+    return getMunicipalSimuladorCenarios(tenant, params);
+  }
+
   getSimuladorReforma(tenant: TenantInfo, variacaoArrecadacaoPropriaPct: number = 0) {
     return getMunicipalSimuladorReforma(tenant, variacaoArrecadacaoPropriaPct);
   }
@@ -79,5 +89,21 @@ export class FiscalService {
 
   getAlertasProativos(tenant: TenantInfo) {
     return getMunicipalAlertasProativos(tenant);
+  }
+
+  getParametrosAlertas(tenant: TenantInfo) {
+    return getParametrosAlertas(tenant);
+  }
+
+  salvarParametrosAlertas(tenant: TenantInfo, novasRegras: any[]) {
+    return salvarParametrosAlertas(tenant, novasRegras);
+  }
+
+  getDecisoesGabinete(tenant: TenantInfo) {
+    return getDecisoesGabinete(tenant);
+  }
+
+  despacharDecisaoGabinete(tenant: TenantInfo, decisaoId: string, acao: any, dadosDespacho?: any) {
+    return despacharDecisaoGabinete(tenant, decisaoId, acao, dadosDespacho);
   }
 }
