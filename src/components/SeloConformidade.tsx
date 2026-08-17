@@ -203,29 +203,29 @@ export const SeloConformidade: React.FC<SeloConformidadeProps> = ({
   };
 
   return (
-    <div className="space-y-6 print:m-0 print:p-0">
+    <div className="space-y-6 print:m-0 print:p-0 font-sans">
       {/* Top Banner: Selo de Conformidade */}
-      <div className="bg-slate-900 border border-slate-800 rounded-sm p-5 text-white shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4 font-sans">
+        <div className="space-y-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
-              <Award className="w-3 h-3 text-emerald-400" />
+            <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold uppercase tracking-wider bg-[#0a1128] text-white border border-navy-700 flex items-center gap-1">
+              <Award className="w-3.5 h-3.5 text-emerald-400" />
               CERTIFICADO OFICIAL • SAÚDE FISCAL & PRESTÍGIO POLÍTICO
             </span>
             <DataSourceBadge dataSource={payload.dataSource} size="xs" showDetails />
           </div>
-          <h2 className="text-xl font-bold uppercase tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-slate-950 dark:text-white font-sans">
             SELO DE CONFORMIDADE FISCAL — {cidade} / {uf}
           </h2>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium font-sans">
             Auditoria automatizada dos 6 pilares da LRF, pisos constitucionais e adimplência no CAUC / SICONFI.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 print:hidden">
+        <div className="flex flex-wrap items-center gap-2 shrink-0 print:hidden font-sans">
           <button
             onClick={handleDownloadBadge}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-bold rounded-xs transition flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 bg-slate-100 dark:bg-navy-900 hover:bg-slate-200 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xs transition flex items-center gap-1.5 border border-slate-300 dark:border-navy-700 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Baixar Selo (PNG/SVG)</span>
@@ -233,7 +233,7 @@ export const SeloConformidade: React.FC<SeloConformidadeProps> = ({
 
           <button
             onClick={handlePrint}
-            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold rounded-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+            className="px-3.5 py-1.5 bg-[#0a1128] hover:bg-[#1a2a52] text-white text-xs font-bold rounded-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Imprimir Certificado</span>
@@ -242,7 +242,7 @@ export const SeloConformidade: React.FC<SeloConformidadeProps> = ({
       </div>
 
       {/* Grid Principal: Selo Visual & Histórico à Esquerda | Checklist à Direita */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 font-sans">
         {/* =========================================================================
             COLUNA 1 (5 COLS): SELO VISUAL, NOTA E HISTÓRICO TEMPORAL
         ========================================================================= */}
@@ -250,43 +250,43 @@ export const SeloConformidade: React.FC<SeloConformidadeProps> = ({
           {/* Card do Selo Visual de Prestígio */}
           <div
             ref={badgeRef}
-            className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border-2 border-emerald-500/50 rounded-sm p-6 text-center text-white shadow-xl relative overflow-hidden flex flex-col items-center justify-between min-h-[340px]"
+            className="bg-white dark:bg-navy-950 border-2 border-emerald-500/40 rounded-sm p-6 text-center text-slate-900 dark:text-white shadow-sm relative overflow-hidden flex flex-col items-center justify-between min-h-[340px] font-sans"
           >
-            <div className="w-full flex items-center justify-between border-b border-slate-800 pb-3">
-              <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest font-bold">
+            <div className="w-full flex items-center justify-between border-b border-slate-200 dark:border-navy-800 pb-3">
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
                 AUDITORIA LRF / CF-88
               </span>
-              <span className="text-[10px] font-mono text-slate-400">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
                 EXERCÍCIO {ano}
               </span>
             </div>
 
             {/* Medalha / Badge Circular */}
             <div className="my-4 relative">
-              <div className="w-28 h-28 rounded-full border-4 border-emerald-400/40 bg-emerald-500/10 flex flex-col items-center justify-center shadow-lg relative">
-                <span className="text-3xl font-mono font-bold text-emerald-400 tracking-tighter">
+              <div className="w-28 h-28 rounded-full border-4 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 flex flex-col items-center justify-center shadow-md relative">
+                <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight">
                   NOTA {payload.notaConceito || 'A'}
                 </span>
-                <span className="text-xs font-mono font-bold text-slate-200">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   {payload.pontuacaoTotal}/100 PTS
                 </span>
               </div>
-              <Sparkles className="w-5 h-5 text-amber-400 absolute -top-1 -right-1 animate-pulse" />
+              <Sparkles className="w-5 h-5 text-amber-500 absolute -top-1 -right-1 animate-pulse" />
             </div>
 
             <div>
-              <span className="px-3 py-1 bg-emerald-500 text-slate-950 font-mono font-bold text-xs uppercase tracking-wider rounded-xs inline-block mb-1 shadow-sm">
+              <span className="px-3 py-1 bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-xs inline-block mb-1 shadow-xs">
                 SELO {payload.nivelSelo} DE GESTÃO FISCAL
               </span>
-              <h3 className="text-base font-bold text-white uppercase mt-1">
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white uppercase mt-1">
                 PREFEITURA DE {cidade}
               </h3>
-              <span className="text-[11px] font-mono text-slate-400 block mt-0.5">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 block mt-0.5">
                 Código: {payload.codigoAutenticidade}
               </span>
             </div>
 
-            <div className="w-full pt-3 mt-3 border-t border-slate-800 text-[10px] font-mono text-emerald-400/90 flex justify-between items-center">
+            <div className="w-full pt-3 mt-3 border-t border-slate-200 dark:border-navy-800 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 flex justify-between items-center">
               <span>✓ 100% REGULAR NO CAUC</span>
               <span>✓ CONTAS HOMOLOGADAS</span>
             </div>

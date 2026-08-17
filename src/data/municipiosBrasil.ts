@@ -725,28 +725,29 @@ function buildDiscoveredResponse(base: MunicipioBase): AutoDiscoveredMunicipalit
 
 function generateDynamicMunicipalityProfile(rawQuery: string, digitsOnly: string): AutoDiscoveredMunicipality {
   // Clean clean name
-  let cityName = rawQuery
+  let cityName = (rawQuery || '')
     .replace(/^(prefeitura municipal de|prefeitura de|municipio de|governo de)\s+/i, '')
-    .trim();
+    .trim() || 'Município';
   
   // Capitalize words
   cityName = cityName
     .split(' ')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ');
+    .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : '')
+    .filter(Boolean)
+    .join(' ') || 'Município';
 
   // Guess UF if specified like "Campinas - SP" or default to PR
   let uf = 'PR';
-  const ufMatches = rawQuery.match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/i);
+  const ufMatches = (rawQuery || '').match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/i);
   if (ufMatches) {
     uf = ufMatches[1].toUpperCase();
-    cityName = cityName.replace(new RegExp(`[-/\\s]*${uf}\\b`, 'i'), '').trim();
+    cityName = cityName.replace(new RegExp(`[-/\\s]*${uf}\\b`, 'i'), '').trim() || 'Município';
   }
 
   // Generate deterministic IBGE & CNPJ if not provided
-  const hash = Math.abs(cityName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 1000));
-  const codigoIbge = digitsOnly.length === 7 ? digitsOnly : `41${String(10000 + (hash % 89999))}`;
-  const cnpj = digitsOnly.length === 14 
+  const hash = Math.abs((cityName || 'Municipio').split('').reduce((acc, char) => acc + char.charCodeAt(0), 1000));
+  const codigoIbge = (digitsOnly && digitsOnly.length === 7) ? digitsOnly : `41${String(10000 + (hash % 89999))}`;
+  const cnpj = (digitsOnly && digitsOnly.length === 14)
     ? `${digitsOnly.substring(0, 2)}.${digitsOnly.substring(2, 5)}.${digitsOnly.substring(5, 8)}/${digitsOnly.substring(8, 12)}-${digitsOnly.substring(12, 14)}`
     : `76.${String(100 + (hash % 899))}.${String(100 + ((hash * 3) % 899))}/0001-${String(10 + (hash % 89))}`;
 

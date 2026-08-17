@@ -43,7 +43,7 @@ export function isEmendaRecente(dataProcessamento?: string, dias: number = 7): b
 }
 
 export function formatDataBR(dataStr?: string): string {
-  if (!dataStr) return '-';
+  if (!dataStr || typeof dataStr !== 'string') return '-';
   const parts = dataStr.split('-');
   if (parts.length === 3) {
     return `${parts[2]}/${parts[1]}/${parts[0]}`;

@@ -118,9 +118,10 @@ export const Module3Despesas: React.FC<Module3DespesasProps> = ({
   if (activeMode === 'anual' && comparativeData) {
     barChartFuncoes = porFuncao.map(f => {
       const comp = funcCompMap.get(f.id);
+      const name = f.funcao && f.funcao.includes(' - ') ? f.funcao.split(' - ')[1] : (f.funcao || 'Outras');
       return {
-        name: f.funcao.split(' - ')[1] || f.funcao,
-        fullName: f.funcao,
+        name,
+        fullName: f.funcao || name,
         [`${comparativeData.anoAnterior}`]: comp ? +(comp.anterior / 1_000_000).toFixed(1) : 0,
         [`${comparativeData.anoAtual}`]: +(f.liquidado / 1_000_000).toFixed(1),
       };
@@ -129,9 +130,10 @@ export const Module3Despesas: React.FC<Module3DespesasProps> = ({
     barChartFuncoes = porFuncao.map(f => {
       const triAtualVal = +((f.liquidado * (3 / 8)) / 1_000_000).toFixed(2);
       const triAnteriorVal = +((triAtualVal / quarterlyRatio) / 1_000_000).toFixed(2);
+      const name = f.funcao && f.funcao.includes(' - ') ? f.funcao.split(' - ')[1] : (f.funcao || 'Outras');
       return {
-        name: f.funcao.split(' - ')[1] || f.funcao,
-        fullName: f.funcao,
+        name,
+        fullName: f.funcao || name,
         [`${quarterlyComparativeData.trimestreNome}/${quarterlyComparativeData.anoAnterior}`]: triAnteriorVal,
         [`${quarterlyComparativeData.trimestreNome}/${quarterlyComparativeData.ano}`]: triAtualVal,
       };
@@ -140,28 +142,32 @@ export const Module3Despesas: React.FC<Module3DespesasProps> = ({
     barChartFuncoes = porFuncao.map(f => {
       const mesAtualVal = +((f.liquidado / 8) / 1_000_000).toFixed(2);
       const mesAnteriorVal = +((f.liquidado / 8 / monthlyRatio) / 1_000_000).toFixed(2);
+      const name = f.funcao && f.funcao.includes(' - ') ? f.funcao.split(' - ')[1] : (f.funcao || 'Outras');
       return {
-        name: f.funcao.split(' - ')[1] || f.funcao,
-        fullName: f.funcao,
+        name,
+        fullName: f.funcao || name,
         [`${monthlyComparativeData.mesAnterior}`]: mesAnteriorVal,
         [`${monthlyComparativeData.mesAtual}`]: mesAtualVal,
       };
     });
   } else {
-    barChartFuncoes = porFuncao.map(f => ({
-      name: f.funcao.split(' - ')[1] || f.funcao,
-      fullName: f.funcao,
-      Orçado: +(f.orcado / 1_000_000).toFixed(1),
-      Liquidado: +(f.liquidado / 1_000_000).toFixed(1),
-      Pago: +(f.pago / 1_000_000).toFixed(1),
-    }));
+    barChartFuncoes = porFuncao.map(f => {
+      const name = f.funcao && f.funcao.includes(' - ') ? f.funcao.split(' - ')[1] : (f.funcao || 'Outras');
+      return {
+        name,
+        fullName: f.funcao || name,
+        Orçado: +(f.orcado / 1_000_000).toFixed(1),
+        Liquidado: +(f.liquidado / 1_000_000).toFixed(1),
+        Pago: +(f.pago / 1_000_000).toFixed(1),
+      };
+    });
   }
 
   // Pie chart by nature
   const pieChartNatureza = porNatureza.map(n => ({
-    name: n.categoria.split('.')[1]?.trim() || n.categoria,
+    name: n.categoria && n.categoria.includes('.') ? n.categoria.split('.')[1]?.trim() || n.categoria : (n.categoria || 'Outras'),
     value: +(n.liquidado / 1_000_000).toFixed(1),
-    percentual: n.percentualTotal,
+    percentual: n.percentualTotal || 0,
   }));
 
   const handleExportCSV = () => {

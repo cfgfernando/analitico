@@ -255,66 +255,62 @@ export const AlertasPrazosCriticos: React.FC<AlertasPrazosCriticosProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Banner: Alertas Proativos & Proteção da Folha da Educação */}
-      <div className="bg-slate-900 border border-slate-800 rounded-sm p-5 text-white shadow-md space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4 font-sans">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold uppercase tracking-wider bg-[#0a1128] text-white border border-navy-700 flex items-center gap-1">
+              <BellRing className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+              RADAR DE PRAZOS CRÍTICOS • FUNDEB, SIOPE & MSC
+            </span>
+            <DataSourceBadge dataSource={payload.dataSource} size="xs" showDetails />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-slate-950 dark:text-white font-sans">
+            SISTEMA PROATIVO DE ALERTAS FISCAIS — {cidade} / {uf}
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium font-sans">
+            Proteção contra desabilitação do VAAT (10,5% do FUNDEB), vencimento de CNDs do CAUC e bloqueios na STN.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-4 shrink-0 font-sans">
+          <div className="text-right">
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Alertas Críticos</span>
+            <span className="inline-flex items-center gap-1 text-sm font-bold text-rose-600 dark:text-rose-400 tabular-nums">
+              <AlertTriangle className="w-4 h-4" /> {payload.totalCriticos} Críticos
+            </span>
+          </div>
+          <div className="text-right border-l border-slate-200 dark:border-navy-800 pl-4">
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">Habilitação VAAT</span>
+            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <ShieldCheck className="w-4 h-4" /> Habilitado
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/80 rounded-sm p-4 text-slate-900 dark:text-white shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 font-sans">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-sm bg-rose-600 text-white flex items-center justify-center shrink-0 font-extrabold text-base shadow-xs animate-pulse">
+            5d
+          </div>
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1">
-                <BellRing className="w-3 h-3 text-rose-400 animate-pulse" />
-                RADAR DE PRAZOS CRÍTICOS • FUNDEB, SIOPE & MSC
-              </span>
-              <DataSourceBadge dataSource={payload.dataSource} size="xs" showDetails />
-            </div>
-            <h2 className="text-xl font-bold uppercase tracking-tight">
-              SISTEMA PROATIVO DE ALERTAS FISCAIS — {cidade} / {uf}
-            </h2>
-            <p className="text-xs text-slate-300">
-              Proteção contra desabilitação do VAAT (10,5% do FUNDEB), vencimento de CNDs do CAUC e bloqueios na STN.
+            <strong className="text-xs font-bold text-rose-700 dark:text-rose-300 uppercase tracking-wider block">
+              🚨 ALERTA CRÍTICO: ENVIO DA MSC VENCE EM 5 DIAS
+            </strong>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+              {mapaRisco.alertaExecutivo}
             </p>
           </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="text-right">
-              <span className="text-[10px] font-mono text-slate-400 block uppercase">Alertas Críticos</span>
-              <span className="inline-flex items-center gap-1 text-sm font-mono font-bold text-rose-400">
-                <AlertTriangle className="w-4 h-4" /> {payload.totalCriticos} Críticos
-              </span>
-            </div>
-            <div className="text-right border-l border-slate-700 pl-3">
-              <span className="text-[10px] font-mono text-slate-400 block uppercase">Habilitação VAAT</span>
-              <span className="text-sm font-mono font-bold text-emerald-400 flex items-center gap-1">
-                <ShieldCheck className="w-4 h-4" /> Habilitado
-              </span>
-            </div>
-          </div>
         </div>
-
-        {/* Alerta Executivo de Janela Crítica FUNDEB (MSC em 5 Dias) */}
-        <div className="bg-rose-950/60 border border-rose-500/50 rounded-sm p-4 text-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-sm bg-rose-600 text-white flex items-center justify-center shrink-0 font-mono font-bold text-lg animate-pulse">
-              5d
-            </div>
-            <div>
-              <strong className="text-xs font-mono font-bold text-rose-300 uppercase tracking-wider block">
-                🚨 ALERTA CRÍTICO: ENVIO DA MSC VENCE EM 5 DIAS
-              </strong>
-              <p className="text-xs text-slate-200 mt-0.5">
-                {mapaRisco.alertaExecutivo}
-              </p>
-            </div>
-          </div>
-          <a
-            href="https://siconfi.tesouro.gov.br"
-            target="_blank"
-            rel="noreferrer"
-            className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-mono font-bold text-xs uppercase tracking-wider rounded-xs shrink-0 transition flex items-center gap-1 cursor-pointer"
-          >
-            <span>Acessar Siconfi</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        </div>
+        <a
+          href="https://siconfi.tesouro.gov.br"
+          target="_blank"
+          rel="noreferrer"
+          className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs uppercase tracking-wider rounded-xs shrink-0 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+        >
+          <span>Acessar Siconfi</span>
+          <ExternalLink className="w-3.5 h-3.5" />
+        </a>
       </div>
 
       {/* Navegação em Abas do Módulo de Prazos */}

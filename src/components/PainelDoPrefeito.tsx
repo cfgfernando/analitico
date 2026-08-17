@@ -408,26 +408,26 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
   return (
     <div className={`space-y-6 ${isFullscreen ? 'p-8 bg-slate-950 min-h-screen' : ''}`}>
       {/* Header com Identificação do Município e Modo Apresentação */}
-      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-950 text-white rounded-sm p-4 sm:p-6 shadow-sm border border-navy-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="space-y-1.5">
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 font-sans">
+        <div className="space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] font-mono font-bold tracking-widest text-emerald-400 uppercase bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded-xs">
+            <span className="text-[11px] font-bold tracking-wider text-white uppercase bg-[#0a1128] dark:bg-navy-900 border border-navy-700 px-2 py-0.5 rounded-xs font-sans">
               VISÃO EXECUTIVA — GABINETE DO PREFEITO
             </span>
             <DataSourceBadge dataSource={panelData.dataSource} size="xs" showDetails />
           </div>
-          <h2 className="panel-title text-xl font-bold uppercase tracking-tight text-white">
+          <h2 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-slate-950 dark:text-white font-sans">
             PAINEL DO PREFEITO — {panelData.municipio.cidade} / {panelData.municipio.uf}
           </h2>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium font-sans">
             Inteligência fiscal multi-origem. <strong>Clique em qualquer card</strong> para abrir a auditoria analítica e detalhamento completo em tempo real.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 font-sans">
           <button
             onClick={toggleFullscreen}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-sm transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-wider bg-slate-100 dark:bg-navy-900 hover:bg-slate-200 dark:hover:bg-navy-800 border border-slate-300 dark:border-navy-700 text-slate-700 dark:text-slate-200 rounded-sm transition cursor-pointer"
             title="Alternar Modo Apresentação em Tela Cheia"
           >
             {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -436,7 +436,7 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
 
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-bold uppercase tracking-wider bg-emerald-600 hover:bg-emerald-500 text-white rounded-sm transition cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider bg-[#0a1128] hover:bg-[#1a2a52] text-white rounded-sm transition cursor-pointer shadow-xs"
             title="Imprimir Relatório Executivo do Prefeito"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -446,19 +446,19 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
       </div>
 
       {/* Barra de 10 Fontes Governamentais Conectadas */}
-      <div className="bg-slate-100 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-sm px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-mono font-bold">
-          <Layers className="w-4 h-4 text-emerald-500" />
+      <div className="bg-slate-50 dark:bg-navy-900/60 border border-slate-200/90 dark:border-navy-800/80 rounded-sm px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs font-sans">
+        <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-bold text-xs">
+          <Layers className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span>FONTES GOVERNAMENTAIS HOMOLOGADAS (10 CONECTORES OFICIAIS):</span>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           {(panelData.fontesIntegradas || []).map((fonte) => (
             <span
               key={fonte.nome}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
               title={`${fonte.nome} — ${fonte.orgao}`}
             >
-              <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" />
+              <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
               <span>{fonte.nome}</span>
             </span>
           ))}
@@ -466,24 +466,22 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
       </div>
 
       {/* CENTRAL DE ALERTAS CRÍTICOS & GESTÃO DE RISCOS DO PREFEITO */}
-      <div className="bg-gradient-to-r from-rose-950/40 via-amber-950/30 to-slate-900 border border-rose-500/30 rounded-sm p-4 text-white shadow-md space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rose-500/20 pb-2">
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm overflow-hidden font-sans">
+        <div className="bg-[#0a1128] text-white px-3.5 py-2 text-xs font-bold font-sans tracking-wide uppercase flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-rose-400 animate-pulse" />
-            <h3 className="font-bold text-xs uppercase tracking-wider text-rose-200">
-              RADAR DE ALERTAS CRÍTICOS & RISCOS FISCAIS / CONTRATUAIS (PAUTA IMEDIATA)
-            </h3>
+            <ShieldAlert className="w-4 h-4 text-rose-400 animate-pulse" />
+            <span>RADAR DE ALERTAS CRÍTICOS & RISCOS FISCAIS / CONTRATUAIS (PAUTA IMEDIATA)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-xs text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+            <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold bg-rose-600 text-white shadow-xs">
               2 ALERTAS CRÍTICOS
             </span>
-            <span className="px-2 py-0.5 rounded-xs text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+            <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold bg-amber-500 text-slate-900 shadow-xs">
               3 EM ATENÇÃO
             </span>
             <button
               onClick={() => setActiveModal('PARAMETRIZACAO_ALERTAS')}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-xs text-[10px] font-mono font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-400/40 transition cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-xs text-[10px] font-bold bg-[#1a2a52] hover:bg-[#24376b] text-amber-300 border border-navy-700 transition cursor-pointer"
               title="Configurar gatilhos, prazos de leis e boas práticas de controle"
             >
               <Sliders className="w-3 h-3" />
@@ -492,27 +490,27 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+        <div className="p-3.5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
           {/* Alerta 1: PNCP SAMU */}
           <div
             onClick={() => setActiveModal('PNCP_CONTRATOS')}
-            className="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xs p-2.5 cursor-pointer transition flex flex-col justify-between"
+            className="bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100/70 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-800/80 rounded-sm p-3 cursor-pointer transition flex flex-col justify-between shadow-xs"
           >
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-mono font-bold bg-rose-600 text-white">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="px-1.5 py-0.5 rounded-xs text-[9px] font-bold bg-rose-600 text-white">
                   CRÍTICO • 18 DIAS
                 </span>
-                <span className="text-[10px] font-mono text-purple-300">PNCP / SAÚDE</span>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">PNCP / SAÚDE</span>
               </div>
-              <strong className="text-rose-200 block text-[11px] leading-tight">
+              <strong className="text-slate-950 dark:text-white block text-xs leading-tight font-bold">
                 Vencimento do Contrato das Ambulâncias do SAMU
               </strong>
-              <p className="text-[10px] text-slate-300 mt-1">
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">
                 Contrato nº 015/2025 ({formatCompactCurrency(Math.round((panelData.pncp?.valorContratosVencendo60Dias || 2450000) * 0.36))}) encerra vigência. Risco de interrupção no resgate de urgência em {panelData.municipio.cidade}.
               </p>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400 font-semibold mt-2 underline">
+            <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold mt-2.5">
               👉 Lavrar Aditivo de Prorrogação
             </span>
           </div>
@@ -520,23 +518,23 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
           {/* Alerta 2: CND Federal / CAUC */}
           <div
             onClick={() => setActiveModal('CAPTACAO_CAUC')}
-            className="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xs p-2.5 cursor-pointer transition flex flex-col justify-between"
+            className="bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100/70 dark:hover:bg-rose-950/50 border border-rose-200 dark:border-rose-800/80 rounded-sm p-3 cursor-pointer transition flex flex-col justify-between shadow-xs"
           >
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-mono font-bold bg-rose-600 text-white">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="px-1.5 py-0.5 rounded-xs text-[9px] font-bold bg-rose-600 text-white">
                   CRÍTICO • 18 DIAS
                 </span>
-                <span className="text-[10px] font-mono text-blue-300">STN / CAUC</span>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">STN / CAUC</span>
               </div>
-              <strong className="text-rose-200 block text-[11px] leading-tight">
+              <strong className="text-slate-950 dark:text-white block text-xs leading-tight font-bold">
                 Renovação da Certidão Negativa Federal (CND / PGFN)
               </strong>
-              <p className="text-[10px] text-slate-300 mt-1">
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">
                 Validade expira em 02/09. Risco de inadimplência no CAUC e trava de repasses para {panelData.municipio.cidade}.
               </p>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400 font-semibold mt-2 underline">
+            <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold mt-2.5">
               👉 Emitir Certidão no e-CAC
             </span>
           </div>
@@ -544,23 +542,23 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
           {/* Alerta 3: IPM IPARDES */}
           <div
             onClick={() => setActiveModal('IPARDES_PARANA')}
-            className="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xs p-2.5 cursor-pointer transition flex flex-col justify-between"
+            className="bg-amber-50/70 dark:bg-amber-950/30 hover:bg-amber-100/70 dark:hover:bg-amber-950/50 border border-amber-200 dark:border-amber-800/80 rounded-sm p-3 cursor-pointer transition flex flex-col justify-between shadow-xs"
           >
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-mono font-bold bg-amber-500 text-slate-900">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="px-1.5 py-0.5 rounded-xs text-[9px] font-bold bg-amber-500 text-slate-900">
                   ATENÇÃO • 22 DIAS
                 </span>
-                <span className="text-[10px] font-mono text-indigo-300">IPARDES / ICMS</span>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">IPARDES / ICMS</span>
               </div>
-              <strong className="text-amber-200 block text-[11px] leading-tight">
+              <strong className="text-slate-950 dark:text-white block text-xs leading-tight font-bold">
                 Defesa do Índice de Participação dos Municípios (IPM)
               </strong>
-              <p className="text-[10px] text-slate-300 mt-1">
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">
                 Prazo recursal contra cota do ICMS. Em jogo: {formatCompactCurrency(panelData.ipardes?.repassesIcmsEstimados || 23000000)} no exercício {ano + 1}.
               </p>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400 font-semibold mt-2 underline">
+            <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold mt-2.5">
               👉 Protocolar Impugnação na SEFAZ
             </span>
           </div>
@@ -568,23 +566,23 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
           {/* Alerta 4: PNCP Limpeza Urbana */}
           <div
             onClick={() => setActiveModal('PNCP_CONTRATOS')}
-            className="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xs p-2.5 cursor-pointer transition flex flex-col justify-between"
+            className="bg-amber-50/70 dark:bg-amber-950/30 hover:bg-amber-100/70 dark:hover:bg-amber-950/50 border border-amber-200 dark:border-amber-800/80 rounded-sm p-3 cursor-pointer transition flex flex-col justify-between shadow-xs"
           >
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="px-1.5 py-0.2 rounded-xs text-[9px] font-mono font-bold bg-amber-500 text-slate-900">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="px-1.5 py-0.5 rounded-xs text-[9px] font-bold bg-amber-500 text-slate-900">
                   ATENÇÃO • 42 DIAS
                 </span>
-                <span className="text-[10px] font-mono text-purple-300">PNCP / MEIO AMB</span>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">PNCP / MEIO AMB</span>
               </div>
-              <strong className="text-amber-200 block text-[11px] leading-tight">
+              <strong className="text-slate-950 dark:text-white block text-xs leading-tight font-bold">
                 Vencimento do Contrato de Coleta de Lixo Urbano
               </strong>
-              <p className="text-[10px] text-slate-300 mt-1">
-                Contrato nº 042/2025 ({formatCompactCurrency(panelData.pncp?.valorContratosVencendo60Dias || 2450000)}). Evitar descontinuidade e emergência sanitária em {panelData.municipio.cidade}.
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">
+                Contrato nº 042/2025 ({formatCompactCurrency(panelData.pncp?.valorContratosVencendo60Dias || 42000000)}). Evitar descontinuidade e emergência sanitária em {panelData.municipio.cidade}.
               </p>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400 font-semibold mt-2 underline">
+            <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold mt-2.5">
               👉 Formalizar Renovação ou Pregão
             </span>
           </div>

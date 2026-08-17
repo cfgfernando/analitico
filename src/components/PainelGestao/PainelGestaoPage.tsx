@@ -113,22 +113,22 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
           ============================================================ */}
       <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm p-4 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white uppercase font-sans">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-950 dark:text-white uppercase font-sans">
             PAINEL DE GESTÃO ORÇAMENTÁRIA E CONTRATUAL
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            Decisões inteligentes para uma cidade sustentável • {cidade} / {uf}
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium font-sans">
+            Decisões inteligentes para uma cidade sustentável
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex items-center gap-2.5 flex-wrap font-sans">
           {/* Toggle Visão: Prefeitura | Secretaria */}
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mr-1">
-            <span className="font-mono text-[11px] uppercase text-slate-500">VISÃO:</span>
+            <span className="text-[11px] uppercase text-slate-500 font-bold">VISÃO:</span>
             <div className="inline-flex bg-slate-100 dark:bg-navy-900 border border-slate-300 dark:border-navy-700 rounded-full p-0.5">
               <button
                 onClick={() => setEscopo('prefeitura')}
-                className={`px-3 py-1 text-xs font-semibold rounded-full transition cursor-pointer ${
+                className={`px-3.5 py-1 text-xs font-bold rounded-full transition cursor-pointer ${
                   escopo === 'prefeitura'
                     ? 'bg-[#0a1128] text-white shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
@@ -138,7 +138,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
               </button>
               <button
                 onClick={() => setEscopo('secretaria')}
-                className={`px-3 py-1 text-xs font-semibold rounded-full transition cursor-pointer ${
+                className={`px-3.5 py-1 text-xs font-bold rounded-full transition cursor-pointer ${
                   escopo === 'secretaria'
                     ? 'bg-[#0a1128] text-white shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
@@ -151,14 +151,14 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
 
           {/* Select Secretaria */}
           <div className="flex flex-col">
-            <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 font-bold mb-0.5">
+            <span className="text-[10px] uppercase text-slate-500 dark:text-slate-400 font-bold mb-0.5 font-sans">
               SECRETARIA:
             </span>
             <div className="relative">
               <select
                 value={secretariaSelecionada}
                 onChange={e => setSecretariaSelecionada(e.target.value)}
-                className="text-xs font-mono font-medium bg-white dark:bg-navy-900 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-slate-100 rounded-sm px-2.5 py-1.5 pr-7 appearance-none cursor-pointer focus:outline-none focus:border-navy-600 shadow-xs"
+                className="text-xs font-sans font-semibold bg-white dark:bg-navy-900 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-slate-100 rounded-sm px-3 py-1.5 pr-8 appearance-none cursor-pointer focus:outline-none focus:border-navy-600 shadow-xs"
               >
                 <option value="Administração">Administração</option>
                 <option value="Saúde">Saúde</option>
@@ -166,36 +166,36 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <option value="Obras">Obras e Serviços Públicos</option>
                 <option value="Urbanismo">Urbanismo</option>
               </select>
-              <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
           </div>
 
           {/* Select Exercício */}
           <div className="flex flex-col">
-            <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 font-bold mb-0.5">
+            <span className="text-[10px] uppercase text-slate-500 dark:text-slate-400 font-bold mb-0.5 font-sans">
               EXERCÍCIO:
             </span>
             <div className="relative">
               <select
                 value={ano}
                 onChange={e => setAno(Number(e.target.value))}
-                className="text-xs font-mono font-bold bg-white dark:bg-navy-900 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-slate-100 rounded-sm px-2.5 py-1.5 pr-7 appearance-none cursor-pointer focus:outline-none focus:border-navy-600 shadow-xs"
+                className="text-xs font-sans font-bold bg-white dark:bg-navy-900 border border-slate-300 dark:border-navy-700 text-slate-900 dark:text-slate-100 rounded-sm px-3 py-1.5 pr-8 appearance-none cursor-pointer focus:outline-none focus:border-navy-600 shadow-xs"
               >
                 <option value={2026}>2026</option>
                 <option value={2025}>2025</option>
                 <option value={2024}>2024</option>
               </select>
-              <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
           </div>
 
           {/* Atualizado em */}
           <div className="flex flex-col">
-            <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 font-bold mb-0.5">
+            <span className="text-[10px] uppercase text-slate-500 dark:text-slate-400 font-bold mb-0.5 font-sans">
               ATUALIZADO EM:
             </span>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-mono font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-navy-900 border border-slate-200 dark:border-navy-700 px-2.5 py-1.5 rounded-sm">
+              <span className="text-xs font-sans font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-navy-900 border border-slate-200 dark:border-navy-700 px-3 py-1.5 rounded-sm">
                 31/07/2026 08:30
               </span>
               <button
@@ -213,7 +213,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
       {/* ============================================================
           2. BLOCO 1 — SAÚDE FINANCEIRA
           ============================================================ */}
-      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm overflow-hidden font-sans">
         {/* Barra de Título do Bloco */}
         <div className="bg-[#0a1128] text-white px-3.5 py-2 text-xs font-bold font-sans tracking-wide uppercase flex items-center justify-between">
           <span>BLOCO 1 — SAÚDE FINANCEIRA</span>
@@ -221,17 +221,17 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
 
         <div className="p-4 space-y-4">
           {/* Fileira de 6 Cards de KPI com Círculos Coloridos */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 font-sans">
             {/* 1. Orçamento Total */}
             <div className="bg-slate-50/70 dark:bg-navy-900/60 border border-slate-200/80 dark:border-navy-800 p-3 rounded-sm flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-[#101a3a] text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs font-mono">
+              <div className="w-11 h-11 rounded-full bg-[#101a3a] text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs">
                 $
               </div>
               <div className="min-w-0">
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight block">
                   ORÇAMENTO TOTAL
                 </span>
-                <span className="font-mono font-extrabold text-base sm:text-lg text-slate-900 dark:text-white tracking-tight">
+                <span className="font-extrabold text-base sm:text-lg text-slate-950 dark:text-white tracking-tight tabular-nums block font-sans">
                   R$ 180,0 mi
                 </span>
               </div>
@@ -246,12 +246,10 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight block">
                   EMPENHADO
                 </span>
-                <div className="flex items-baseline gap-1.5 flex-wrap">
-                  <span className="font-mono font-extrabold text-base sm:text-lg text-slate-900 dark:text-white tracking-tight">
-                    R$ 126,0 mi
-                  </span>
-                </div>
-                <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-400">70%</span>
+                <span className="font-extrabold text-base sm:text-lg text-slate-950 dark:text-white tracking-tight tabular-nums block font-sans">
+                  R$ 126,0 mi
+                </span>
+                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">70%</span>
               </div>
             </div>
 
@@ -264,10 +262,10 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight block">
                   LIQUIDADO
                 </span>
-                <span className="font-mono font-extrabold text-base sm:text-lg text-slate-900 dark:text-white tracking-tight block">
+                <span className="font-extrabold text-base sm:text-lg text-slate-950 dark:text-white tracking-tight tabular-nums block font-sans">
                   R$ 91,8 mi
                 </span>
-                <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-400">51%</span>
+                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">51%</span>
               </div>
             </div>
 
@@ -280,10 +278,10 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight block">
                   SALDO ORÇAMENTÁRIO
                 </span>
-                <span className="font-mono font-extrabold text-base sm:text-lg text-slate-900 dark:text-white tracking-tight block">
+                <span className="font-extrabold text-base sm:text-lg text-slate-950 dark:text-white tracking-tight tabular-nums block font-sans">
                   R$ 54,0 mi
                 </span>
-                <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-400">30%</span>
+                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">30%</span>
               </div>
             </div>
 
@@ -296,7 +294,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight block">
                   CONTRATOS ATIVOS
                 </span>
-                <span className="font-mono font-extrabold text-xl sm:text-2xl text-slate-900 dark:text-white tracking-tight block mt-0.5">
+                <span className="font-extrabold text-xl sm:text-2xl text-slate-950 dark:text-white tracking-tight block mt-0.5 font-sans">
                   73
                 </span>
               </div>
@@ -311,20 +309,20 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight block">
                   VALOR CONTRATUAL DISPONÍVEL
                 </span>
-                <span className="font-mono font-extrabold text-base sm:text-lg text-slate-900 dark:text-white tracking-tight block">
+                <span className="font-extrabold text-base sm:text-lg text-slate-950 dark:text-white tracking-tight tabular-nums block font-sans">
                   R$ 42,6 mi
                 </span>
-                <span className="text-[11px] font-mono font-bold text-slate-600 dark:text-slate-400">23,7%</span>
+                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">23,7%</span>
               </div>
             </div>
           </div>
 
           {/* Barra Segmentada Tri-Color */}
-          <div className="space-y-1.5 pt-1">
-            <div className="text-xs font-bold font-mono text-slate-800 dark:text-slate-200">
+          <div className="space-y-1.5 pt-1 font-sans">
+            <div className="text-xs font-bold text-slate-900 dark:text-slate-200">
               ORÇAMENTO 2026 — R$ 180,0 mi
             </div>
-            <div className="w-full h-8 rounded-sm overflow-hidden flex font-mono text-[11px] font-bold text-white shadow-xs">
+            <div className="w-full h-8 rounded-sm overflow-hidden flex text-[11px] font-bold text-white shadow-xs">
               <div
                 style={{ width: '51%' }}
                 className="bg-[#10b981] flex items-center justify-center px-2 truncate transition-all duration-500"
@@ -354,7 +352,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
       {/* ============================================================
           3. LINHA DO MEIO — 3 BLOCOS (ONDE ESTAMOS GASTANDO / COMPORTAMENTO DOS GASTOS / REPRESENTATIVIDADE)
           ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 font-sans">
         {/* BLOCO 2 — ONDE ESTAMOS GASTANDO? (4 cols) */}
         <div className="lg:col-span-4 bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm flex flex-col justify-between overflow-hidden">
           <div>
@@ -367,7 +365,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
               </div>
 
               {/* Lista de Barras Horizontais */}
-              <div className="space-y-2 pt-1">
+              <div className="space-y-2 pt-1 font-sans">
                 {GASTOS_CATEGORIAS.map((item, i) => (
                   <div key={i} className="flex items-center justify-between gap-2 text-xs">
                     <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate w-36 sm:w-44">
@@ -380,7 +378,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                           style={{ width: `${item.pct}%` }}
                         />
                       </div>
-                      <span className="font-mono font-bold text-[11px] text-slate-900 dark:text-slate-100 shrink-0 w-18 text-right">
+                      <span className="font-bold text-[11px] text-slate-900 dark:text-slate-100 shrink-0 w-18 text-right tabular-nums">
                         {item.valor}
                       </span>
                     </div>
@@ -391,36 +389,36 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
           </div>
 
           {/* Mini Tabela Inferior: Total dos Contratos */}
-          <div className="p-3.5 border-t border-slate-200 dark:border-navy-800 bg-slate-50/70 dark:bg-navy-900/50">
-            <span className="text-[10px] font-bold uppercase font-mono text-slate-500 dark:text-slate-400 block mb-1.5">
+          <div className="p-3.5 border-t border-slate-200 dark:border-navy-800 bg-slate-50/70 dark:bg-navy-900/50 font-sans">
+            <span className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 block mb-1.5">
               TOTAL DOS CONTRATOS
             </span>
-            <div className="grid grid-cols-4 gap-1 text-center font-mono">
+            <div className="grid grid-cols-4 gap-1 text-center">
               <div className="bg-white dark:bg-navy-950 p-1.5 rounded border border-slate-200 dark:border-navy-800">
-                <span className="text-[9px] text-slate-400 block font-sans">Valor total</span>
-                <span className="text-[11px] font-bold text-slate-900 dark:text-white">R$ 126,0 mi</span>
+                <span className="text-[9px] text-slate-400 block font-medium">Valor total</span>
+                <span className="text-[11px] font-bold text-slate-900 dark:text-white tabular-nums">R$ 126,0 mi</span>
               </div>
               <div className="bg-white dark:bg-navy-950 p-1.5 rounded border border-slate-200 dark:border-navy-800">
-                <span className="text-[9px] text-slate-400 block font-sans">Liquidado</span>
-                <span className="text-[11px] font-bold text-emerald-600">R$ 68,7 mi</span>
-                <span className="text-[9px] text-slate-500 block">54,5%</span>
+                <span className="text-[9px] text-slate-400 block font-medium">Liquidado</span>
+                <span className="text-[11px] font-bold text-emerald-600 tabular-nums">R$ 68,7 mi</span>
+                <span className="text-[9px] text-slate-500 block font-medium">54,5%</span>
               </div>
               <div className="bg-white dark:bg-navy-950 p-1.5 rounded border border-slate-200 dark:border-navy-800">
-                <span className="text-[9px] text-slate-400 block font-sans">Empenhado</span>
-                <span className="text-[11px] font-bold text-amber-600">R$ 16,5 mi</span>
-                <span className="text-[9px] text-slate-500 block">13,1%</span>
+                <span className="text-[9px] text-slate-400 block font-medium">Empenhado</span>
+                <span className="text-[11px] font-bold text-amber-600 tabular-nums">R$ 16,5 mi</span>
+                <span className="text-[9px] text-slate-500 block font-medium">13,1%</span>
               </div>
               <div className="bg-white dark:bg-navy-950 p-1.5 rounded border border-slate-200 dark:border-navy-800">
-                <span className="text-[9px] text-slate-400 block font-sans">Disponível</span>
-                <span className="text-[11px] font-bold text-blue-600">R$ 40,8 mi</span>
-                <span className="text-[9px] text-slate-500 block">32,4%</span>
+                <span className="text-[9px] text-slate-400 block font-medium">Disponível</span>
+                <span className="text-[11px] font-bold text-blue-600 tabular-nums">R$ 40,8 mi</span>
+                <span className="text-[9px] text-slate-500 block font-medium">32,4%</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* BLOCO 3 — COMPORTAMENTO DOS GASTOS (4 cols) */}
-        <div className="lg:col-span-4 bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm flex flex-col justify-between overflow-hidden">
+        <div className="lg:col-span-4 bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm flex flex-col justify-between overflow-hidden font-sans">
           <div>
             <div className="bg-[#0a1128] text-white px-3.5 py-2 text-xs font-bold font-sans tracking-wide uppercase">
               BLOCO 3 — COMPORTAMENTO DOS GASTOS
@@ -433,11 +431,11 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                   Gasto mensal do contrato selecionado
                 </span>
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] font-mono text-slate-400">Contrato:</span>
+                  <span className="text-[10px] text-slate-500 font-semibold">Contrato:</span>
                   <select
                     value={contratoSelecionado}
                     onChange={e => setContratoSelecionado(e.target.value)}
-                    className="text-[11px] font-mono bg-slate-50 dark:bg-navy-900 border border-slate-300 dark:border-navy-700 rounded-sm px-2 py-1 text-slate-800 dark:text-slate-200 focus:outline-none"
+                    className="text-[11px] font-sans font-medium bg-slate-50 dark:bg-navy-900 border border-slate-300 dark:border-navy-700 rounded-sm px-2 py-1 text-slate-800 dark:text-slate-200 focus:outline-none"
                   >
                     <option value="Vigilância - Contrato 142/2025">Vigilância - Contrato 142/2025</option>
                     <option value="Limpeza - Contrato 088/2024">Limpeza - Contrato 088/2024</option>
@@ -457,10 +455,10 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                           <stop offset="95%" stopColor="#1e3a8a" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey="mes" tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 9, fill: '#64748b' }} axisLine={false} tickLine={false} domain={[0, 2.0]} />
+                      <XAxis dataKey="mes" tick={{ fontSize: 9, fill: '#64748b', fontFamily: 'Inter' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 9, fill: '#64748b', fontFamily: 'Inter' }} axisLine={false} tickLine={false} domain={[0, 2.0]} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#0a1128', borderColor: '#1e3a8a', fontSize: '11px', color: '#fff' }}
+                        contentStyle={{ backgroundColor: '#0a1128', borderColor: '#1e3a8a', fontSize: '11px', color: '#fff', fontFamily: 'Inter' }}
                         formatter={(val: any) => [`R$ ${Number(val).toFixed(2)} mi`, 'Gasto']}
                       />
                       <Area type="monotone" dataKey="realizado" stroke="#1e3a8a" strokeWidth={2} fillOpacity={1} fill="url(#colorRealizado)" connectNulls={false} />
@@ -470,30 +468,30 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 </div>
 
                 {/* Caixa Lateral com Métricas Chave */}
-                <div className="col-span-4 bg-slate-50 dark:bg-navy-900 p-2 rounded border border-slate-200 dark:border-navy-800 space-y-1.5 text-[10px] font-mono">
+                <div className="col-span-4 bg-slate-50 dark:bg-navy-900 p-2 rounded border border-slate-200 dark:border-navy-800 space-y-1.5 text-[10px] font-sans">
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Média mensal 2026</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">R$ 1,42 mi</span>
+                    <span className="text-slate-500 font-medium">Média mensal 2026</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200 tabular-nums">R$ 1,42 mi</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Último mês (jul/26)</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">R$ 1,57 mi</span>
+                    <span className="text-slate-500 font-medium">Último mês (jul/26)</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200 tabular-nums">R$ 1,57 mi</span>
                   </div>
                   <div className="flex justify-between items-center text-rose-600 font-bold">
                     <span>Tendência</span>
-                    <span>↑ 8,3%</span>
+                    <span className="tabular-nums">↑ 8,3%</span>
                   </div>
                   <div className="border-t border-slate-200 dark:border-navy-800 pt-1 flex justify-between">
-                    <span className="text-slate-500">Projeção 2026</span>
-                    <span className="font-bold text-blue-600">R$ 18,4 mi</span>
+                    <span className="text-slate-500 font-medium">Projeção 2026</span>
+                    <span className="font-bold text-blue-600 tabular-nums">R$ 18,4 mi</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-500">Orçamento disp.</span>
-                    <span className="font-bold text-emerald-600">R$ 17,1 mi</span>
+                    <span className="text-slate-500 font-medium">Orçamento disp.</span>
+                    <span className="font-bold text-emerald-600 tabular-nums">R$ 17,1 mi</span>
                   </div>
                   <div className="flex justify-between items-center pt-0.5">
                     <span className="text-slate-500 font-bold">Risco projetado</span>
-                    <span className="px-1 py-0.5 bg-rose-100 text-rose-700 border border-rose-300 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-700 rounded-xs font-bold text-[9px]">
+                    <span className="px-1 py-0.5 bg-rose-100 text-rose-700 border border-rose-300 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-700 rounded-xs font-bold text-[9px] tabular-nums">
                       -R$ 1,3 mi
                     </span>
                   </div>
@@ -503,49 +501,49 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
           </div>
 
           {/* Card Detalhe do Contrato Selecionado */}
-          <div className="p-3 border-t border-slate-200 dark:border-navy-800 bg-slate-50/70 dark:bg-navy-900/50 space-y-2">
+          <div className="p-3 border-t border-slate-200 dark:border-navy-800 bg-slate-50/70 dark:bg-navy-900/50 space-y-2 font-sans">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-[#1a2a52] text-white flex items-center justify-center shrink-0">
                 <Shield className="w-3.5 h-3.5" />
               </div>
               <div className="min-w-0">
-                <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                <span className="text-xs font-bold text-slate-900 dark:text-white block truncate font-sans">
                   Contrato 142/2025 - Empresa XYZ
                 </span>
-                <span className="text-[10px] text-slate-500 block truncate">
+                <span className="text-[10px] text-slate-500 block truncate font-medium">
                   Objeto: Serviços de vigilância patrimonial armada
                 </span>
               </div>
             </div>
 
-            <div className="grid grid-cols-5 gap-1 text-center font-mono text-[9px] pt-1">
+            <div className="grid grid-cols-5 gap-1 text-center text-[9px] pt-1 font-sans">
               <div className="bg-white dark:bg-navy-950 p-1 rounded border border-slate-200 dark:border-navy-800">
-                <span className="text-slate-400 block font-sans">Valor total</span>
-                <span className="font-bold text-slate-900 dark:text-white text-[10px]">R$ 13,9 mi</span>
+                <span className="text-slate-400 block font-medium">Valor total</span>
+                <span className="font-bold text-slate-900 dark:text-white text-[10px] tabular-nums">R$ 13,9 mi</span>
               </div>
               <div className="bg-white dark:bg-navy-950 p-1 rounded border border-slate-200 dark:border-navy-800">
-                <span className="text-slate-400 block font-sans">Liquidado</span>
-                <span className="font-bold text-emerald-600">54,7%</span>
-                <span className="text-[8px] text-slate-500 block">R$ 7,6 mi</span>
+                <span className="text-slate-400 block font-medium">Liquidado</span>
+                <span className="font-bold text-emerald-600 tabular-nums">54,7%</span>
+                <span className="text-[8px] text-slate-500 block font-medium tabular-nums">R$ 7,6 mi</span>
               </div>
               <div className="bg-white dark:bg-navy-950 p-1 rounded border border-slate-200 dark:border-navy-800">
-                <span className="text-slate-400 block font-sans">Empenhado</span>
-                <span className="font-bold text-amber-600">15,1%</span>
-                <span className="text-[8px] text-slate-500 block">R$ 2,1 mi</span>
+                <span className="text-slate-400 block font-medium">Empenhado</span>
+                <span className="font-bold text-amber-600 tabular-nums">15,1%</span>
+                <span className="text-[8px] text-slate-500 block font-medium tabular-nums">R$ 2,1 mi</span>
               </div>
               <div className="bg-white dark:bg-navy-950 p-1 rounded border border-slate-200 dark:border-navy-800">
-                <span className="text-slate-400 block font-sans">Disponível</span>
-                <span className="font-bold text-blue-600">30,2%</span>
-                <span className="text-[8px] text-slate-500 block">R$ 4,2 mi</span>
+                <span className="text-slate-400 block font-medium">Disponível</span>
+                <span className="font-bold text-blue-600 tabular-nums">30,2%</span>
+                <span className="text-[8px] text-slate-500 block font-medium tabular-nums">R$ 4,2 mi</span>
               </div>
               <div className="bg-white dark:bg-navy-950 p-1 rounded border border-slate-200 dark:border-navy-800">
-                <span className="text-slate-400 block font-sans">Representat.</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200 text-[10px]">7,7%</span>
+                <span className="text-slate-400 block font-medium">Representat.</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 text-[10px] tabular-nums">7,7%</span>
               </div>
             </div>
 
             {/* Tags de Essencialidade e Corte */}
-            <div className="flex items-center gap-1.5 flex-wrap text-[9px] font-mono pt-1">
+            <div className="flex items-center gap-1.5 flex-wrap text-[9px] pt-1 font-sans">
               <span className="text-slate-500">Classificação: <strong className="text-slate-800 dark:text-slate-200">Serviço contínuo</strong></span>
               <span>•</span>
               <span className="text-slate-500">Essencialidade: <strong className="text-rose-600 font-bold">ALTA</strong></span>
@@ -558,7 +556,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
         </div>
 
         {/* BLOCO 2 — REPRESENTATIVIDADE NO ORÇAMENTO (4 cols) */}
-        <div className="lg:col-span-4 bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm flex flex-col justify-between overflow-hidden">
+        <div className="lg:col-span-4 bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm flex flex-col justify-between overflow-hidden font-sans">
           <div>
             <div className="bg-[#0a1128] text-white px-3.5 py-2 text-xs font-bold font-sans tracking-wide uppercase">
               BLOCO 2 — REPRESENTATIVIDADE NO ORÇAMENTO
@@ -591,9 +589,9 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                     </PieChart>
                   </ResponsiveContainer>
                   {/* Centro do Donut */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter font-sans">Total</span>
-                    <span className="font-mono font-extrabold text-xs text-slate-900 dark:text-white">R$ 180,0 mi</span>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center font-sans">
+                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Total</span>
+                    <span className="font-extrabold text-xs text-slate-950 dark:text-white tabular-nums">R$ 180,0 mi</span>
                   </div>
                 </div>
 
@@ -603,11 +601,11 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                     <div key={i} className="flex items-center justify-between gap-1">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
-                        <span className="text-slate-600 dark:text-slate-400 truncate max-w-[95px]" title={item.name}>
+                        <span className="text-slate-600 dark:text-slate-400 truncate max-w-[95px] font-medium" title={item.name}>
                           {item.name}
                         </span>
                       </div>
-                      <span className="font-mono font-bold text-slate-800 dark:text-slate-200 shrink-0 text-[9px]">
+                      <span className="font-bold text-slate-800 dark:text-slate-200 shrink-0 text-[9px] tabular-nums">
                         {item.value.toFixed(1)}%
                       </span>
                     </div>
@@ -617,7 +615,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
             </div>
           </div>
 
-          <div className="p-3 border-t border-slate-200 dark:border-navy-800 bg-slate-50/70 dark:bg-navy-900/50 text-center">
+          <div className="p-3 border-t border-slate-200 dark:border-navy-800 bg-slate-50/70 dark:bg-navy-900/50 text-center font-sans">
             <span className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
               Os <strong>8 maiores contratos</strong> representam <strong>64,4%</strong> do orçamento da secretaria.
             </span>
@@ -628,7 +626,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
       {/* ============================================================
           4. LINHA INFERIOR — SIMULADOR DE CONTINGENCIAMENTO & CENTRAL DE DECISÃO
           ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 font-sans">
         {/* BLOCO 4 — SIMULADOR DE CONTINGENCIAMENTO (8 cols) */}
         <div className="lg:col-span-8 bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm overflow-hidden flex flex-col justify-between">
           <div>
@@ -636,20 +634,20 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
               <span>BLOCO 4 — SIMULADOR DE CONTINGENCIAMENTO</span>
             </div>
 
-            <div className="p-3.5 space-y-4">
+            <div className="p-3.5 space-y-4 font-sans">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                   <span>Simule cenários de redução e veja o impacto por secretaria</span>
                   <Info className="w-3.5 h-3.5 text-slate-400 cursor-help" />
                 </div>
 
-                <div className="flex items-center gap-4 text-xs font-mono">
+                <div className="flex items-center gap-4 text-xs">
                   <div className="flex items-center gap-1.5">
                     <span className="font-bold text-slate-700 dark:text-slate-300 font-sans text-[11px]">META DE ECONOMIA:</span>
                     <select
                       value={metaEconomia}
                       onChange={e => setMetaEconomia(e.target.value)}
-                      className="bg-slate-50 dark:bg-navy-900 border border-slate-300 dark:border-navy-700 font-bold text-emerald-600 rounded-sm px-2 py-1 text-xs"
+                      className="bg-slate-50 dark:bg-navy-900 border border-slate-300 dark:border-navy-700 font-bold text-emerald-600 rounded-sm px-2 py-1 text-xs font-sans"
                     >
                       <option value="10%">10%</option>
                       <option value="15%">15%</option>
@@ -662,35 +660,35 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
               </div>
 
               {/* Resumo de Metas */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 dark:bg-navy-900/60 p-2.5 rounded border border-slate-200 dark:border-navy-800 font-mono text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 dark:bg-navy-900/60 p-2.5 rounded border border-slate-200 dark:border-navy-800 font-sans text-xs">
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase font-sans">Despesa contratual Prefeitura</span>
-                  <span className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">R$ 640,0 mi</span>
+                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Despesa contratual Prefeitura</span>
+                  <span className="font-extrabold text-slate-950 dark:text-white text-sm sm:text-base tabular-nums">R$ 640,0 mi</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase font-sans">Economia teórica de {metaEconomia}</span>
-                  <span className="font-extrabold text-blue-600 text-sm sm:text-base">R$ 160,0 mi</span>
+                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Economia teórica de {metaEconomia}</span>
+                  <span className="font-extrabold text-blue-600 text-sm sm:text-base tabular-nums">R$ 160,0 mi</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase font-sans">Potencial viável identificado</span>
-                  <span className="font-extrabold text-emerald-600 text-sm sm:text-base">R$ 98,0 mi</span>
+                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Potencial viável identificado</span>
+                  <span className="font-extrabold text-emerald-600 text-sm sm:text-base tabular-nums">R$ 98,0 mi</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-400 block uppercase font-sans">Atingimento da meta</span>
-                  <span className="font-extrabold text-amber-600 text-sm sm:text-base">61,2% viável</span>
+                  <span className="text-[10px] text-slate-400 block uppercase font-medium">Atingimento da meta</span>
+                  <span className="font-extrabold text-amber-600 text-sm sm:text-base tabular-nums">61,2% viável</span>
                 </div>
               </div>
 
               {/* 2 Tabelas Lado a Lado (Secretarias + Top Oportunidades) */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-1 font-sans">
                 {/* Tabela de Secretarias (7 cols) */}
                 <div className="md:col-span-7 space-y-1.5">
-                  <span className="text-[10px] font-bold font-mono uppercase text-slate-500 dark:text-slate-400 block">
+                  <span className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 block">
                     DISTRIBUIÇÃO POR SECRETARIA
                   </span>
                   <div className="overflow-x-auto border border-slate-200 dark:border-navy-800 rounded-sm">
-                    <table className="w-full text-[10px] font-mono text-left">
-                      <thead className="bg-slate-100 dark:bg-navy-900 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-navy-800">
+                    <table className="w-full text-xs font-sans text-left">
+                      <thead className="bg-slate-100 dark:bg-navy-900 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-navy-800 text-[11px]">
                         <tr>
                           <th className="p-1.5">Secretaria</th>
                           <th className="p-1.5 text-center">Contr.</th>
@@ -700,7 +698,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                           <th className="p-1.5 text-right">Potencial</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-navy-800 text-slate-700 dark:text-slate-300">
+                      <tbody className="divide-y divide-slate-100 dark:divide-navy-800 text-slate-700 dark:text-slate-300 text-[11px] tabular-nums">
                         {SECRETARIAS_SIMULADOR.map((s, idx) => (
                           <tr
                             key={idx}
@@ -710,11 +708,11 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                             <td className="p-1.5 text-center">{s.contratos}</td>
                             <td className="p-1.5 text-right">{s.despesa}</td>
                             <td className="p-1.5 text-right">{s.pctPref}</td>
-                            <td className="p-1.5 text-right text-blue-600">{s.corte25}</td>
-                            <td className="p-1.5 text-right text-amber-600">{s.potencial}</td>
+                            <td className="p-1.5 text-right text-blue-600 font-semibold">{s.corte25}</td>
+                            <td className="p-1.5 text-right text-amber-600 font-semibold">{s.potencial}</td>
                           </tr>
                         ))}
-                        <tr className="bg-slate-100 dark:bg-navy-900 font-bold text-slate-900 dark:text-white">
+                        <tr className="bg-slate-100 dark:bg-navy-900 font-bold text-slate-950 dark:text-white">
                           <td className="p-1.5 uppercase">TOTAL</td>
                           <td className="p-1.5 text-center">487</td>
                           <td className="p-1.5 text-right">640.000.000</td>
@@ -728,13 +726,13 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 </div>
 
                 {/* Tabela de Oportunidades de Redução (5 cols) */}
-                <div className="md:col-span-5 space-y-1.5">
-                  <span className="text-[10px] font-bold font-mono uppercase text-slate-500 dark:text-slate-400 block">
+                <div className="md:col-span-5 space-y-1.5 font-sans">
+                  <span className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400 block">
                     ÍNDICE DE OPORTUNIDADE DE REDUÇÃO (Top contratos)
                   </span>
                   <div className="overflow-x-auto border border-slate-200 dark:border-navy-800 rounded-sm">
-                    <table className="w-full text-[10px] font-mono text-left">
-                      <thead className="bg-slate-100 dark:bg-navy-900 text-slate-600 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-navy-800">
+                    <table className="w-full text-xs font-sans text-left">
+                      <thead className="bg-slate-100 dark:bg-navy-900 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-navy-800 text-[11px]">
                         <tr>
                           <th className="p-1.5">Contrato</th>
                           <th className="p-1.5 text-right">Valor (R$)</th>
@@ -742,13 +740,13 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                           <th className="p-1.5 text-right">Economia (R$)</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-navy-800 text-slate-700 dark:text-slate-300">
+                      <tbody className="divide-y divide-slate-100 dark:divide-navy-800 text-slate-700 dark:text-slate-300 text-[11px] tabular-nums">
                         {OPORTUNIDADES_REDUCAO.map((c, idx) => (
                           <tr key={idx} className="hover:bg-slate-50/50">
                             <td className="p-1.5 font-medium truncate max-w-[90px]">{c.contrato}</td>
                             <td className="p-1.5 text-right">{c.valor}</td>
                             <td className="p-1.5 text-center">
-                              <span className={`px-1 py-0.5 rounded-xs text-[8px] font-bold border ${c.corEss}`}>
+                              <span className={`px-1.5 py-0.5 rounded-xs text-[9px] font-bold border ${c.corEss}`}>
                                 {c.essencialidade}
                               </span>
                             </td>
@@ -763,30 +761,30 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
             </div>
           </div>
 
-          <div className="p-2.5 border-t border-slate-200 dark:border-navy-800 bg-slate-50/70 dark:bg-navy-900/50 text-left text-[10px] text-slate-500 font-medium">
+          <div className="p-2.5 border-t border-slate-200 dark:border-navy-800 bg-slate-50/70 dark:bg-navy-900/50 text-left text-[10px] text-slate-500 font-medium font-sans">
             Obs.: Potencial recomendado considera essencialidade, impacto operacional e possibilidade real de redução contratual.
           </div>
         </div>
 
         {/* CENTRAL DE DECISÃO — CENÁRIOS (4 cols) */}
-        <div className="lg:col-span-4 bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm overflow-hidden flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm overflow-hidden flex flex-col justify-between font-sans">
           <div>
             <div className="bg-[#0a1128] text-white px-3.5 py-2 text-xs font-bold font-sans tracking-wide uppercase">
               CENTRAL DE DECISÃO — CENÁRIOS
             </div>
 
-            <div className="p-3.5 space-y-3">
+            <div className="p-3.5 space-y-3 font-sans">
               <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                 Escolha a meta de economia e veja a melhor combinação
               </div>
 
               {/* Seletor de Cenário */}
-              <div className="flex items-center gap-2 text-xs">
-                <span className="font-mono text-slate-500 uppercase text-[10px]">Cenário:</span>
+              <div className="flex items-center gap-2 text-xs font-sans">
+                <span className="text-slate-500 uppercase text-[10px] font-bold">Cenário:</span>
                 <select
                   value={cenarioSelecionado}
                   onChange={e => setCenarioSelecionado(e.target.value)}
-                  className="flex-1 bg-slate-50 dark:bg-navy-900 border border-slate-300 dark:border-navy-700 font-mono text-xs rounded-sm px-2.5 py-1 text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="flex-1 bg-slate-50 dark:bg-navy-900 border border-slate-300 dark:border-navy-700 font-sans text-xs font-medium rounded-sm px-2.5 py-1 text-slate-800 dark:text-slate-200 focus:outline-none"
                 >
                   <option value="Economizar R$ 50 milhões">Economizar R$ 50 milhões</option>
                   <option value="Economizar R$ 80 milhões">Economizar R$ 80 milhões</option>
@@ -796,33 +794,33 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
               </div>
 
               {/* 4 Mini Cards de Indicadores do Cenário */}
-              <div className="grid grid-cols-2 gap-2 text-center font-mono">
+              <div className="grid grid-cols-2 gap-2 text-center font-sans">
                 <div className="bg-slate-50 dark:bg-navy-900 p-2 rounded border border-slate-200 dark:border-navy-800">
-                  <span className="text-[9px] text-slate-400 block font-sans">Contratos analisados</span>
-                  <span className="font-bold text-slate-900 dark:text-white text-sm">487</span>
+                  <span className="text-[9px] text-slate-500 block font-medium">Contratos analisados</span>
+                  <span className="font-extrabold text-slate-950 dark:text-white text-sm tabular-nums">487</span>
                 </div>
                 <div className="bg-slate-50 dark:bg-navy-900 p-2 rounded border border-slate-200 dark:border-navy-800">
-                  <span className="text-[9px] text-slate-400 block font-sans">Contratos afetados</span>
-                  <span className="font-bold text-slate-900 dark:text-white text-sm">63</span>
+                  <span className="text-[9px] text-slate-500 block font-medium">Contratos afetados</span>
+                  <span className="font-extrabold text-slate-950 dark:text-white text-sm tabular-nums">63</span>
                 </div>
                 <div className="bg-slate-50 dark:bg-navy-900 p-2 rounded border border-slate-200 dark:border-navy-800">
-                  <span className="text-[9px] text-slate-400 block font-sans">Essenciais afetados</span>
-                  <span className="font-bold text-amber-600 text-sm">4</span>
+                  <span className="text-[9px] text-slate-500 block font-medium">Essenciais afetados</span>
+                  <span className="font-extrabold text-amber-600 text-sm tabular-nums">4</span>
                 </div>
                 <div className="bg-slate-50 dark:bg-navy-900 p-2 rounded border border-slate-200 dark:border-navy-800">
-                  <span className="text-[9px] text-slate-400 block font-sans">Economia estimada</span>
-                  <span className="font-bold text-emerald-600 text-sm">R$ 51,8 mi</span>
+                  <span className="text-[9px] text-slate-500 block font-medium">Economia estimada</span>
+                  <span className="font-extrabold text-emerald-600 text-sm tabular-nums">R$ 51,8 mi</span>
                 </div>
               </div>
 
               {/* Tag de Impacto */}
-              <div className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700/60 rounded-xs p-2 text-center text-xs font-mono font-bold text-emerald-800 dark:text-emerald-300">
+              <div className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700/60 rounded-xs p-2 text-center text-xs font-sans font-bold text-emerald-800 dark:text-emerald-300">
                 Impacto estimado nos serviços: BAIXO / MODERADO
               </div>
 
               {/* Gráfico de Barras de Economia por Secretaria */}
-              <div className="space-y-2 pt-1">
-                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase block">
+              <div className="space-y-2 pt-1 font-sans">
+                <span className="text-[10px] font-bold text-slate-500 uppercase block">
                   Economia por Secretaria (sugestão do cenário)
                 </span>
                 <div className="space-y-1.5">
@@ -838,7 +836,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                             style={{ width: `${item.pct}%` }}
                           />
                         </div>
-                        <span className="font-mono font-bold text-[10px] text-slate-900 dark:text-slate-100 shrink-0 w-16 text-right">
+                        <span className="font-bold text-[10px] text-slate-900 dark:text-slate-100 shrink-0 w-16 text-right tabular-nums">
                           {item.valor}
                         </span>
                       </div>
@@ -849,7 +847,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
             </div>
           </div>
 
-          <div className="p-3 border-t border-slate-200 dark:border-navy-800">
+          <div className="p-3 border-t border-slate-200 dark:border-navy-800 font-sans">
             <button className="w-full bg-[#0a1128] hover:bg-[#1a2a52] text-white font-bold py-2.5 px-4 rounded-sm text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2 shadow-sm">
               <span>VER DETALHAMENTO DOS CONTRATOS</span>
               <ChevronRight className="w-4 h-4" />
@@ -861,20 +859,20 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
       {/* ============================================================
           5. ALERTAS PARA DECISÃO (RODAPÉ)
           ============================================================ */}
-      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm shadow-sm overflow-hidden font-sans">
         <div className="bg-[#0a1128] text-white px-3.5 py-2 text-xs font-bold font-sans tracking-wide uppercase">
           ALERTAS PARA DECISÃO
         </div>
 
-        <div className="p-3.5 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+        <div className="p-3.5 grid grid-cols-1 md:grid-cols-12 gap-3 items-center font-sans">
           {/* 5 Mini Cards de Alertas */}
-          <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono">
+          <div className="md:col-span-8 grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
             {/* 1 */}
             <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 rounded-sm flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold text-rose-700 dark:text-rose-300 block text-xs">5 secretarias</span>
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-sans leading-tight block">
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium leading-tight block">
                   projetam estouro orçamentário
                 </span>
               </div>
@@ -885,7 +883,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
               <TrendingUp className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold text-amber-700 dark:text-amber-300 block text-xs">17 contratos</span>
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-sans leading-tight block">
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium leading-tight block">
                   apresentam crescimento &gt; 15% no ano
                 </span>
               </div>
@@ -893,12 +891,12 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
 
             {/* 3 */}
             <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-2.5 rounded-sm flex items-start gap-2">
-              <span className="w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5 font-mono">
+              <span className="w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5">
                 $
               </span>
               <div>
-                <span className="font-bold text-rose-700 dark:text-rose-300 block text-xs">R$ 42,8 mi</span>
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-sans leading-tight block">
+                <span className="font-bold text-rose-700 dark:text-rose-300 block text-xs tabular-nums">R$ 42,8 mi</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium leading-tight block">
                   de déficit projetado para dezembro
                 </span>
               </div>
@@ -908,8 +906,8 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
             <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-2.5 rounded-sm flex items-start gap-2">
               <PiggyBank className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold text-emerald-700 dark:text-emerald-300 block text-xs">R$ 31,4 mi</span>
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-sans leading-tight block">
+                <span className="font-bold text-emerald-700 dark:text-emerald-300 block text-xs tabular-nums">R$ 31,4 mi</span>
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium leading-tight block">
                   de economia potencial identificada
                 </span>
               </div>
@@ -920,7 +918,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
               <FileText className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <div>
                 <span className="font-bold text-amber-700 dark:text-amber-300 block text-xs">8 contratos</span>
-                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-sans leading-tight block">
+                <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium leading-tight block">
                   representam 41% do gasto contratual
                 </span>
               </div>
@@ -928,9 +926,9 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
           </div>
 
           {/* Card Resumo Executivo */}
-          <div className="md:col-span-4 bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-800 p-3 rounded-sm flex items-center justify-between gap-3">
-            <div className="text-xs text-slate-700 dark:text-slate-300 font-sans leading-relaxed">
-              <strong className="text-slate-900 dark:text-white block mb-0.5">Resumo Executivo</strong>
+          <div className="md:col-span-4 bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-800 p-3 rounded-sm flex items-center justify-between gap-3 font-sans">
+            <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              <strong className="text-slate-950 dark:text-white block mb-0.5 font-bold">Resumo Executivo</strong>
               A situação orçamentária requer ações imediatas para evitar déficit de <strong>R$ 42,8 mi</strong> ao final de 2026. Há potencial de economia de <strong>R$ 31,4 mi</strong> com baixo impacto operacional.
             </div>
             <ChevronRight className="w-5 h-5 text-slate-400 shrink-0 cursor-pointer hover:text-slate-600" />
