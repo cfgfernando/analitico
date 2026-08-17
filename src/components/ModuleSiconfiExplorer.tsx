@@ -128,41 +128,41 @@ export const ModuleSiconfiExplorer: React.FC<ModuleSiconfiExplorerProps> = ({
   return (
     <div className="space-y-6">
       {/* Header Info */}
-      <div className="bg-slate-900 border border-slate-800 rounded-sm p-5 text-white shadow-sm">
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm p-4 shadow-sm font-sans">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <div className="flex items-center space-x-2">
-              <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                <Database className="w-3 h-3" />
+              <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold uppercase tracking-wider bg-[#0a1128] text-white border border-navy-700 flex items-center gap-1 font-sans">
+                <Database className="w-3 h-3 text-emerald-400" />
                 Tesouro Nacional Data Lake API
               </span>
-              <span className="text-[10px] text-slate-400 font-mono">IBGE: 4101804 (Araucária/PR)</span>
+              <span className="text-[10px] text-slate-500 font-bold">IBGE: 4101804 (Araucária/PR)</span>
             </div>
-            <h2 className="text-base font-bold uppercase tracking-wider text-white">
+            <h2 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-slate-950 dark:text-white font-sans">
               Console & Inspetor de Dados Abertos do Siconfi
             </h2>
-            <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-3xl leading-relaxed font-medium">
               Consulte e inspecione diretamente os payloads brutos em JSON fornecidos pelo Tesouro Nacional para o município de Araucária.
               Acesso livre e sem autenticação aos relatórios fiscais oficiais (RREO, RGF, DCA e MSC).
             </p>
           </div>
 
           {/* Connection Status Box */}
-          <div className="bg-slate-950 border border-slate-800 rounded-sm p-3.5 shrink-0 text-xs space-y-1.5 font-mono">
+          <div className="bg-slate-50 dark:bg-navy-900/60 border border-slate-200 dark:border-navy-800 rounded-sm p-3.5 shrink-0 text-xs space-y-1.5 font-sans">
             <div className="flex items-center justify-between gap-4">
-              <span className="text-slate-400 text-[10px] uppercase">Status Servidor:</span>
-              <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-slate-500 text-[10px] uppercase font-bold">Status Servidor:</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 {siconfiStatus?.online ? 'Online (Conectado)' : 'Cache Local Ativo'}
               </span>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <span className="text-slate-400 text-[10px] uppercase">Latência:</span>
-              <span className="text-slate-200">{siconfiStatus?.latencyMs || 0} ms</span>
+              <span className="text-slate-500 text-[10px] uppercase font-bold">Latência:</span>
+              <span className="text-slate-800 dark:text-slate-200 font-bold tabular-nums">{siconfiStatus?.latencyMs || 0} ms</span>
             </div>
             <div className="flex items-center justify-between gap-4">
-              <span className="text-slate-400 text-[10px] uppercase">Ente Ativo:</span>
-              <span className="font-bold text-slate-200">Araucária (4101804)</span>
+              <span className="text-slate-500 text-[10px] uppercase font-bold">Ente Ativo:</span>
+              <span className="font-bold text-slate-900 dark:text-white">Araucária (4101804)</span>
             </div>
           </div>
         </div>

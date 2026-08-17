@@ -194,61 +194,59 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Top Banner: Geometric Executive Overview */}
-      <div className="bg-slate-900 border border-slate-800 text-white p-5 shadow-md relative overflow-hidden rounded-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                EXERCÍCIO {ano} {ano === 2026 && '— ORÇAMENTO REESTIMADO'}
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono">
-                IBGE: {tenantInfo?.codigoIbge || '4101804'} ({(tenantInfo?.cidade || 'ARAUCÁRIA').toUpperCase()}/{tenantInfo?.uf || 'PR'})
-              </span>
-              <DataSourceBadge dataSource={summary.dataSource} size="xs" showDetails />
-            </div>
-            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white uppercase">
-              PAINEL EXECUTIVO DE GESTÃO FISCAL & ORÇAMENTÁRIA — {tenantInfo?.cidade || 'ARAUCÁRIA'}
-            </h2>
-            <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
-              Consolidação contábil via API Siconfi do Tesouro Nacional. Monitoramento da execução orçamentária,
-              folha de pessoal ({summary.despesaPessoalPercentualRCL}% da RCL) e indicadores constitucionais de {tenantInfo?.nomePrefeitura || 'Araucária'}.
-            </p>
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 font-sans">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold uppercase tracking-wider bg-[#0a1128] text-white border border-navy-700 font-sans">
+              EXERCÍCIO {ano} {ano === 2026 && '— ORÇAMENTO REESTIMADO'}
+            </span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
+              IBGE: {tenantInfo?.codigoIbge || '4101804'} ({(tenantInfo?.cidade || 'ARAUCÁRIA').toUpperCase()}/{tenantInfo?.uf || 'PR'})
+            </span>
+            <DataSourceBadge dataSource={summary.dataSource} size="xs" showDetails />
           </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-950 dark:text-white uppercase font-sans">
+            PAINEL EXECUTIVO DE GESTÃO FISCAL & ORÇAMENTÁRIA — {tenantInfo?.cidade || 'ARAUCÁRIA'}
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-3xl leading-relaxed font-medium">
+            Consolidação contábil via API Siconfi do Tesouro Nacional. Monitoramento da execução orçamentária,
+            folha de pessoal ({summary.despesaPessoalPercentualRCL}% da RCL) e indicadores constitucionais de {tenantInfo?.nomePrefeitura || 'Araucária'}.
+          </p>
+        </div>
 
-          {/* Quick Alert Summary Badges & AI Action */}
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <button
-              type="button"
-              id="executive-open-predictive-btn"
-              onClick={() => setIsPredictiveModalOpen(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-sm bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-mono font-bold transition uppercase cursor-pointer shadow-md shadow-purple-950/40 border border-purple-400/40"
-              title="Clique para abrir a Análise Preditiva de IA baseada nas variações dos últimos 6 meses"
-            >
-              <BrainCircuit className="w-3.5 h-3.5 animate-pulse text-purple-200" />
-              <span>Análise Preditiva (IA)</span>
-            </button>
+        {/* Quick Alert Summary Badges & AI Action */}
+        <div className="flex flex-wrap items-center gap-2 shrink-0 font-sans">
+          <button
+            type="button"
+            id="executive-open-predictive-btn"
+            onClick={() => setIsPredictiveModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xs bg-[#0a1128] hover:bg-[#1a2a52] text-white text-xs font-bold transition uppercase cursor-pointer shadow-xs border border-navy-700"
+            title="Clique para abrir a Análise Preditiva de IA baseada nas variações dos últimos 6 meses"
+          >
+            <BrainCircuit className="w-3.5 h-3.5 animate-pulse text-purple-300" />
+            <span>Análise Preditiva (IA)</span>
+          </button>
 
-            <button
-              type="button"
-              onClick={() => onNavigateToTab('modulo4')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold hover:bg-amber-500/30 transition uppercase cursor-pointer"
-              title="Clique para ver os limites da LRF e alertas do TCE-PR"
-            >
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-              <span>{atencaoCount} EM ATENÇÃO</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigateToTab('modulo4')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold hover:bg-emerald-500/30 transition uppercase cursor-pointer"
-              title="Clique para ver indicadores regulares"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{okCount} REGULARES</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('modulo4')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xs bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 text-xs font-bold hover:bg-amber-100 transition uppercase cursor-pointer"
+            title="Clique para ver os limites da LRF e alertas do TCE-PR"
+          >
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+            <span>{atencaoCount} EM ATENÇÃO</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigateToTab('modulo4')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xs bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-100 transition uppercase cursor-pointer"
+            title="Clique para ver indicadores regulares"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>{okCount} REGULARES</span>
+          </button>
         </div>
       </div>
 
@@ -416,12 +414,12 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
               </span>
               {activeMode === 'anual' && comparativeData ? (
                 <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
-                  comparativeData.despesaPessoalPercentualRCL.diferencaPontosPercentuais <= 0
+                  comparativeData.despesaPessoalPercentualRCL.deltaPp <= 0
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
                     : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                 }`}>
-                  {comparativeData.despesaPessoalPercentualRCL.diferencaPontosPercentuais >= 0 ? '▲ +' : '▼ '}
-                  {Math.abs(comparativeData.despesaPessoalPercentualRCL.diferencaPontosPercentuais).toFixed(2)} p.p. YoY
+                  {comparativeData.despesaPessoalPercentualRCL.deltaPp >= 0 ? '▲ +' : '▼ '}
+                  {Math.abs(comparativeData.despesaPessoalPercentualRCL.deltaPp).toFixed(2)} p.p. YoY
                 </span>
               ) : activeMode === 'trimestral' && quarterlyComparativeData ? (
                 <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${

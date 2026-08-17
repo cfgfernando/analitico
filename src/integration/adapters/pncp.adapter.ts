@@ -98,90 +98,35 @@ export class PncpAdapter implements BaseIntegrationAdapter<PncpData> {
     const isAraucaria = codigoIbge === '4101804';
     const isCuritiba = codigoIbge === '4106902';
 
-    const hoje = new Date();
-    const addDays = (d: number) => {
-      const target = new Date(hoje.getTime() + d * 24 * 60 * 60 * 1000);
-      return target.toISOString().split('T')[0];
-    };
+    const items = Array.isArray(rawData?.data) ? rawData.data : Array.isArray(rawData) ? rawData : [];
 
-    const contratos: PncpContratoItem[] = [
-      {
-        numeroContrato: '042/2025',
-        anoContrato: 2025,
-        processo: 'PE-018/2025',
-        objeto: 'Prestação de serviços contínuos de limpeza pública urbana, coleta de resíduos e destinação final',
-        orgaoEntidade: isAraucaria ? 'Secretaria Municipal de Meio Ambiente — SMMA' : 'Secretaria de Obras',
-        cnpjFornecedor: '04.123.456/0001-88',
-        nomeFornecedor: 'ECOPAR AMBIENTAL & SERVIÇOS URBANOS LTDA',
-        valorInicial: 34500000,
-        valorGlobal: 34500000,
-        dataAssinatura: '2025-04-10',
-        dataVigenciaInicio: '2025-04-15',
-        dataVigenciaFim: addDays(42),
-        diasParaVencer: 42,
-        statusVigencia: 'A_VENCER_60D',
-        categoria: 'SERVICOS_CONTINUOS',
-        modalidadeLicitacao: 'Pregão Eletrônico (Lei 14.133)',
-        linkPncp: `https://pncp.gov.br/app/contratos/${codigoIbge}/2025/42`,
-      },
-      {
-        numeroContrato: '089/2025',
-        anoContrato: 2025,
-        processo: 'PE-034/2025',
-        objeto: 'Fornecimento de merenda escolar orgânica e insumos alimentícios para a rede pública municipal de ensino',
-        orgaoEntidade: 'Secretaria Municipal de Educação — SMED',
-        cnpjFornecedor: '12.876.543/0001-22',
-        nomeFornecedor: 'COOPERATIVA REGIONAL DE AGRICULTORES FAMILIARES',
-        valorInicial: 18200000,
-        valorGlobal: 18200000,
-        dataAssinatura: '2025-06-01',
-        dataVigenciaInicio: '2025-06-05',
-        dataVigenciaFim: addDays(118),
-        diasParaVencer: 118,
-        statusVigencia: 'VIGENTE',
-        categoria: 'FORNECIMENTO_ALIMENTACAO',
-        modalidadeLicitacao: 'Chamada Pública PNAE / Pregão',
-        linkPncp: `https://pncp.gov.br/app/contratos/${codigoIbge}/2025/89`,
-      },
-      {
-        numeroContrato: '112/2025',
-        anoContrato: 2025,
-        processo: 'CC-004/2025',
-        objeto: 'Execução de obras de drenagem pluvial, pavimentação asfáltica e calçadas acessíveis no Bairro Costeira',
-        orgaoEntidade: 'Secretaria Municipal de Obras Públicas — SMOP',
-        cnpjFornecedor: '78.987.654/0001-11',
-        nomeFornecedor: 'SUL BRASIL PAVIMENTAÇÃO & ENGENHARIA S/A',
-        valorInicial: 24800000,
-        valorGlobal: 24800000,
-        dataAssinatura: '2025-08-20',
-        dataVigenciaInicio: '2025-09-01',
-        dataVigenciaFim: addDays(210),
-        diasParaVencer: 210,
-        statusVigencia: 'VIGENTE',
-        categoria: 'OBRAS_ENGENHARIA',
-        modalidadeLicitacao: 'Concorrência Eletrônica',
-        linkPncp: `https://pncp.gov.br/app/contratos/${codigoIbge}/2025/112`,
-      },
-      {
-        numeroContrato: '015/2025',
-        anoContrato: 2025,
-        processo: 'PE-008/2025',
-        objeto: 'Locação e manutenção de frota de veículos utilitários e ambulâncias do SAMU',
-        orgaoEntidade: 'Secretaria Municipal de Saúde — SMS',
-        cnpjFornecedor: '33.222.111/0001-99',
-        nomeFornecedor: 'LOCALIZA FLEET GESTÃO DE FROTAS S/A',
-        valorInicial: 8900000,
-        valorGlobal: 8900000,
-        dataAssinatura: '2025-02-15',
-        dataVigenciaInicio: '2025-03-01',
-        dataVigenciaFim: addDays(18),
-        diasParaVencer: 18,
-        statusVigencia: 'A_VENCER_60D',
-        categoria: 'LOCACAO_FROTA',
-        modalidadeLicitacao: 'Pregão Eletrônico (Lei 14.133)',
-        linkPncp: `https://pncp.gov.br/app/contratos/${codigoIbge}/2025/15`,
-      },
-    ];
+    const contratos: PncpContratoItem[] = items.map((item: any) => {
+      const dataFim = item.dataVigenciaFim ? item.dataVigenciaFim.split('T')[0] : `${exercicio}-12-31`;
+      const hoje = new Date();
+      const fimDate = new Date(dataFim);
+      const diffTime = fimDate.getTime() - hoje.getTime();
+      const diasParaVencer = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+      return {
+        numeroContrato: item.numeroContratoEmpenho || `${item.sequencialContrato || '1'}/${item.anoContrato || exercicio}`,
+        anoContrato: item.anoContrato || exercicio,
+        processo: item.processo || item.numeroProcesso || 'PA-OFICIAL',
+        objeto: item.objetoContrato || 'Prestação de serviços públicos homologada no PNCP',
+        orgaoEntidade: item.nomeOrgao || item.unidadeCompradora?.nomeUnidade || 'Prefeitura Municipal de Araucária',
+        cnpjFornecedor: item.niFornecedor || item.cnpjContratado || '00.000.000/0000-00',
+        nomeFornecedor: item.nomeRazaoSocialFornecedor || item.razaoSocialContratado || 'Fornecedor Contratado PNCP',
+        valorInicial: Number(item.valorInicial || item.valorGlobal || 0),
+        valorGlobal: Number(item.valorGlobal || item.valorInicial || 0),
+        dataAssinatura: item.dataAssinatura ? item.dataAssinatura.split('T')[0] : `${exercicio}-01-01`,
+        dataVigenciaInicio: item.dataVigenciaInicio ? item.dataVigenciaInicio.split('T')[0] : `${exercicio}-01-01`,
+        dataVigenciaFim: dataFim,
+        diasParaVencer: diasParaVencer,
+        statusVigencia: diasParaVencer < 60 ? 'A_VENCER_60D' : 'VIGENTE',
+        categoria: item.categoriaProcesso || 'SERVICOS',
+        modalidadeLicitacao: item.modalidadeNome || 'Pregão Eletrônico (Lei 14.133/2021)',
+        linkPncp: `https://pncp.gov.br/app/contratos/${codigoIbge}/${item.anoContrato || exercicio}/${item.sequencialContrato || '1'}`,
+      };
+    });
 
     const valorGlobalAtivo = contratos.reduce((acc, c) => acc + c.valorGlobal, 0);
     const contratosVencendo = contratos.filter(c => c.statusVigencia === 'A_VENCER_60D');

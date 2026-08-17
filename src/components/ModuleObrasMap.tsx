@@ -171,42 +171,37 @@ export const ModuleObrasMap: React.FC<ModuleObrasMapProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Top Banner & Module Header */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-5 shadow-xs">
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm p-4 shadow-sm font-sans">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="p-2.5 rounded bg-indigo-600 dark:bg-indigo-700 text-white shadow-sm mt-0.5">
-              <MapPin className="w-6 h-6" />
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-xs bg-[#0a1128] text-white border border-navy-700 font-sans">
+                MÓDULO 09 • INFRAESTRUTURA & OBRAS
+              </span>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                Exercício {ano}
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                  MÓDULO 09 • INFRAESTRUTURA & OBRAS
-                </span>
-                <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
-                  Exercício {ano}
-                </span>
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white uppercase tracking-tight mt-1">
-                MAPA DE OBRAS PÚBLICAS & INVESTIMENTOS DE ARAUCÁRIA
-              </h2>
-              <p className="text-xs text-slate-600 dark:text-slate-400 max-w-3xl mt-0.5">
-                Visualização georreferenciada e analítica das obras municipais em execução, filtradas por secretaria setorial, status físico-financeiro e fontes de financiamento (Tesouro, Finisa, Federal e Paranacidade).
-              </p>
-            </div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-950 dark:text-white uppercase tracking-tight font-sans">
+              MAPA DE OBRAS PÚBLICAS & INVESTIMENTOS DE ARAUCÁRIA
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-3xl leading-relaxed font-medium">
+              Visualização georreferenciada e analítica das obras municipais em execução, filtradas por secretaria setorial, status físico-financeiro e fontes de financiamento (Tesouro, Finisa, Federal e Paranacidade).
+            </p>
           </div>
 
           {/* Action Controls: View Switch & Export */}
-          <div className="flex items-center gap-2 self-start lg:self-center">
+          <div className="flex items-center gap-2 self-start lg:self-center font-sans">
             {/* View Mode Toggle */}
-            <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded border border-slate-200 dark:border-slate-700 flex items-center text-xs font-mono">
+            <div className="bg-slate-100 dark:bg-navy-900 p-1 rounded-sm border border-slate-300 dark:border-navy-700 flex items-center text-xs font-sans">
               <button
                 type="button"
                 onClick={() => setViewMode('mapa')}
-                className={`px-3 py-1.5 rounded transition flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xs transition flex items-center gap-1.5 cursor-pointer ${
                   viewMode === 'mapa'
-                    ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 font-bold shadow-xs'
+                    ? 'bg-[#0a1128] text-white font-bold shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                 }`}
               >
@@ -216,9 +211,9 @@ export const ModuleObrasMap: React.FC<ModuleObrasMapProps> = ({
               <button
                 type="button"
                 onClick={() => setViewMode('grade')}
-                className={`px-3 py-1.5 rounded transition flex items-center gap-1.5 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xs transition flex items-center gap-1.5 cursor-pointer ${
                   viewMode === 'grade'
-                    ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 font-bold shadow-xs'
+                    ? 'bg-[#0a1128] text-white font-bold shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                 }`}
               >
@@ -231,7 +226,7 @@ export const ModuleObrasMap: React.FC<ModuleObrasMapProps> = ({
             <button
               type="button"
               onClick={handleExportCSV}
-              className="px-3 py-1.5 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded text-xs font-mono font-bold flex items-center gap-1.5 transition cursor-pointer border border-slate-700 shadow-xs"
+              className="px-3.5 py-2 bg-[#0a1128] hover:bg-[#1a2a52] text-white rounded-sm text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-xs"
               title="Exportar planilha de obras em formato CSV"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
@@ -241,13 +236,13 @@ export const ModuleObrasMap: React.FC<ModuleObrasMapProps> = ({
         </div>
 
         {/* 4 Summary KPI Metric Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-5 mt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-4 mt-4 border-t border-slate-200 dark:border-navy-800">
           {/* KPI 1 */}
-          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded border border-slate-200 dark:border-slate-700/80">
-            <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 font-semibold block">
+          <div className="p-3 bg-slate-50 dark:bg-navy-900/60 rounded-sm border border-slate-200 dark:border-navy-800">
+            <span className="text-[10px] uppercase text-slate-500 dark:text-slate-400 font-bold block">
               Investimento Total Mapeado
             </span>
-            <div className="text-base sm:text-lg font-bold font-mono text-slate-900 dark:text-white mt-0.5">
+            <div className="text-base sm:text-lg font-extrabold text-slate-950 dark:text-white mt-0.5 tabular-nums">
               {formatCurrency(totalFilteredInvestimento)}
             </div>
             <span className="text-[10px] text-slate-400 font-mono">

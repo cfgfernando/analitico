@@ -365,19 +365,19 @@ export const Header: React.FC<HeaderProps> = ({
           {siconfiStatus && (
             <div
               className={`hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-sm text-xs font-mono border ${
-                siconfiStatus.conectado
+                siconfiStatus.online
                   ? 'bg-emerald-950/60 border-emerald-800/80 text-emerald-300'
                   : 'bg-amber-950/60 border-amber-800/80 text-amber-300'
               }`}
-              title={siconfiStatus.mensagem || 'Status da API Siconfi'}
+              title={siconfiStatus.online ? 'API Siconfi Online' : 'Cache Local Ativo'}
             >
-              {siconfiStatus.conectado ? (
+              {siconfiStatus.online ? (
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               ) : (
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               )}
               <span className="truncate max-w-[120px] lg:max-w-none text-[11px] font-bold">
-                {siconfiStatus.conectado ? 'SICONFI CONECTADO' : 'SICONFI OFFLINE'}
+                {siconfiStatus.online ? 'SICONFI CONECTADO' : 'SICONFI OFFLINE'}
               </span>
             </div>
           )}
@@ -439,61 +439,49 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="relative" ref={roleDropdownRef}>
             <button
               onClick={() => setRoleDropdownOpen(prev => !prev)}
-              className="flex items-center gap-1.5 px-2 py-1 rounded-sm bg-navy-900 hover:bg-navy-800 border border-navy-700 text-white text-xs font-mono transition cursor-pointer"
+              className="flex items-center gap-1.5 px-2 py-1 rounded-sm bg-navy-900 hover:bg-navy-800 border border-navy-700 text-white text-xs font-sans transition cursor-pointer"
               title="Perfil de Acesso do Usuário"
             >
               <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
               <span className="hidden md:inline font-bold">
-                {authRole === 'EMPRESA_MASTER' ? 'Master SaaS' : 'Prefeitura'}
+                {authRole === 'EMPRESA_MASTER' ? 'Master SaaS' : `Prefeitura de ${tenantInfo.cidade}`}
               </span>
               <ChevronDown className="w-3 h-3 text-slate-400" />
             </button>
 
             {roleDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-navy-900 border border-navy-700 rounded-sm shadow-2xl z-50 overflow-hidden animate-in fade-in duration-150">
+              <div className="absolute right-0 mt-2 w-64 bg-navy-900 border border-navy-700 rounded-sm shadow-2xl z-50 overflow-hidden animate-in fade-in duration-150 font-sans">
                 <div className="p-2.5 bg-navy-950 border-b border-navy-800 text-xs">
-                  <span className="text-[10px] font-mono text-slate-400 block uppercase">Conta Conectada</span>
-                  <span className="font-bold text-white font-mono truncate block">
+                  <span className="text-[10px] text-slate-400 block uppercase font-bold">Conta Conectada</span>
+                  <span className="font-bold text-white truncate block">
                     {authRole === 'EMPRESA_MASTER' ? 'admin@escrita.online' : `fiscal@${tenantInfo.cidade.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}.pr.gov.br`}
                   </span>
                 </div>
 
-                <div className="p-1 space-y-0.5">
-                  <button
-                    onClick={() => handleSelectRole('EMPRESA_MASTER')}
-                    className={`w-full text-left p-2 rounded-xs text-xs font-mono flex items-center justify-between transition cursor-pointer ${
-                      authRole === 'EMPRESA_MASTER'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                        : 'text-slate-300 hover:bg-navy-800 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                      <div>
-                        <span className="font-bold block">Administrador Master</span>
-                        <span className="text-[10px] text-slate-400 block">Gestão multi-tenant global</span>
+                <div className="p-2 space-y-1.5">
+                  {authRole === 'EMPRESA_MASTER' ? (
+                    <div className="p-2 rounded-xs text-xs flex items-center justify-between bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                        <div>
+                          <span className="font-bold block">Administrador Master</span>
+                          <span className="text-[10px] text-slate-400 block">Gestão multi-tenant global</span>
+                        </div>
                       </div>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
                     </div>
-                    {authRole === 'EMPRESA_MASTER' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
-                  </button>
-
-                  <button
-                    onClick={() => handleSelectRole('PREFEITURA_CLIENTE')}
-                    className={`w-full text-left p-2 rounded-xs text-xs font-mono flex items-center justify-between transition cursor-pointer ${
-                      authRole === 'PREFEITURA_CLIENTE'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                        : 'text-slate-300 hover:bg-navy-800 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Building className="w-4 h-4 text-blue-400" />
-                      <div>
-                        <span className="font-bold block">Gestor Municipal</span>
-                        <span className="text-[10px] text-slate-400 block">{tenantInfo.cidade} / {tenantInfo.uf}</span>
+                  ) : (
+                    <div className="p-2 rounded-xs text-xs flex items-center justify-between bg-navy-950 border border-navy-800 text-slate-200">
+                      <div className="flex items-center gap-2">
+                        <Building className="w-4 h-4 text-blue-400" />
+                        <div>
+                          <span className="font-bold block text-white">Gestor Municipal</span>
+                          <span className="text-[10px] text-slate-400 block">{tenantInfo.cidade} / {tenantInfo.uf} • IBGE {tenantInfo.codigoIbge || '4101804'}</span>
+                        </div>
                       </div>
+                      <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
                     </div>
-                    {authRole === 'PREFEITURA_CLIENTE' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
-                  </button>
+                  )}
                 </div>
 
                 {onLogout && (
@@ -503,7 +491,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setRoleDropdownOpen(false);
                         onLogout();
                       }}
-                      className="w-full text-left p-2 rounded-xs text-xs text-rose-300 hover:bg-rose-950/50 hover:text-rose-200 transition flex items-center gap-2 font-mono cursor-pointer"
+                      className="w-full text-left p-2 rounded-xs text-xs text-rose-300 hover:bg-rose-950/50 hover:text-rose-200 transition flex items-center gap-2 font-sans font-bold cursor-pointer"
                     >
                       <LogOut className="w-3.5 h-3.5 text-rose-400" />
                       <span>Encerrar Sessão</span>

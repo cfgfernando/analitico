@@ -42,7 +42,9 @@ export class PncpConnectorService {
     maxRetries = 2
   ): Promise<PncpContratoItem[]> {
     const cleanCnpj = cnpj.replace(/\D/g, '');
-    const url = `${this.PNCP_API_URL}?cnpjOrgao=${cleanCnpj}&ano=${ano}&pagina=1&tamanhoPagina=50`;
+    const dtIni = `${ano}0101`;
+    const dtFim = `${ano}1231`;
+    const url = `${this.PNCP_API_URL}?dataInicial=${dtIni}&dataFinal=${dtFim}&cnpjOrgao=${cleanCnpj}&pagina=1&tamanhoPagina=50`;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {

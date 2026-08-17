@@ -32,6 +32,8 @@ interface Module5CaptacaoProps {
   emendas: EmendaParlamentar[];
   convenios: ConvenioRecurso[];
   searchQuery: string;
+  cidade?: string;
+  uf?: string;
 }
 
 export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
@@ -41,6 +43,8 @@ export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
   emendas,
   convenios,
   searchQuery,
+  cidade = 'Araucária',
+  uf = 'PR',
 }) => {
   const [activeTab, setActiveTab] = useState<'radar' | 'emendas' | 'convenios'>('radar');
   const [selectedEsfera, setSelectedEsfera] = useState<'todas' | 'Federal' | 'Estadual' | 'recentes'>('todas');
@@ -116,44 +120,44 @@ export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Annual Target Progress Hero Card */}
-      <div className="bg-slate-900 border border-slate-800 rounded-sm p-5 text-white shadow-sm">
+      {/* Top Header Card */}
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm p-4 shadow-sm font-sans">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2">
+          <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                <Target className="w-3 h-3" />
+              <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold uppercase tracking-wider bg-[#0a1128] text-white border border-navy-700 flex items-center gap-1 font-sans">
+                <Target className="w-3 h-3 text-emerald-400" />
                 Meta Estratégica de Captação Externa
               </span>
-              <span className="text-[10px] font-mono text-slate-400 uppercase">Exercício {2026}</span>
+              <span className="text-[10px] font-bold text-slate-500 uppercase">Exercício {2026}</span>
             </div>
-            <h2 className="text-base font-bold uppercase tracking-wider">
+            <h2 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-slate-950 dark:text-white font-sans">
               Captação de Recursos Extraorçamentários
             </h2>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed font-medium">
               Monitoramento de Emendas Parlamentares Federais (RP6/RP7/RP8), Emendas Estaduais da ALEP e Convênios do Transferegov para mitigar o impacto da perda de receitas industriais da REPAR.
             </p>
           </div>
 
           {/* Progress Box */}
-          <div className="bg-slate-950 border border-slate-800 rounded-sm p-4 w-full md:w-auto md:min-w-[280px]">
-            <div className="flex justify-between items-baseline mb-1.5 font-mono">
-              <span className="text-[10px] text-slate-400 uppercase">Meta Anual:</span>
-              <span className="text-sm font-bold text-white">{formatCompactCurrency(metaAnual)}</span>
+          <div className="bg-slate-50 dark:bg-navy-900/60 border border-slate-200 dark:border-navy-800 rounded-sm p-4 w-full md:w-auto md:min-w-[280px] font-sans">
+            <div className="flex justify-between items-baseline mb-1.5 font-sans">
+              <span className="text-[10px] text-slate-500 uppercase font-bold">Meta Anual:</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">{formatCompactCurrency(metaAnual)}</span>
             </div>
-            <div className="flex justify-between items-baseline mb-2 font-mono">
-              <span className="text-[10px] text-emerald-400 uppercase font-bold">Captado Acumulado:</span>
-              <span className="text-base font-bold text-emerald-400">{formatCompactCurrency(captadoAcumulado)}</span>
+            <div className="flex justify-between items-baseline mb-2 font-sans">
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase font-bold">Captado Acumulado:</span>
+              <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">{formatCompactCurrency(captadoAcumulado)}</span>
             </div>
 
             {/* Bar */}
-            <div className="h-2 bg-slate-800 overflow-hidden mb-1.5">
+            <div className="h-2 bg-slate-200 dark:bg-navy-800 rounded-xs overflow-hidden mb-1.5">
               <div
-                className="h-full bg-emerald-500 transition-all duration-700"
+                className="h-full bg-emerald-500 rounded-xs transition-all duration-700"
                 style={{ width: `${percentualAtingimento}%` }}
               />
             </div>
-            <div className="text-right text-[10px] text-slate-400 font-mono">
+            <div className="text-right text-[10px] text-slate-500 font-bold tabular-nums">
               {percentualAtingimento}% da meta atingida
             </div>
           </div>
@@ -312,7 +316,17 @@ export const Module5Captacao: React.FC<Module5CaptacaoProps> = ({
 
       {/* Renderização Condicional: Radar ou Tabelas */}
       {activeTab === 'radar' ? (
-        <RadarCaptacao />
+        <RadarCaptacao
+          cidade={cidade}
+          uf={uf}
+          metaCaptacao={{
+            metaAnual: metaAnual || 32000000,
+            captadoRealizado: captadoAcumulado || 18450000,
+            potencialGlobal: (metaAnual || 32000000) * 3.5,
+            percentualAtingido: parseFloat(percentualAtingimento) || 57.6,
+            resumoTexto: `Você captou ${formatCompactCurrency(captadoAcumulado || 18450000)} de ${formatCompactCurrency(metaAnual || 32000000)} da meta anual (${percentualAtingimento}% atingido). Potencial em editais abertos: ${formatCompactCurrency((metaAnual || 32000000) * 3.5)}.`,
+          }}
+        />
       ) : (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm overflow-hidden shadow-sm">
           <div className="overflow-x-auto">

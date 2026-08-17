@@ -116,29 +116,29 @@ export const SimuladorCenariosLoa: React.FC<SimuladorCenariosLoaProps> = ({
   };
 
   return (
-    <div className="space-y-6 print:m-0 print:p-0">
+    <div className="space-y-6 print:m-0 print:p-0 font-sans">
       {/* Top Banner: Cabeçalho Executivo */}
-      <div className="bg-slate-900 border border-slate-800 rounded-sm p-5 text-white shadow-md flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm p-4 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4 font-sans">
+        <div className="space-y-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/40 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-purple-400" />
+            <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold uppercase tracking-wider bg-[#0a1128] text-white border border-navy-700 flex items-center gap-1 font-sans">
+              <Sparkles className="w-3.5 h-3.5 text-purple-300" />
               SIMULADOR DE CENÁRIOS LOA • TOMADA DE DECISÃO "E SE"
             </span>
             <DataSourceBadge size="xs" showDetails />
           </div>
-          <h2 className="text-xl font-bold uppercase tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-slate-950 dark:text-white font-sans">
             SIMULADOR DE IMPACTO FISCAL & RECEITAS PRÓPRIAS — {cidade} / {uf}
           </h2>
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium font-sans">
             Simule o efeito imediato de revisões de alíquota de ISS/ITBI, recadastramento imobiliário (PGV) e corte de custeio na folha LRF e no orçamento.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 print:hidden">
+        <div className="flex flex-wrap items-center gap-2 shrink-0 print:hidden font-sans">
           <button
             onClick={() => aplicarPreset('reset')}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono font-bold rounded-xs transition flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 bg-slate-100 dark:bg-navy-900 hover:bg-slate-200 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xs transition flex items-center gap-1.5 border border-slate-300 dark:border-navy-700 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Resetar</span>
@@ -146,7 +146,7 @@ export const SimuladorCenariosLoa: React.FC<SimuladorCenariosLoaProps> = ({
 
           <button
             onClick={handlePrint}
-            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold rounded-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+            className="px-3.5 py-1.5 bg-[#0a1128] hover:bg-[#1a2a52] text-white text-xs font-bold rounded-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Exportar PDF / Imprimir</span>
@@ -155,24 +155,24 @@ export const SimuladorCenariosLoa: React.FC<SimuladorCenariosLoaProps> = ({
       </div>
 
       {/* Síntese Executiva em Linguagem Humana */}
-      <div className={`p-4 rounded-sm border shadow-xs transition-all duration-300 ${
+      <div className={`p-4 rounded-sm border shadow-xs transition-all duration-300 font-sans ${
         deltaReceitaPropria > 0 || economiaCusteio > 0
-          ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-100'
-          : 'bg-slate-900 border-slate-800 text-slate-200'
+          ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200'
+          : 'bg-slate-50 dark:bg-navy-900/60 border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-200'
       }`}>
         <div className="flex items-start gap-3">
-          <div className="p-2 rounded-sm bg-emerald-500/20 text-emerald-400 shrink-0 mt-0.5">
-            <TrendingUp className="w-5 h-5" />
+          <div className="p-2 rounded-full bg-emerald-600 text-white shrink-0 mt-0.5 shadow-xs">
+            <TrendingUp className="w-4 h-4" />
           </div>
           <div className="space-y-1">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-400 block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block font-sans">
               SÍNTESE EXECUTIVA PARA O GABINETE DO PREFEITO
             </span>
             <p className="text-sm font-sans font-bold leading-relaxed">
               {deltaReceitaPropria > 0 || economiaCusteio > 0 ? (
                 <>
                   Com essas mudanças simuladas, a sua folha cairia de{' '}
-                  <span className="text-amber-300 font-mono underline">{folhaPctBase}%</span> para{' '}
+                  <span className="text-amber-700 dark:text-amber-300 font-bold underline">{folhaPctBase}%</span> para{' '}
                   <span className="text-emerald-300 font-mono underline">{folhaPctSimulada}%</span> da RCL (
                   <span className="text-emerald-300 font-mono font-bold">
                     +R$ {(ganhoFolgaPrudencial / 1_000_000).toFixed(2)}M

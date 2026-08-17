@@ -130,13 +130,13 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
   };
 
   return (
-    <div className="relative w-full h-[540px] sm:h-[580px] lg:h-[620px] bg-slate-950 border border-slate-800 rounded-sm overflow-hidden select-none flex flex-col shadow-inner">
+    <div className="relative w-full h-[540px] sm:h-[580px] lg:h-[620px] bg-slate-50 dark:bg-[#0a1128] border border-slate-200/90 dark:border-navy-800/80 rounded-sm overflow-hidden select-none flex flex-col shadow-xs font-sans">
       {/* Top Map Controls Bar */}
-      <div className="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 bg-slate-900/90 backdrop-blur-md p-1.5 rounded-sm border border-slate-700/80 shadow-md">
+      <div className="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-1.5 bg-white/95 dark:bg-navy-900/95 backdrop-blur-md p-1.5 rounded-sm border border-slate-200 dark:border-navy-700 shadow-sm font-sans">
         <button
           type="button"
           onClick={handleZoomIn}
-          className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer"
+          className="p-1.5 rounded-xs hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-200 transition cursor-pointer"
           title="Aproximar Mapa (Zoom In)"
         >
           <ZoomIn className="w-4 h-4" />
@@ -144,7 +144,7 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
         <button
           type="button"
           onClick={handleZoomOut}
-          className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer"
+          className="p-1.5 rounded-xs hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-200 transition cursor-pointer"
           title="Afastar Mapa (Zoom Out)"
         >
           <ZoomOut className="w-4 h-4" />
@@ -152,22 +152,22 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
         <button
           type="button"
           onClick={handleResetZoom}
-          className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition cursor-pointer font-mono text-[11px] flex items-center gap-1"
+          className="p-1.5 rounded-xs hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-200 transition cursor-pointer font-bold text-[11px] flex items-center gap-1"
           title="Centralizar e Restaurar Escala"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">100%</span>
         </button>
 
-        <div className="h-4 w-px bg-slate-700 mx-0.5" />
+        <div className="h-4 w-px bg-slate-200 dark:bg-navy-700 mx-0.5" />
 
         {/* Layer Visibility Menu Toggle */}
         <div className="relative">
           <button
             type="button"
             onClick={() => setShowLayerMenu(!showLayerMenu)}
-            className={`px-2 py-1 rounded text-xs font-mono flex items-center gap-1.5 transition cursor-pointer ${
-              showLayerMenu ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
+            className={`px-2 py-1 rounded-xs text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
+              showLayerMenu ? 'bg-[#0a1128] text-white' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-navy-800'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -175,11 +175,11 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
           </button>
 
           {showLayerMenu && (
-            <div className="absolute top-full left-0 mt-1.5 w-52 bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded p-2.5 shadow-xl z-30 space-y-1.5 text-xs font-mono">
-              <div className="text-[10px] text-slate-400 font-bold uppercase border-b border-slate-800 pb-1">
+            <div className="absolute top-full left-0 mt-1.5 w-52 bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-sm p-2.5 shadow-xl z-30 space-y-1.5 text-xs font-sans">
+              <div className="text-[10px] text-slate-400 font-bold uppercase border-b border-slate-100 dark:border-navy-800 pb-1">
                 Camadas Geográficas
               </div>
-              <label className="flex items-center gap-2 text-slate-300 cursor-pointer hover:text-white">
+              <label className="flex items-center gap-2 text-slate-700 dark:text-slate-200 cursor-pointer hover:text-slate-900">
                 <input
                   type="checkbox"
                   checked={showSectors}
@@ -188,7 +188,7 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
                 />
                 Setores Municipais
               </label>
-              <label className="flex items-center gap-2 text-slate-300 cursor-pointer hover:text-white">
+              <label className="flex items-center gap-2 text-slate-700 dark:text-slate-200 cursor-pointer hover:text-slate-900">
                 <input
                   type="checkbox"
                   checked={showRivers}
@@ -197,7 +197,7 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
                 />
                 Hidrografia (Rios & Represa)
               </label>
-              <label className="flex items-center gap-2 text-slate-300 cursor-pointer hover:text-white">
+              <label className="flex items-center gap-2 text-slate-700 dark:text-slate-200 cursor-pointer hover:text-slate-900">
                 <input
                   type="checkbox"
                   checked={showRoads}
@@ -206,7 +206,7 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
                 />
                 Eixos Viários (BR-476 / PR-423)
               </label>
-              <label className="flex items-center gap-2 text-slate-300 cursor-pointer hover:text-white">
+              <label className="flex items-center gap-2 text-slate-700 dark:text-slate-200 cursor-pointer hover:text-slate-900">
                 <input
                   type="checkbox"
                   checked={showRepar}
@@ -215,7 +215,7 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
                 />
                 Polo Petroquímico (REPAR)
               </label>
-              <label className="flex items-center gap-2 text-slate-300 cursor-pointer hover:text-white">
+              <label className="flex items-center gap-2 text-slate-700 dark:text-slate-200 cursor-pointer hover:text-slate-900">
                 <input
                   type="checkbox"
                   checked={showLabels}
@@ -230,13 +230,13 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
       </div>
 
       {/* Top Right Live Stats Chip */}
-      <div className="absolute top-3 right-3 z-20 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-sm border border-slate-700/80 shadow-md flex items-center gap-2.5 font-mono text-[11px]">
+      <div className="absolute top-3 right-3 z-20 bg-white/95 dark:bg-navy-900/95 backdrop-blur-md px-3 py-1.5 rounded-sm border border-slate-200 dark:border-navy-700 shadow-sm flex items-center gap-2.5 text-[11px] font-sans">
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-slate-300 font-bold">{obras.length} Obras Mapeadas</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-slate-700 dark:text-slate-200 font-bold">{obras.length} Obras Mapeadas</span>
         </div>
-        <span className="text-slate-600">|</span>
-        <span className="text-indigo-400 font-bold">
+        <span className="text-slate-300 dark:text-navy-700">|</span>
+        <span className="text-indigo-600 dark:text-indigo-400 font-extrabold tabular-nums">
           {formatCompactCurrency(obras.reduce((acc, o) => acc + o.valorPrevisto, 0))}
         </span>
       </div>
@@ -256,23 +256,23 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
           <defs>
             {/* Grid Pattern */}
             <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" strokeWidth="0.5" strokeOpacity="0.4" />
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#94a3b8" strokeWidth="0.5" strokeOpacity="0.25" />
             </pattern>
 
             {/* Industrial Pattern for REPAR */}
             <pattern id="repar-hatch" width="12" height="12" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
-              <line x1="0" y1="0" x2="0" y2="12" stroke="#f59e0b" strokeWidth="2" strokeOpacity="0.25" />
+              <line x1="0" y1="0" x2="0" y2="12" stroke="#f59e0b" strokeWidth="2" strokeOpacity="0.4" />
             </pattern>
 
             {/* Linear Gradients */}
             <linearGradient id="grad-rural" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#0f172a" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#064e3b" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="#f0fdf4" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#dcfce7" stopOpacity="0.85" />
             </linearGradient>
 
             <linearGradient id="grad-urban" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#1e1b4b" stopOpacity="0.85" />
-              <stop offset="100%" stopColor="#0f172a" stopOpacity="0.95" />
+              <stop offset="0%" stopColor="#f8fafc" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#e2e8f0" stopOpacity="0.85" />
             </linearGradient>
 
             <linearGradient id="grad-river" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -288,11 +288,11 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
           </defs>
 
           {/* Background Grid */}
-          <rect width="800" height="600" fill="#030712" />
+          <rect width="800" height="600" fill="#f8fafc" />
           <rect width="800" height="600" fill="url(#grid-pattern)" />
 
           {/* External Municipal Border Reference Contours */}
-          <g className="text-slate-700 font-mono text-[9px] font-semibold opacity-40">
+          <g className="text-slate-400 font-sans text-[9px] font-bold opacity-60">
             <text x="660" y="70" fill="#64748b">← CURITIBA (CIC)</text>
             <text x="680" y="460" fill="#64748b">← FAZENDA RIO GRANDE</text>
             <text x="70" y="110" fill="#64748b">CAMPO LARGO →</text>
@@ -308,8 +308,8 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
                 fill="url(#grad-rural)"
                 stroke="#10b981"
                 strokeWidth={hoveredSector === 'rural' ? '2.5' : '1.2'}
-                strokeOpacity="0.45"
-                className="cursor-pointer transition-all hover:stroke-opacity-90"
+                strokeOpacity="0.65"
+                className="cursor-pointer transition-all hover:stroke-opacity-100"
                 onMouseEnter={() => setHoveredSector('rural')}
                 onMouseLeave={() => setHoveredSector(null)}
               />
@@ -317,11 +317,11 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
               {/* Sector 5: Região Oeste / Thomaz Coelho & Tindiquera */}
               <path
                 d="M 260 170 L 370 160 L 360 320 L 260 290 L 230 200 Z"
-                fill="#0f172a"
+                fill="#f1f5f9"
                 stroke="#6366f1"
                 strokeWidth={hoveredSector === 'oeste' ? '2.5' : '1.2'}
-                strokeOpacity="0.4"
-                className="cursor-pointer transition-all hover:stroke-opacity-90"
+                strokeOpacity="0.5"
+                className="cursor-pointer transition-all hover:stroke-opacity-100"
                 onMouseEnter={() => setHoveredSector('oeste')}
                 onMouseLeave={() => setHoveredSector(null)}
               />
@@ -332,8 +332,8 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
                 fill="url(#grad-urban)"
                 stroke="#38bdf8"
                 strokeWidth={hoveredSector === 'norte' ? '2.5' : '1.5'}
-                strokeOpacity="0.5"
-                className="cursor-pointer transition-all hover:stroke-opacity-90"
+                strokeOpacity="0.6"
+                className="cursor-pointer transition-all hover:stroke-opacity-100"
                 onMouseEnter={() => setHoveredSector('norte')}
                 onMouseLeave={() => setHoveredSector(null)}
               />
@@ -341,10 +341,10 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
               {/* Sector 2: Centro Urbano / Fazenda Velha & Iguaçu */}
               <path
                 d="M 370 160 L 460 210 L 520 280 L 470 360 L 360 320 Z"
-                fill="#1e1b4b"
-                stroke="#818cf8"
+                fill="#e0e7ff"
+                stroke="#6366f1"
                 strokeWidth={hoveredSector === 'centro' ? '3' : '1.8'}
-                strokeOpacity="0.75"
+                strokeOpacity="0.85"
                 className="cursor-pointer transition-all hover:stroke-opacity-100"
                 onMouseEnter={() => setHoveredSector('centro')}
                 onMouseLeave={() => setHoveredSector(null)}
@@ -353,11 +353,11 @@ export const AraucariaSvgMap: React.FC<AraucariaSvgMapProps> = ({
               {/* Sector 3: Costeira / Sul / Estação / Campina das Pedras */}
               <path
                 d="M 360 320 L 470 360 L 540 400 L 450 510 L 320 420 Z"
-                fill="#0f172a"
+                fill="#f3e8ff"
                 stroke="#a855f7"
                 strokeWidth={hoveredSector === 'costeira' ? '2.5' : '1.2'}
-                strokeOpacity="0.5"
-                className="cursor-pointer transition-all hover:stroke-opacity-90"
+                strokeOpacity="0.6"
+                className="cursor-pointer transition-all hover:stroke-opacity-100"
                 onMouseEnter={() => setHoveredSector('costeira')}
                 onMouseLeave={() => setHoveredSector(null)}
               />

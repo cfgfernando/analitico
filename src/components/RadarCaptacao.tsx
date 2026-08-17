@@ -93,7 +93,7 @@ export const RadarCaptacao: React.FC<RadarCaptacaoProps> = ({
   metaCaptacao: initialMeta,
   alertasJanela: initialAlertas,
   resumo: initialResumo,
-  cidade = 'Contenda',
+  cidade = 'Araucária',
   uf = 'PR',
 }) => {
   const [activeTab, setActiveTab] = useState<'editais' | 'emendas' | 'projetos' | 'calendario' | 'simulador'>('editais');
@@ -475,7 +475,6 @@ export const RadarCaptacao: React.FC<RadarCaptacaoProps> = ({
     const matchUrgente = !filterUrgentes || p.statusPrazo === 'URGENTE';
     return matchMin && matchSearch && matchUrgente;
   });
-
   // Cálculo do Simulador de Contrapartida
   const contrapartidaCalculada = Math.round(simValorGlobal * (simPctContrapartida / 100));
   const repasseFederalCalculado = simValorGlobal - contrapartidaCalculada;
@@ -484,79 +483,79 @@ export const RadarCaptacao: React.FC<RadarCaptacaoProps> = ({
   const viabilidadeStatus = impactoCaixaLivre <= 15 ? 'ALTA' : impactoCaixaLivre <= 35 ? 'MODERADA' : 'CRITICA';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* =========================================================================
           HERO BANNER: META VS REALIZADO & ALERTAS DE JANELA
       ========================================================================= */}
-      <div className="bg-slate-900 border border-slate-800 rounded-sm p-5 text-white shadow-md space-y-4">
+      <div className="bg-white dark:bg-navy-950 border border-slate-200/90 dark:border-navy-800/80 rounded-sm p-4 shadow-sm font-sans space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
+          <div className="space-y-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-1">
-                <Target className="w-3 h-3 text-emerald-400" />
+              <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold uppercase tracking-wider bg-[#0a1128] text-white border border-navy-700 flex items-center gap-1 font-sans">
+                <Target className="w-3.5 h-3.5 text-emerald-400" />
                 RADAR DE CAPTAÇÃO DE RECURSOS • O QUE GERA RECEITA
               </span>
               <DataSourceBadge size="xs" showDetails />
             </div>
-            <h2 className="text-xl font-bold uppercase tracking-tight">
+            <h2 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-slate-950 dark:text-white font-sans">
               PAUTA ESTRATÉGICA DE CAPTAÇÃO — {cidade} / {uf}
             </h2>
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium font-sans">
               {meta.resumoTexto || `Você captou ${formatCompactCurrency(meta.captadoRealizado)} de ${formatCompactCurrency(meta.metaAnual)} potenciais (${meta.percentualAtingido}% atingido).`}
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-4 shrink-0 font-sans">
             <div className="text-right">
-              <span className="text-[10px] font-mono text-slate-400 block uppercase">Status CAUC / STN</span>
-              <span className={`inline-flex items-center gap-1 text-xs font-mono font-bold ${isCaucRegular ? 'text-emerald-400' : 'text-rose-400'}`}>
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Status CAUC / STN</span>
+              <span className={`inline-flex items-center gap-1 text-xs font-bold ${isCaucRegular ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                 {isCaucRegular ? <ShieldCheck className="w-3.5 h-3.5" /> : <ShieldAlert className="w-3.5 h-3.5" />}
                 {isCaucRegular ? '100% Regular (8/8)' : `${resumo.caucRestricoes} Restrição(ões)`}
               </span>
             </div>
-            <div className="text-right border-l border-slate-700 pl-3">
-              <span className="text-[10px] font-mono text-slate-400 block uppercase">Classificação CAPAG</span>
-              <span className="text-xs font-mono font-bold text-white">Score {resumo.capagScore || 'A'}</span>
+            <div className="text-right border-l border-slate-200 dark:border-navy-800 pl-4">
+              <span className="text-[10px] font-bold text-slate-400 uppercase block">Classificação CAPAG</span>
+              <span className="text-xs font-extrabold text-slate-900 dark:text-white">Score {resumo.capagScore || 'A'}</span>
             </div>
           </div>
         </div>
 
         {/* Barra de Progresso Meta vs Realizado */}
-        <div className="bg-slate-950/80 border border-slate-800 rounded-sm p-4 space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
+        <div className="bg-slate-50 dark:bg-navy-900/60 border border-slate-200 dark:border-navy-800 rounded-sm p-4 space-y-2 font-sans">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-sans">
             <div className="flex items-center gap-2">
-              <span className="text-slate-400">Captado Realizado:</span>
-              <strong className="text-emerald-400 text-sm">{formatCurrency(meta.captadoRealizado)}</strong>
+              <span className="text-slate-500 font-medium">Captado Realizado:</span>
+              <strong className="text-emerald-600 dark:text-emerald-400 text-sm font-extrabold tabular-nums">{formatCurrency(meta.captadoRealizado)}</strong>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-slate-400">Meta Anual: <strong className="text-white">{formatCurrency(meta.metaAnual)}</strong></span>
-              <span className="text-purple-400 font-bold">Potencial em Aberto: {formatCurrency(meta.potencialGlobal)}</span>
+              <span className="text-slate-500 font-medium">Meta Anual: <strong className="text-slate-900 dark:text-white tabular-nums">{formatCurrency(meta.metaAnual)}</strong></span>
+              <span className="text-purple-600 dark:text-purple-400 font-bold tabular-nums">Potencial em Aberto: {formatCurrency(meta.potencialGlobal)}</span>
             </div>
           </div>
 
-          <div className="h-3 bg-slate-800 rounded-full overflow-hidden flex">
+          <div className="h-2.5 bg-slate-200 dark:bg-navy-800 rounded-xs overflow-hidden flex">
             <div
-              className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-700"
+              className="h-full bg-emerald-500 rounded-xs transition-all duration-700"
               style={{ width: `${Math.min(100, meta.percentualAtingido)}%` }}
             />
           </div>
 
-          <div className="flex justify-between text-[11px] font-mono text-slate-400">
+          <div className="flex justify-between text-[11px] text-slate-500 font-medium font-sans">
             <span>{meta.percentualAtingido}% da meta anual executada</span>
-            <span className="text-emerald-400 font-bold">Saldo para meta: {formatCurrency(Math.max(0, meta.metaAnual - meta.captadoRealizado))}</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold tabular-nums">Saldo para meta: {formatCurrency(Math.max(0, meta.metaAnual - meta.captadoRealizado))}</span>
           </div>
         </div>
 
         {/* Banner de Alertas de Janela (Editais que fecham em menos de 15 dias) */}
         {alertasJanela.length > 0 && (
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-sm p-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+          <div className="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/80 rounded-sm p-3.5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs font-sans">
             <div className="flex items-center gap-2.5">
-              <Clock className="w-5 h-5 text-amber-400 shrink-0 animate-pulse" />
+              <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
               <div>
-                <strong className="text-amber-300 font-bold uppercase tracking-wider block">
+                <strong className="text-amber-800 dark:text-amber-300 font-bold uppercase tracking-wider block font-sans">
                   ⚠️ ALERTA DE JANELA: {alertasJanela.length} OPORTUNIDADES FECHAM EM MENOS DE 15 DIAS
                 </strong>
-                <p className="text-slate-300 text-[11px]">
+                <p className="text-slate-600 dark:text-slate-300 text-[11px] mt-0.5">
                   {alertasJanela.map(a => `${a.titulo} (${a.diasRestantes} dias)`).join(' • ')}
                 </p>
               </div>
@@ -566,9 +565,9 @@ export const RadarCaptacao: React.FC<RadarCaptacaoProps> = ({
                 setActiveTab('editais');
                 setFilterUrgentes(true);
               }}
-              className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-900 font-mono font-bold rounded-xs shrink-0 transition cursor-pointer text-xs"
+              className="px-3.5 py-1.5 bg-[#0a1128] hover:bg-[#1a2a52] text-white font-bold rounded-xs shrink-0 transition cursor-pointer text-xs shadow-xs"
             >
-              Ver Editais Urgentes →
+              <span>Ver Editais Urgentes →</span>
             </button>
           </div>
         )}

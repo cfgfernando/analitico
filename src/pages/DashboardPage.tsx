@@ -229,6 +229,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               emendas={captacao.emendas}
               convenios={captacao.convenios}
               searchQuery={searchQuery}
+              cidade={activeTenant?.cidade || 'Araucária'}
+              uf={activeTenant?.uf || 'PR'}
             />
           ) : (
             <div className="flex flex-col items-center justify-center py-20 space-y-3">
