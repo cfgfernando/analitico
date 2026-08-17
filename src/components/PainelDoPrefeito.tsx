@@ -68,6 +68,7 @@ type DetailModalType =
   | 'CAIXA_DISPONIVEL'
   | 'FOLHA_PESSOAL'
   | 'CAPTACAO_CAUC'
+  | 'CAPAG_STN'
   | 'PNCP_CONTRATOS'
   | 'TRANSPARENCIA_CGU'
   | 'IBGE_DEMOGRAFIA'
@@ -589,8 +590,8 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
         </div>
       </div>
 
-      {/* 4 Cards Principais de Gestão Fiscal & Caixa */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 5 Cards Principais de Gestão Fiscal, Caixa & CAPAG */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
         {/* Card 1: Semáforo Fiscal Geral */}
         <div
           onClick={() => setActiveModal('SEMAFORO_LRF')}
@@ -734,6 +735,44 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
               <CheckCircle2 className="w-3 h-3" /> CAUC: 100% Regular
             </span>
             <span className="text-blue-500">Ver 8 Itens STN →</span>
+          </div>
+        </div>
+
+        {/* Card 5: CAPAG / STN — Capacidade de Pagamento & Financiamentos */}
+        <div
+          onClick={() => setActiveModal('CAPAG_STN')}
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-4 shadow-sm flex flex-col justify-between cursor-pointer hover:border-emerald-500/50 hover:scale-[1.01] transition-all"
+        >
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                5. CAPAG / STN
+              </span>
+              <div className="flex items-center gap-1 text-emerald-500">
+                <span className="text-[9px] font-mono font-bold px-1 py-0.5 bg-emerald-500/10 rounded-xs">DETALHAR</span>
+                <Landmark className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold font-mono tracking-tighter text-emerald-600 dark:text-emerald-400">
+                NOTA A
+              </span>
+              <span className="text-xs font-mono text-slate-400">Tesouro Nacional</span>
+            </div>
+            <div className="mt-2 space-y-1 text-xs font-mono">
+              <div className="flex justify-between text-slate-700 dark:text-slate-300">
+                <span>Espaço Crédito:</span>
+                <strong className="text-emerald-600 dark:text-emerald-400">R$ 125,0 mi</strong>
+              </div>
+              <div className="flex justify-between text-slate-500 text-[11px]">
+                <span>Garantia União:</span>
+                <span className="text-emerald-600 font-bold">100% Habilitado</span>
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold flex justify-between">
+            <span>3 Indicadores STN (A, A, A)</span>
+            <span className="text-emerald-500">Ver FINISA/BNDES →</span>
           </div>
         </div>
       </div>
@@ -2434,6 +2473,99 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
                     <div className="flex justify-between p-2.5 bg-rose-500/10 rounded-xs border border-rose-500/30 text-rose-700 dark:text-rose-300">
                       <span>(-) Dedução para Formação do FUNDEB (20%):</span>
                       <strong className="font-bold">-{formatCurrency(Math.round((panelData.margemFolha?.gastoAtual || 40000000) * 0.14))}</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeModal === 'CAPAG_STN' && (
+                <div className="space-y-4 font-mono text-xs">
+                  {/* Banner da Nota */}
+                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-300">
+                        AVALIAÇÃO OFICIAL DA SECRETARIA DO TESOURO NACIONAL (STN / SICONFI)
+                      </span>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                        Classificação Geral: <span className="text-emerald-600 dark:text-emerald-400 font-extrabold text-lg">CAPAG NOTA A</span>
+                      </h3>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 font-sans">
+                        Município com situação fiscal de excelência e baixíssimo risco de crédito, 100% apto a contratar operações de crédito com garantia da União.
+                      </p>
+                    </div>
+
+                    <div className="bg-emerald-600 text-white px-3.5 py-2 rounded text-center shrink-0">
+                      <span className="text-[10px] block opacity-80 uppercase">Espaço Fiscal Disponível</span>
+                      <strong className="text-base font-extrabold">R$ 125,0 mi</strong>
+                    </div>
+                  </div>
+
+                  {/* 3 Indicadores da Portaria STN */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {/* Indicador 1: Endividamento */}
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-sm border border-slate-200 dark:border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-400 uppercase font-bold">Indicador 1: Endividamento</span>
+                        <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-600 rounded text-[9px] font-bold">NOTA A</span>
+                      </div>
+                      <div className="text-lg font-bold text-slate-900 dark:text-white">
+                        14,8% <span className="text-[11px] text-slate-400 font-normal">DCL / RCL</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-sans">
+                        Dívida Consolidada Líquida muito abaixo do limite máximo de 60% para Nota A.
+                      </p>
+                    </div>
+
+                    {/* Indicador 2: Poupança Corrente */}
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-sm border border-slate-200 dark:border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-400 uppercase font-bold">Indicador 2: Poupança Corrente</span>
+                        <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-600 rounded text-[9px] font-bold">NOTA A</span>
+                      </div>
+                      <div className="text-lg font-bold text-slate-900 dark:text-white">
+                        84,2% <span className="text-[11px] text-slate-400 font-normal">DC / RCA</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-sans">
+                        Despesas Correntes absorvem menos de 90% das Receitas Correntes Ajustadas.
+                      </p>
+                    </div>
+
+                    {/* Indicador 3: Liquidez */}
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-sm border border-slate-200 dark:border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-400 uppercase font-bold">Indicador 3: Liquidez</span>
+                        <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-600 rounded text-[9px] font-bold">NOTA A</span>
+                      </div>
+                      <div className="text-lg font-bold text-slate-900 dark:text-white">
+                        0,38 <span className="text-[11px] text-slate-400 font-normal">Obrigações / Caixa</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-sans">
+                        Disponibilidade de caixa bruto cobre com folga integral todas as obrigações a curto prazo.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Linhas de Financiamento Recomendadas */}
+                  <div className="space-y-2 pt-2">
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                      🏦 Linhas de Crédito & Financiamentos Disponíveis para o Município:
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                      <div className="p-2.5 bg-slate-50 dark:bg-slate-800/30 rounded border border-slate-200 dark:border-slate-800">
+                        <strong className="text-blue-600 dark:text-blue-400 block font-bold">FINISA (Caixa Econômica)</strong>
+                        <span className="text-slate-500 text-[11px]">Infraestrutura, Pavimentação e Saneamento</span>
+                        <div className="mt-1 text-slate-900 dark:text-white font-bold">Taxa: CDI + 1,45% a.a.</div>
+                      </div>
+                      <div className="p-2.5 bg-slate-50 dark:bg-slate-800/30 rounded border border-slate-200 dark:border-slate-800">
+                        <strong className="text-emerald-600 dark:text-emerald-400 block font-bold">BNDES Municípios</strong>
+                        <span className="text-slate-500 text-[11px]">Modernização da Gestão & Saúde Digital</span>
+                        <div className="mt-1 text-slate-900 dark:text-white font-bold">Taxa: TLP + 1,20% a.a.</div>
+                      </div>
+                      <div className="p-2.5 bg-slate-50 dark:bg-slate-800/30 rounded border border-slate-200 dark:border-slate-800">
+                        <strong className="text-purple-600 dark:text-purple-400 block font-bold">Paranacidade (FDU)</strong>
+                        <span className="text-slate-500 text-[11px]">Maquinários, Frotas e Escolas</span>
+                        <div className="mt-1 text-slate-900 dark:text-white font-bold">Taxa: Selic Subsid. Estadual</div>
+                      </div>
                     </div>
                   </div>
                 </div>

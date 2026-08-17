@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, Inject } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../database/prisma.service';
 import { PncpConnectorService } from './pncp-connector.service';
@@ -19,7 +19,7 @@ export class AutoSyncSchedulerService implements OnModuleInit {
   private isSyncRunning = false;
 
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
     private readonly provenanceService: DataProvenanceService,
   ) {}
 
@@ -58,16 +58,21 @@ export class AutoSyncSchedulerService implements OnModuleInit {
     const resultados: SincronizacaoResultado[] = [];
 
     try {
+      if (!this.prisma || !this.prisma.tenant) {
+        this.logger.warn('[AutoSyncScheduler] PrismaService não disponível. Pulando ciclo.');
+        return [];
+      }
+
       let tenants = await this.prisma.tenant.findMany({
-        where: { ativo: true },
-      }).catch(() => []);
+        where: { status: 'ATIVO' },
+      }).catch(() => [] as any[]);
 
       if (tenants.length === 0) {
-        tenants = await this.prisma.tenant.findMany().catch(() => []);
+        tenants = await this.prisma.tenant.findMany().catch(() => [] as any[]);
       }
 
       for (const tenant of tenants) {
-        this.logger.log(`[AutoSyncScheduler] Sincronizando dados para prefeitura: ${tenant.nome} (${tenant.id})`);
+        this.logger.log(`[AutoSyncScheduler] Sincronizando dados para prefeitura: ${tenant.nomePrefeitura} (${tenant.id})`);
         const resTenant = await this.sincronizarTodasFontesPorTenant(tenant.id, tenant.cnpj || '76.105.535/0001-99');
         resultados.push(...resTenant);
       }
@@ -86,6 +91,18 @@ export class AutoSyncSchedulerService implements OnModuleInit {
   public async sincronizarTodasFontesPorTenant(tenantId: string, cnpj = '76.105.535/0001-99'): Promise<SincronizacaoResultado[]> {
     const anoAtual = new Date().getFullYear();
     const resultados: SincronizacaoResultado[] = [];
+
+    if (!this.prisma || !this.provenanceService) {
+      this.logger.warn('[AutoSyncScheduler] PrismaService ou ProvenanceService não disponível.');
+      return [{
+        fonte: 'SISTEMA',
+        nome: 'Verificação de Disponibilidade',
+        sucesso: false,
+        registrosImportados: 0,
+        mensagem: 'Serviços de sincronização não disponíveis no momento.',
+        timestamp: new Date().toISOString(),
+      }];
+    }
 
     // 1. PNCP Federal (Lei 14.133/2021)
     try {
@@ -129,6 +146,7 @@ export class AutoSyncSchedulerService implements OnModuleInit {
             valorLiquidado: item.valorAcumulado,
             valorDisponivel: Math.max(0, item.valorGlobal - item.valorAcumulado),
             isDemonstracao: false,
+            ativo: true,
           },
           create: {
             id: contratoId,
@@ -147,6 +165,7 @@ export class AutoSyncSchedulerService implements OnModuleInit {
             dataInicio: new Date(item.dataVigenciaInicio),
             dataFim: new Date(item.dataVigenciaFim),
             isDemonstracao: false,
+            ativo: true,
           },
         });
         countPncp++;

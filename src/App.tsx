@@ -6,6 +6,7 @@ import { ToastMessage, ComparativeMode } from './types/fiscal';
 import { DashboardPage } from './pages/DashboardPage';
 import { TenantLoginPage } from './pages/TenantLoginPage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
+import { RelatorioConsolidadoModal } from './components/RelatorioConsolidadoModal';
 import { AuthProvider, useAuthContext, AuthRole } from './contexts/AuthContext';
 import { TenantProvider, useTenantContext } from './contexts/TenantContext';
 import { useFiscalData } from './hooks/useFiscalData';
@@ -50,6 +51,7 @@ function MainDashboardApp() {
   });
   const [isPresentationMode, setIsPresentationMode] = useState<boolean>(false);
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
+  const [isRelatorioConsolidadoOpen, setIsRelatorioConsolidadoOpen] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   // Keep tab updated on role change
@@ -322,6 +324,7 @@ function MainDashboardApp() {
           onToggleSidebar={handleToggleSidebar}
           onSelectTenant={handleTenantSelect}
           onLogout={handleLogout}
+          onOpenRelatorioExecutivo={() => setIsRelatorioConsolidadoOpen(true)}
         />
 
         {/* Presentation Mode Slide Bar */}
@@ -450,6 +453,15 @@ function MainDashboardApp() {
           </footer>
         )}
       </div>
+
+      {/* Modal de Dossiê Executivo Consolidado Timbrado (1-Click PDF) */}
+      <RelatorioConsolidadoModal
+        isOpen={isRelatorioConsolidadoOpen}
+        onClose={() => setIsRelatorioConsolidadoOpen(false)}
+        summary={summary}
+        ano={ano}
+        activeTenant={activeTenant}
+      />
     </div>
   );
 }

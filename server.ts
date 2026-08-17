@@ -44,34 +44,6 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 const ARAUCARIA_IBGE = '4101804';
 
-async function resolveDbTenant(tenantId?: string) {
-  try {
-    if (tenantId) {
-      let t = await prisma.tenant.findUnique({ where: { id: String(tenantId) } }).catch(() => null);
-      if (t) return t;
-
-      t = await prisma.tenant.findFirst({
-        where: {
-          OR: [
-            { codigoIbge: String(tenantId) },
-            { slug: String(tenantId).toLowerCase() },
-            { nome: { contains: String(tenantId) } },
-          ],
-        },
-      }).catch(() => null);
-      if (t) return t;
-    }
-
-    let defaultTenant = await prisma.tenant.findFirst({ where: { codigoIbge: ARAUCARIA_IBGE } }).catch(() => null);
-    if (!defaultTenant) {
-      defaultTenant = await prisma.tenant.findFirst().catch(() => null);
-    }
-    return defaultTenant;
-  } catch {
-    return null;
-  }
-}
-
 // Helper to fetch from Siconfi with retry and cache
 async function fetchSiconfi(endpoint: string, params: Record<string, string>) {
   const queryParams = new URLSearchParams(params).toString();
@@ -2541,9 +2513,9 @@ app.post('/api/painel/sincronizar-todas-fontes', async (req, res) => {
 
     res.json({
       sucesso: true,
-      mensagem: `Sincronização concluída! ${countPncp} contratos oficiais foram integrados e salvos com sucesso na base de dados de ${tenant.nome}.`,
+      mensagem: `Sincronização concluída! ${countPncp} contratos oficiais foram integrados e salvos com sucesso na base de dados de ${tenant.nomePrefeitura}.`,
       tenantId: targetTenantId,
-      municipio: tenant.nome,
+      municipio: tenant.nomePrefeitura,
       totalContratos: countPncp,
       dataSincronizacao: new Date().toISOString(),
     });
@@ -2655,10 +2627,10 @@ app.post('/api/painel/sincronizar-pncp', async (req, res) => {
       for (let m = 1; m <= 12; m++) {
         await prisma.contratoGastoMensal.upsert({
           where: {
-            contratoId_ano_mes: {
+            contratoId_mes_ano: {
               contratoId: contrato.id,
-              ano: 2025,
               mes: m,
+              ano: 2025,
             },
           },
           update: { valorLiquidado: Math.round(baseMensal * (0.85 + (m % 3) * 0.1)) },
@@ -2673,10 +2645,10 @@ app.post('/api/painel/sincronizar-pncp', async (req, res) => {
       for (let m = 1; m <= 8; m++) {
         await prisma.contratoGastoMensal.upsert({
           where: {
-            contratoId_ano_mes: {
+            contratoId_mes_ano: {
               contratoId: contrato.id,
-              ano: 2026,
               mes: m,
+              ano: 2026,
             },
           },
           update: { valorLiquidado: Math.round(baseMensal * (0.90 + (m % 4) * 0.08)) },

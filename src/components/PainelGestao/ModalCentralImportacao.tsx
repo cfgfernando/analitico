@@ -153,7 +153,9 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
 
       setPreviewXml(data);
       if (!data.valid) {
-        setFeedback({ tipo: 'erro', texto: data.erros?.[0] || data.mensagem || 'Arquivo XML inválido.' });
+        const errorMsg = data.erros?.[0] || data.mensagem || data.message || data.errorDetail || 'Arquivo XML inválido.';
+        const allErrors = data.erros?.length > 1 ? `\n\nDetalhes:\n${data.erros.join('\n')}` : '';
+        setFeedback({ tipo: 'erro', texto: errorMsg + allErrors });
       }
     } catch {
       setFeedback({ tipo: 'erro', texto: 'Erro ao validar XML.' });
@@ -183,7 +185,8 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
           onClose();
         }, 1500);
       } else {
-        setFeedback({ tipo: 'erro', texto: data.error || 'Falha ao salvar XML.' });
+        const errorMsg = data.error || data.erros?.[0] || data.mensagem || data.message || 'Erro ao importar XML.';
+        setFeedback({ tipo: 'erro', texto: errorMsg });
       }
     } catch (e: any) {
       setFeedback({ tipo: 'erro', texto: `Erro de conexão: ${e.message}` });

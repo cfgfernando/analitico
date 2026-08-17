@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, Req, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Req, Res, HttpStatus, Logger, Inject } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { PrismaService } from '../database/prisma.service';
 import { SpreadsheetImporterService } from './spreadsheet-importer.service';
@@ -10,8 +10,10 @@ const ARAUCARIA_IBGE = '4101804';
 
 @Controller('api/painel')
 export class PainelController {
+  private readonly logger = new Logger(PainelController.name);
+
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
     private readonly autoSyncScheduler: AutoSyncSchedulerService,
   ) {}
 
@@ -30,7 +32,7 @@ export class PainelController {
       sucesso: true,
       mensagem: 'Sincronização global de todas as fontes governamentais concluída!',
       tenantId: tenant.id,
-      municipio: tenant.nome,
+      municipio: tenant.nomePrefeitura,
       resultados,
       dataSincronizacao: new Date().toISOString(),
     };
@@ -38,108 +40,184 @@ export class PainelController {
 
   private async resolveTenant(tenantId?: string) {
     try {
+      // Testa conexão com o banco antes de tudo
+      await this.prisma.$queryRaw`SELECT 1`.catch((e) => {
+        this.logger.error(`[resolveTenant] FALHA na conexão com MySQL/Prisma: ${e.message}. Verifique se o MySQL está rodando no Laragon.`);
+        throw e;
+      });
+
       if (tenantId) {
-        let t = await this.prisma.tenant.findUnique({ where: { id: String(tenantId) } }).catch(() => null);
+        let t = await this.prisma.tenant.findUnique({ where: { id: String(tenantId) } }).catch((e) => {
+          this.logger.warn(`[resolveTenant] findUnique falhou para id='${tenantId}': ${e.message}`);
+          return null;
+        });
         if (t) return t;
 
         t = await this.prisma.tenant.findFirst({
           where: {
             OR: [
               { codigoIbge: String(tenantId) },
-              { slug: String(tenantId).toLowerCase() },
-              { nome: { contains: String(tenantId) } },
+              { nomePrefeitura: { contains: String(tenantId) } },
             ],
           },
-        }).catch(() => null);
+        }).catch((e) => {
+          this.logger.warn(`[resolveTenant] findFirst falhou para tenantId='${tenantId}': ${e.message}`);
+          return null;
+        });
         if (t) return t;
       }
 
       let defaultTenant = await this.prisma.tenant.findFirst({ where: { codigoIbge: ARAUCARIA_IBGE } }).catch(() => null);
       if (!defaultTenant) {
+        this.logger.warn(`[resolveTenant] Tenant IBGE ${ARAUCARIA_IBGE} não encontrado, buscando primeiro tenant ativo...`);
+        defaultTenant = await this.prisma.tenant.findFirst({ where: { status: 'ATIVO' } }).catch(() => null);
+      }
+      if (!defaultTenant) {
+        this.logger.warn(`[resolveTenant] Nenhum tenant ativo encontrado, buscando qualquer tenant...`);
         defaultTenant = await this.prisma.tenant.findFirst().catch(() => null);
       }
+      if (!defaultTenant) {
+        this.logger.error(`[resolveTenant] NENHUM tenant encontrado no banco de dados. Verifique se o Prisma está conectado e a tabela 'tenants' populada.`);
+      }
       return defaultTenant;
-    } catch {
+    } catch (e: any) {
+      this.logger.error(`[resolveTenant] Erro inesperado: ${e.message}`, e.stack);
       return null;
     }
   }
 
   // 1. GET /api/painel/contratos — Lista todos os contratos oficiais cadastrados
   @Get('contratos')
-  async getContratos(@Query('tenantId') tenantId?: string, @Query('ano') anoStr?: string) {
+  async getContratos(
+    @Query('tenantId') tenantId?: string,
+    @Query('ano') anoStr?: string,
+    @Query('secretaria') secretariaFiltro?: string,
+    @Query('criticidade') criticidadeFiltro?: string,
+    @Query('status') statusFiltro?: string,
+    @Query('valorMinimo') valorMinimoStr?: string,
+    @Query('valorMaximo') valorMaximoStr?: string,
+    @Query('diasRestantesMax') diasRestantesMaxStr?: string,
+  ) {
     const ano = parseInt(anoStr || '2025', 10);
     const tenant = await this.resolveTenant(tenantId);
     if (!tenant) {
-      return { contratos: [] };
+      return { contratos: [], secretarias: [] };
     }
 
-    let contratosBanco = await this.prisma.contrato.findMany({
-      where: { tenantId: tenant.id, ativo: true },
+    // Monta filtro dinâmico
+    const whereContrato: any = { tenantId: tenant.id, ativo: true };
+
+    if (secretariaFiltro && secretariaFiltro !== 'todas') {
+      const secBusca = secretariaFiltro.replace('Secretaria Municipal de ', '').trim();
+      whereContrato.OR = [
+        { secretaria: { codigo: { equals: secretariaFiltro } } },
+        { secretaria: { nome: { contains: secBusca } } },
+      ];
+    }
+
+    if (criticidadeFiltro && criticidadeFiltro !== 'todas') {
+      whereContrato.criticidade = criticidadeFiltro;
+    }
+
+    if (valorMinimoStr || valorMaximoStr) {
+      whereContrato.valorTotal = {};
+      if (valorMinimoStr) whereContrato.valorTotal.gte = parseFloat(valorMinimoStr);
+      if (valorMaximoStr) whereContrato.valorTotal.lte = parseFloat(valorMaximoStr);
+    }
+
+    const contratosBanco = await this.prisma.contrato.findMany({
+      where: whereContrato,
       include: { secretaria: true },
       orderBy: { valorTotal: 'desc' },
     });
 
-    // Se a base do tenant estiver vazia no banco, aciona sincronização inicial automática do PNCP
-    if (contratosBanco.length === 0) {
-      await this.sincronizarPncpInterno(tenant.id, ano, tenant.cnpj || '76.105.535/0001-99');
-      contratosBanco = await this.prisma.contrato.findMany({
-        where: { tenantId: tenant.id, ativo: true },
-        include: { secretaria: true },
-        orderBy: { valorTotal: 'desc' },
-      });
-    }
-
-    const hoje = new Date();
-    const contratosFormatados = contratosBanco.map(c => {
-      const dataFim = c.dataFim ? c.dataFim.toISOString().split('T')[0] : `${ano}-12-31`;
-      const fimDate = new Date(dataFim);
-      const diffTime = fimDate.getTime() - hoje.getTime();
-      const diasRestantes = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-      const vTotal = Number(c.valorTotal || 0);
-      const vLiq = Number(c.valorLiquidado || 0);
-      const vEmp = Number(c.valorTotal || 0);
-      const vDisp = Number(c.valorDisponivel || Math.max(0, vTotal - vLiq));
-      const pctExec = vTotal > 0 ? (vLiq / vTotal) * 100 : 0;
-
-      return {
-        id: c.id,
-        numero: c.numero,
-        ano: ano,
-        secretaria: c.secretaria?.nome ? c.secretaria.nome.replace('Secretaria Municipal de ', '') : 'Geral',
-        secretariaNome: c.secretaria?.nome || 'Secretaria Municipal',
-        fornecedor: c.empresa,
-        cnpj: '76.105.535/0001-99',
-        objeto: c.objeto,
-        valorTotal: vTotal,
-        valorLiquidado: vLiq,
-        valorEmpenhado: vEmp,
-        saldoDisponivel: vDisp,
-        pctExecutado: pctExec,
-        dataVigenciaInicio: c.dataInicio ? c.dataInicio.toISOString().split('T')[0] : `${ano}-01-01`,
-        dataVigenciaFim: dataFim,
-        diasRestantes: diasRestantes,
-        status: diasRestantes < 60 ? 'A_VENCER_60D' : 'VIGENTE',
-        processo: `PA-${c.numero.replace(/\//g, '_')}`,
-        protocoloTce: `TCE-PR ${c.numero}`,
-        dataAssinatura: c.dataInicio ? c.dataInicio.toISOString().split('T')[0] : `${ano}-01-01`,
-        modalidade: 'Pregão Eletrônico (Lei 14.133/2021)',
-        fonteRecurso: 'Recursos Próprios / Tesouro Municipal',
-        fiscalNome: 'Auditor Fiscal Designado',
-        fiscalMatricula: 'MAT-7782',
-        fonteOrigem: 'PNCP' as const,
-        historicoMensal: [
-          { mes: 'JAN', liquidado: Math.round(vLiq * 0.1) },
-          { mes: 'FEV', liquidado: Math.round(vLiq * 0.12) },
-          { mes: 'MAR', liquidado: Math.round(vLiq * 0.15) },
-          { mes: 'ABR', liquidado: Math.round(vLiq * 0.13) },
-          { mes: 'MAI', liquidado: Math.round(vLiq * 0.18) },
-          { mes: 'JUN', liquidado: Math.round(vLiq * 0.16) },
-          { mes: 'JUL', liquidado: Math.round(vLiq * 0.16) },
-        ],
-      };
+    // Busca secretarias disponíveis para popular filtros
+    const secretariasDb = await this.prisma.secretaria.findMany({
+      where: { tenantId: tenant.id },
+      select: { codigo: true, nome: true },
     });
 
-    return { contratos: contratosFormatados };
+    const hoje = new Date();
+    const contratosFormatados = contratosBanco
+      .map(c => {
+        const dataFim = c.dataFim ? c.dataFim.toISOString().split('T')[0] : `${ano}-12-31`;
+        const fimDate = new Date(dataFim);
+        const diffTime = fimDate.getTime() - hoje.getTime();
+        const diasRestantes = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+        const vTotal = Number(c.valorTotal || 0);
+        const vLiq = Number(c.valorLiquidado || 0);
+        const vEmp = Number(c.valorTotal || 0);
+        const vDisp = Number(c.valorDisponivel || Math.max(0, vTotal - vLiq));
+        const pctExec = vTotal > 0 ? (vLiq / vTotal) * 100 : 0;
+
+        // Determina status real baseado em dias restantes e liquidacao
+        let statusReal = 'VIGENTE';
+        if (diasRestantes <= 0) statusReal = 'ENCERRADO';
+        else if (diasRestantes < 60) statusReal = 'A_VENCER_60D';
+        else if (diasRestantes < 180) statusReal = 'A_VENCER_180D';
+        if (pctExec >= 95) statusReal = 'QUITADO';
+
+        // Extrai ano real do contrato a partir da data
+        const anoContrato = c.dataInicio ? c.dataInicio.getFullYear() : ano;
+        const isTceXml = c.id.includes('XML') || c.id.includes('TCE') || c.numero.includes('TCE');
+
+        return {
+          id: c.id,
+          numero: c.numero,
+          ano: anoContrato,
+          secretaria: c.secretaria?.nome ? c.secretaria.nome.replace('Secretaria Municipal de ', '') : 'Geral',
+          secretariaNome: c.secretaria?.nome || 'Secretaria Municipal',
+          secretariaCodigo: c.secretaria?.codigo || 'ADMIN',
+          fornecedor: c.empresa,
+          cnpj: '76.105.535/0001-99',
+          objeto: c.objeto,
+          valorTotal: vTotal,
+          valorLiquidado: vLiq,
+          valorEmpenhado: vEmp,
+          saldoDisponivel: vDisp,
+          pctExecutado: pctExec,
+          criticidade: c.criticidade,
+          criticidadeFonte: c.criticidadeFonte,
+          impactoMunicipal: c.impactoMunicipal,
+          dataVigenciaInicio: c.dataInicio ? c.dataInicio.toISOString().split('T')[0] : `${ano}-01-01`,
+          dataVigenciaFim: dataFim,
+          diasRestantes: diasRestantes,
+          status: statusReal,
+          processo: `PA-${c.numero.replace(/\//g, '_')}`,
+          protocoloTce: `TCE-PR ${c.numero}`,
+          dataAssinatura: c.dataInicio ? c.dataInicio.toISOString().split('T')[0] : `${ano}-01-01`,
+          modalidade: 'Pregão Eletrônico (Lei 14.133/2021)',
+          fonteRecurso: 'Recursos Próprios / Tesouro Municipal',
+          fiscalNome: 'Auditor Fiscal Designado',
+          fiscalMatricula: 'MAT-7782',
+          fonteOrigem: isTceXml ? ('TCE-PR' as const) : ('PNCP' as const),
+          isDemonstracao: c.isDemonstracao,
+          historicoMensal: [
+            { mes: 'JAN', liquidado: Math.round(vLiq * 0.1) },
+            { mes: 'FEV', liquidado: Math.round(vLiq * 0.12) },
+            { mes: 'MAR', liquidado: Math.round(vLiq * 0.15) },
+            { mes: 'ABR', liquidado: Math.round(vLiq * 0.13) },
+            { mes: 'MAI', liquidado: Math.round(vLiq * 0.18) },
+            { mes: 'JUN', liquidado: Math.round(vLiq * 0.16) },
+            { mes: 'JUL', liquidado: Math.round(vLiq * 0.16) },
+          ],
+        };
+      })
+      .filter(c => {
+        // Filtros pós-formatação
+        if (statusFiltro && statusFiltro !== 'todos' && c.status !== statusFiltro) return false;
+        if (diasRestantesMaxStr) {
+          const maxDias = parseInt(diasRestantesMaxStr, 10);
+          if (!isNaN(maxDias) && c.diasRestantes > maxDias) return false;
+        }
+        return true;
+      });
+
+    return {
+      contratos: contratosFormatados,
+      secretarias: secretariasDb,
+      total: contratosFormatados.length,
+    };
   }
 
   // 2. POST /api/painel/sincronizar-pncp — Sincroniza com PNCP e persiste no banco
@@ -222,6 +300,7 @@ export class PainelController {
           criticidade: inferido.criticidade,
           impactoMunicipal: inferido.impacto,
           isDemonstracao: false,
+          ativo: true,
         },
         create: {
           id: contratoId,
@@ -240,6 +319,7 @@ export class PainelController {
           dataInicio: new Date(item.dataVigenciaInicio),
           dataFim: new Date(item.dataVigenciaFim),
           isDemonstracao: false,
+          ativo: true,
         },
       });
     }
@@ -344,26 +424,31 @@ export class PainelController {
 
       const valTotal = row.valor_total;
       const valLiq = row.valor_liquidado;
-      const contratoId = `${tenant.id}-${row.numero.replace(/\//g, '_')}`;
+      const safeNumero = String(row.numero || '').slice(0, 100);
+      const safeEmpresa = String(row.empresa || 'Fornecedor Não Informado').slice(0, 500);
+      const safeObjeto = String(row.objeto || 'Sem descrição cadastrada').trim();
+      const safeCategoria = String(row.categoria || 'OUTROS').slice(0, 100);
+      const contratoId = `${tenant.id}-${safeNumero.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
       await this.prisma.contrato.upsert({
         where: { id: contratoId },
         update: {
-          empresa: row.empresa,
-          objeto: row.objeto,
+          empresa: safeEmpresa,
+          objeto: safeObjeto,
           valorTotal: valTotal,
           valorLiquidado: valLiq,
           valorDisponivel: Math.max(0, valTotal - valLiq),
           isDemonstracao: false,
+          ativo: true,
         },
         create: {
           id: contratoId,
           tenantId: tenant.id,
           secretariaId: secretaria.id,
-          numero: row.numero,
-          empresa: row.empresa,
-          objeto: row.objeto,
-          categoria: row.categoria,
+          numero: safeNumero,
+          empresa: safeEmpresa,
+          objeto: safeObjeto,
+          categoria: safeCategoria,
           valorTotal: valTotal,
           valorLiquidado: valLiq,
           valorDisponivel: Math.max(0, valTotal - valLiq),
@@ -373,6 +458,7 @@ export class PainelController {
           dataInicio: new Date(row.data_inicio),
           dataFim: new Date(row.data_fim),
           isDemonstracao: false,
+          ativo: true,
         },
       });
     }
@@ -397,9 +483,14 @@ export class PainelController {
   // 6. POST /api/painel/importar-xml
   @Post('importar-xml')
   async importarXml(@Body() body: { xmlContent: string; tenantId?: string }) {
+    this.logger.log(`[importar-xml] Recebido tenantId=${body?.tenantId || '(vazio)'}`);
+
     const tenant = await this.resolveTenant(body.tenantId);
     if (!tenant) {
-      return { success: false, error: 'Município não encontrado.' };
+      const tid = body?.tenantId || '(vazio)';
+      const msg = `Municipio nao encontrado para tenantId="${tid}". Verifique se o MySQL esta rodando no Laragon e se o banco foi populado com "npx prisma db seed".`;
+      this.logger.error(`[importar-xml] ${msg}`);
+      return { success: false, error: msg };
     }
 
     const validation = XmlImporterService.parseAndValidateXml(body.xmlContent);
@@ -428,36 +519,53 @@ export class PainelController {
 
       const valTotal = row.valor_total;
       const valLiq = row.valor_liquidado;
-      const cleanNum = row.numero.replace(/[^a-zA-Z0-9]/g, '_');
+      const safeNumero = String(row.numero || '').slice(0, 100);
+      const safeEmpresa = String(row.empresa || 'Fornecedor Não Informado').slice(0, 500);
+      const safeObjeto = String(row.objeto || 'Sem descrição cadastrada').trim();
+      const safeCategoria = String(row.categoria || 'OUTROS').slice(0, 100);
+      const cleanNum = safeNumero.replace(/[^a-zA-Z0-9]/g, '_');
       const contratoId = `${tenant.id}-XML-${cleanNum}`;
+
+      const parseSafeDate = (d: any, fallbackStr: string) => {
+        if (!d) return new Date(fallbackStr);
+        const parsed = new Date(d);
+        return isNaN(parsed.getTime()) ? new Date(fallbackStr) : parsed;
+      };
+
+      const dInicio = parseSafeDate(row.data_inicio, '2026-01-01');
+      const dFim = parseSafeDate(row.data_fim, '2026-12-31');
 
       await this.prisma.contrato.upsert({
         where: { id: contratoId },
         update: {
-          empresa: row.empresa,
-          objeto: row.objeto,
+          empresa: safeEmpresa,
+          objeto: safeObjeto,
           valorTotal: valTotal,
           valorLiquidado: valLiq,
           valorDisponivel: Math.max(0, valTotal - valLiq),
+          dataInicio: dInicio,
+          dataFim: dFim,
           isDemonstracao: false,
+          ativo: true,
         },
         create: {
           id: contratoId,
           tenantId: tenant.id,
           secretariaId: secretaria.id,
-          numero: row.numero,
-          empresa: row.empresa,
-          objeto: row.objeto,
-          categoria: row.categoria,
+          numero: safeNumero,
+          empresa: safeEmpresa,
+          objeto: safeObjeto,
+          categoria: safeCategoria,
           valorTotal: valTotal,
           valorLiquidado: valLiq,
           valorDisponivel: Math.max(0, valTotal - valLiq),
           criticidade: 'IMPORTANTE',
           criticidadeFonte: 'AUTOMATICA',
           impactoMunicipal: 'ALTO',
-          dataInicio: new Date(row.data_inicio),
-          dataFim: new Date(row.data_fim),
+          dataInicio: dInicio,
+          dataFim: dFim,
           isDemonstracao: false,
+          ativo: true,
         },
       });
     }
@@ -585,6 +693,7 @@ export class PainelController {
           valorLiquidado: valLiq,
           valorDisponivel: Math.max(0, valTotal - valLiq),
           isDemonstracao: false,
+          ativo: true,
         },
         create: {
           id: contratoId,
@@ -603,6 +712,7 @@ export class PainelController {
           dataInicio: item.dataInicio || item.dataVigenciaInicio ? new Date(item.dataInicio || item.dataVigenciaInicio) : new Date(),
           dataFim: item.dataFim || item.dataVigenciaFim ? new Date(item.dataFim || item.dataVigenciaFim) : new Date(new Date().setFullYear(new Date().getFullYear() + 1)),
           isDemonstracao: false,
+          ativo: true,
         },
       });
       importados++;

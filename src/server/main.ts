@@ -15,11 +15,17 @@ import { AllExceptionsFilter } from './all-exceptions.filter';
 
 async function bootstrap() {
   const logger = new Logger('NestBootstrap');
-  const app = await NestFactory.create(AppModule);
-
-  app.useGlobalFilters(new AllExceptionsFilter());
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+  });
 
   const expressApp = app.getHttpAdapter().getInstance();
+
+  // Body parser com limite maior para uploads de XML (10MB)
+  expressApp.use(express.json({ limit: '10mb' }));
+  expressApp.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // Middlewares de Segurança (Fase 0)
   expressApp.use(helmetSecurityMiddleware);

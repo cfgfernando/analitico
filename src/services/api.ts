@@ -147,15 +147,16 @@ export async function querySiconfiProxy(endpoint: string, params: Record<string,
   return res.json();
 }
 
-export async function getAIDiagnosis(question?: string, contextData?: any, tenantId?: string): Promise<{
+export async function getAIDiagnosis(question?: string, contextData?: any, tenantId?: string, ano?: number): Promise<{
   success: boolean;
   analise: string;
+  diagnostico?: string;
   provedor: string;
   timestamp: string;
 }> {
   const res = await authFetch('/api/fiscal/diagnostico-ia', {
     method: 'POST',
-    body: JSON.stringify({ question, contextData, tenantId }),
+    body: JSON.stringify({ question, prompt: question, contextData, summary: contextData, tenantId, ano }),
   });
   if (!res.ok) throw new Error('Falha ao obter diagnóstico fiscal');
   return res.json();

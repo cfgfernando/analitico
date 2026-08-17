@@ -19,6 +19,7 @@ import {
   LogOut,
   Sparkles,
   Building,
+  Printer,
 } from 'lucide-react';
 import { SiconfiApiStatus } from '../types/fiscal';
 import { useAuthContext } from '../contexts/AuthContext';
@@ -53,6 +54,7 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
   onSelectTenant?: (tenant: any) => void;
   onLogout?: () => void;
+  onOpenRelatorioExecutivo?: () => void;
 }
 
 const PREFEITURAS_RAPIDAS = [
@@ -93,6 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleSidebar,
   onSelectTenant,
   onLogout,
+  onOpenRelatorioExecutivo,
 }) => {
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
@@ -396,12 +399,24 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Botão Exportar CSV */}
           <button
             onClick={onExportAllCSV}
-            className="hidden xl:flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-bold rounded-sm bg-navy-900 hover:bg-navy-800 text-slate-200 border border-navy-700 transition cursor-pointer"
+            className="hidden 2xl:flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-bold rounded-sm bg-navy-900 hover:bg-navy-800 text-slate-200 border border-navy-700 transition cursor-pointer"
             title="Exportar Relatório Geral Consolidado em Planilha CSV"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
             <span>Exportar CSV</span>
           </button>
+
+          {/* Botão Dossiê Executivo 1-Click PDF */}
+          {onOpenRelatorioExecutivo && (
+            <button
+              onClick={onOpenRelatorioExecutivo}
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-mono font-bold rounded-sm bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500 transition cursor-pointer shadow-xs"
+              title="Gerar Dossiê Executivo Consolidado Timbrado em PDF"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Dossiê Executivo (PDF)</span>
+            </button>
+          )}
 
           {/* Modo Apresentação */}
           {onTogglePresentationMode && (

@@ -33,6 +33,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       message,
+      mensagem: typeof message === 'string' ? message : exception instanceof Error ? exception.message : String(exception),
+      valid: false,
+      erros: [typeof message === 'string' ? message : exception instanceof Error ? exception.message : String(exception)],
       errorDetail: exception instanceof Error ? exception.message : String(exception),
       stack,
     });

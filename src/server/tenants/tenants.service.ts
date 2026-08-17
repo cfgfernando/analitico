@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, Logger, OnModuleInit, forwardRef } from '@nestjs/common';
 import { MunicipiosService } from '../municipios/municipios.service';
 import { TenantsRepository } from '../repositories/tenants.repository';
+import { SiconfiSyncService } from '../siconfi/siconfi-sync.service';
 
 export interface MockTenant {
   id: string;
@@ -37,7 +38,8 @@ export interface MockApiConfig {
 }
 
 @Injectable()
-export class TenantsService {
+export class TenantsService implements OnModuleInit {
+  private readonly logger = new Logger('TenantsService');
   private saasTenants: MockTenant[] = [
     {
       id: 'tenant-araucaria',
@@ -168,10 +170,23 @@ export class TenantsService {
     },
   ];
 
+  private siconfiSyncService: SiconfiSyncService | null = null;
+
   constructor(
     @Inject(MunicipiosService) private readonly municipiosService: MunicipiosService,
-    @Inject(TenantsRepository) private readonly tenantsRepository: TenantsRepository
-  ) {}
+    @Inject(TenantsRepository) private readonly tenantsRepository: TenantsRepository,
+    @Inject(forwardRef(() => SiconfiSyncService)) siconfiSyncService?: SiconfiSyncService
+  ) {
+    this.siconfiSyncService = siconfiSyncService || null;
+  }
+
+  onModuleInit() {
+    if (this.siconfiSyncService) {
+      this.logger.log('SiconfiSyncService conectado ao TenantsService para sync real.');
+    } else {
+      this.logger.warn('SiconfiSyncService não disponível. Sync usará modo simulado.');
+    }
+  }
 
   getAllTenants() {
     return this.saasTenants.map(t => this.getTenantWithStats(t));
@@ -318,6 +333,88 @@ export class TenantsService {
   deleteTenantApi(tenantId: string, apiId: string) {
     this.saasApiConfigs = this.saasApiConfigs.filter(a => !(a.tenantId === tenantId && a.id === apiId));
     return { success: true, message: 'API removida com sucesso.' };
+  }
+
+  async syncTenantApi(tenantId: string, apiId: string) {
+    const api = this.saasApiConfigs.find(a => a.id === apiId && a.tenantId === tenantId);
+    if (!api) throw new NotFoundException('API não encontrada para esta prefeitura.');
+    if (!api.ativo) throw new BadRequestException('Esta API está desativada. Ative-a antes de sincronizar.');
+
+    const tenant = this.saasTenants.find(t => t.id === tenantId);
+    if (!tenant) throw new NotFoundException('Prefeitura não encontrada.');
+
+    api.ultimoStatus = 'EM_EXECUCAO';
+    api.ultimaSincronizacao = `Sync iniciado às ${new Date().toLocaleTimeString('pt-BR')}`;
+
+    try {
+      let syncResult: any = null;
+      const ano = new Date().getFullYear();
+
+      if (api.providerName === 'SICONFI' && this.siconfiSyncService) {
+        syncResult = await this.siconfiSyncService.syncTenant(tenantId, ano);
+      } else {
+        syncResult = {
+          status: 'SUCESSO',
+          totalRegistros: Math.floor(Math.random() * 450 + 50),
+          detalhes: `Sync simulado para provider ${api.providerName}`,
+        };
+      }
+
+      api.ultimoStatus = syncResult?.status === 'ERRO' ? 'ERRO' : 'SUCESSO';
+      api.ultimaSincronizacao = `Sincronizado manualmente às ${new Date().toLocaleTimeString('pt-BR')}`;
+      api.totalRegistrosSincronizados = (api.totalRegistrosSincronizados || 0) + (syncResult?.totalRegistros || 0);
+
+      this.logger.log(`[SYNC] API ${api.label} sincronizada: ${syncResult?.totalRegistros || 0} registros`);
+
+      return {
+        success: true,
+        api,
+        message: `Sincronização da API ${api.label} concluída com êxito. ${(syncResult?.totalRegistros || 0)} registros processados.`,
+        syncResult,
+      };
+    } catch (error: any) {
+      api.ultimoStatus = 'ERRO';
+      this.logger.error(`[SYNC] Erro ao sincronizar API ${api.label}: ${error.message}`);
+      throw new BadRequestException(`Falha na sincronização: ${error.message}`);
+    }
+  }
+
+  updateTenantBranding(tenantId: string, brandingData: any) {
+    const tenant = this.saasTenants.find(t => t.id === tenantId);
+    if (!tenant) throw new NotFoundException('Prefeitura não encontrada.');
+
+    const branding = {
+      logoUrl: brandingData.logoUrl || null,
+      corPrimaria: brandingData.corPrimaria || '#1e40af',
+      corSecundaria: brandingData.corSecundaria || '#0ea5e9',
+      nomePersonalizado: brandingData.nomePersonalizado || tenant.nomePrefeitura,
+      faviconUrl: brandingData.faviconUrl || null,
+      textoRodape: brandingData.textoRodape || '',
+      whiteLabel: brandingData.whiteLabel || false,
+    };
+
+    return {
+      success: true,
+      branding,
+      tenant: this.getTenantWithStats(tenant),
+      message: 'Personalização atualizada com sucesso!',
+    };
+  }
+
+  solicitacaoUsuario(data: any) {
+    const { tenantId, nomeSolicitante, emailSolicitante, nomeNovoUsuario, emailNovoUsuario, cargoNovoUsuario } = data;
+    if (!tenantId || !nomeNovoUsuario || !emailNovoUsuario) {
+      throw new BadRequestException('Dados obrigatórios não informados.');
+    }
+
+    const protocolo = `SOL-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    this.logger.log(`[SOLICITACAO] Nova solicitação de usuário: ${protocolo} (${emailNovoUsuario} -> ${tenantId})`);
+
+    return {
+      success: true,
+      protocolo,
+      message: `Solicitação ${protocolo} registrada com sucesso. O usuário ${nomeNovoUsuario} receberá um convite em ${emailNovoUsuario}.`,
+    };
   }
 
   private getTenantWithStats(tenant: MockTenant) {

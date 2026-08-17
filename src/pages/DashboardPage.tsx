@@ -279,7 +279,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
         {activeTab === 'diagnostico' && (
           summary ? (
-            <ModuleAIDiagnostico summary={summary} ano={ano} />
+            <ModuleAIDiagnostico summary={summary} ano={ano} activeTenant={activeTenant} />
           ) : (
             <div className="flex flex-col items-center justify-center py-20 space-y-3">
               <RefreshCw className="w-8 h-8 animate-spin text-emerald-500" />

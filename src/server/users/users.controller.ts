@@ -1,10 +1,12 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Inject } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/saas/tenants/:tenantId/users')
 export class UsersController {
   constructor(@Inject(UsersService) private readonly usersService: UsersService) {}
 
+  @Public()
   @Get()
   getUsers(@Param('tenantId') tenantId: string) {
     return this.usersService.getUsersForTenant(tenantId);

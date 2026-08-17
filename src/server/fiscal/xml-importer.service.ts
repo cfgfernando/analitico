@@ -51,34 +51,49 @@ export class XmlImporterService {
     }
 
     try {
-      // Normaliza quebras de linha e limpa caracteres estranhos
-      const cleanXml = xmlContent.replace(/<\?xml.*?\?>/gi, '').trim();
+      // Normaliza: remove declaração XML, limpa namespaces de tags, preserva conteúdo
+      let cleanXml = xmlContent
+        .replace(/<\?xml[^?]*\?>/gi, '')
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+        .trim();
+
+      // Remove BOM (Byte Order Mark) se presente
+      cleanXml = cleanXml.replace(/^\uFEFF/, '');
+
+      // Remove namespaces de tags: <tce:Contrato> -> <Contrato>, </tce:Contrato> -> </Contrato>
+      cleanXml = cleanXml.replace(/<\/?([a-zA-Z][a-zA-Z0-9_-]*):([a-zA-Z][a-zA-Z0-9_-]*)/g, '<$2');
+      cleanXml = cleanXml.replace(/<\/([a-zA-Z][a-zA-Z0-9_-]*):([a-zA-Z][a-zA-Z0-9_-]*)>/g, '</$2>');
 
       let match;
       let count = 0;
 
       // 1. Formato TCE-PR (Portal PIT / ContratoConsulta): elementos auto-fechados com atributos
       //    Ex: <Contrato cdIBGE="410180" idContrato="3503972" nrContrato="14" vlContrato="980000.00" dsObjeto="..." />
-      const attrBlockRegex = /<([A-Za-z][A-Za-z0-9_-]*)([^>]*?)\/>/g;
-      const attrContractLike = /(contrato|aditivo|licitac)/i;
+      const attrBlockRegex = /<([A-Za-z][A-Za-z0-9_-]*)([\s\S]*?)\/>/g;
+      const attrContractLike = /(contrato|aditivo|licitac|ato)/i;
 
       while ((match = attrBlockRegex.exec(cleanXml)) !== null) {
         const tagName = match[1];
         if (!attrContractLike.test(tagName)) continue;
+        const attrsRaw = match[2];
+        // Pula se o conteúdo entre < e /> contém < (seria uma tag aninhada, não um atributo)
+        if (/<[A-Za-z]/.test(attrsRaw)) continue;
         count++;
-        const row = this.extractRowFromAttributes(match[2], count);
+        const row = this.extractRowFromAttributes(attrsRaw, count);
         if (row) {
           linhasValidas.push(row);
         }
       }
 
       // 2. Formato com blocos repetidos de tags abertas/fechadas (SIM-AM, SICOM, NF-e, ERPs):
-      //    Ex: <contrato>...</contrato>, <row>...</row>
+      //    Ex: <contrato>...</contrato>, <row>...</row>, <dadoContrato>...</dadoContrato>
       if (linhasValidas.length === 0) {
-        const blockRegex = /<(?:contrato|registro|item|documento|row|linha|dadosContrato|atoContrato)(?:[^>]*)>([\s\S]*?)<\/(?:contrato|registro|item|documento|row|linha|dadosContrato|atoContrato)>/gi;
+        const blockTagNames = 'contrato|registro|item|documento|row|linha|dadosContrato|atoContrato|dadoContrato|contratoDetalhe';
+        const blockRegex = new RegExp(`<(${blockTagNames})(?:[^>]*)>([\\s\\S]*?)<\\/\\1>`, 'gi');
         while ((match = blockRegex.exec(cleanXml)) !== null) {
           count++;
-          const block = match[1];
+          const block = match[2];
           const row = this.extractRowFromBlock(block, count);
           if (row) {
             linhasValidas.push(row);
@@ -86,7 +101,27 @@ export class XmlImporterService {
         }
       }
 
-      // 3. Se não encontrou blocos, verifica se o próprio XML inteiro é um único contrato
+      // 3. Tenta extrair de qualquer elemento raiz que tenha filhos com dados de contrato
+      if (linhasValidas.length === 0) {
+        // Busca por qualquer tag que contenha subtags típicas de contrato
+        const genericBlockRegex = /<([A-Za-z][A-Za-z0-9_-]*)(?:[^>]*)>\s*<(?:nr|num|numero)?[Cc]ontrato/gi;
+        while ((match = genericBlockRegex.exec(cleanXml)) !== null) {
+          count++;
+          // Encontra o bloco completo deste elemento
+          const startIdx = match.index;
+          const tagAberta = match[1];
+          const blocoRegex = new RegExp(`<${tagAberta}(?:[^>]*)>([\\s\\S]*?)</${tagAberta}>`, 'i');
+          const blocoMatch = blocoRegex.exec(cleanXml.substring(startIdx));
+          if (blocoMatch) {
+            const row = this.extractRowFromBlock(blocoMatch[1], count);
+            if (row) {
+              linhasValidas.push(row);
+            }
+          }
+        }
+      }
+
+      // 4. Se não encontrou blocos, verifica se o próprio XML inteiro é um único contrato
       if (linhasValidas.length === 0) {
         const singleRow = this.extractRowFromBlock(cleanXml, 1);
         if (singleRow) {
@@ -95,7 +130,7 @@ export class XmlImporterService {
       }
 
       if (linhasValidas.length === 0) {
-        erros.push('Não foi possível identificar registros de contratos no formato XML informado.');
+        erros.push('Não foi possível identificar registros de contratos no formato XML informado. Verifique se o arquivo é do TCE-PR (SIM-AM/ContratoConsulta) ou Siconfi.');
       }
 
       const totalVal = linhasValidas.reduce((acc, c) => acc + c.valor_total, 0);
@@ -131,55 +166,55 @@ export class XmlImporterService {
         const r = new RegExp(`<${t}(?:[^>]*)>([\\s\\S]*?)<\\/${t}>`, 'i');
         const m = r.exec(block);
         if (m && m[1]) {
-          return m[1].trim().replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1');
+          return m[1].trim().replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').trim();
         }
       }
       return '';
     };
 
     const anoAtual = new Date().getFullYear();
-    const anoContrato = getTag('nrAnoContrato', 'anoContrato', 'ano_contrato', 'exercicio', 'nrAno') || `${anoAtual}`;
+    const anoContrato = getTag('nrAnoContrato', 'anoContrato', 'ano_contrato', 'exercicio', 'nrAno', 'AnoContrato') || `${anoAtual}`;
 
-    const numero = getTag('nrContrato', 'numContrato', 'numeroContrato', 'nr_contrato', 'numero', 'identificador')
+    const numero = getTag('nrContrato', 'numContrato', 'numeroContrato', 'nr_contrato', 'numero', 'identificador', 'NrContrato', 'NumeroContrato')
       || `TCE-${count}/${anoContrato}`;
 
-    const empresa = getTag('nmCredor', 'nmFornecedor', 'razaoSocial', 'nomeContratado', 'nm_fornecedor', 'nm_credor', 'fornecedor', 'empresa', 'xNome')
+    const empresa = getTag('nmCredor', 'nmFornecedor', 'razaoSocial', 'nomeContratado', 'nm_fornecedor', 'nm_credor', 'fornecedor', 'empresa', 'xNome', 'NmCredor', 'NmFornecedor', 'RazaoSocial')
       || 'Fornecedor Identificado via TCE-PR';
 
-    const cnpj = getTag('nrCnpj', 'nrCpfCnpj', 'nrDocumento', 'nr_cnpj', 'cnpj', 'CNPJ', 'CPF')
+    const cnpj = getTag('nrCnpj', 'nrCpfCnpj', 'nrDocumento', 'nr_cnpj', 'cnpj', 'CNPJ', 'CPF', 'NrCnpj', 'NrCpfCnpj')
       || '76.105.535/0001-99';
 
-    const objeto = getTag('dsObjeto', 'objetoContrato', 'ds_objeto', 'objeto', 'descricao', 'xProd')
+    const objeto = getTag('dsObjeto', 'objetoContrato', 'ds_objeto', 'objeto', 'descricao', 'xProd', 'DsObjeto', 'ObjetoContrato')
       || 'Contratação de obras, bens ou serviços públicos municipais homologados no TCE-PR';
 
-    const secNomeRaw = getTag('nmOrgao', 'secretaria', 'secretariaNome', 'orgao', 'nm_orgao', 'nmUnidade')
+    const secNomeRaw = getTag('nmOrgao', 'secretaria', 'secretariaNome', 'orgao', 'nm_orgao', 'nmUnidade', 'NmOrgao', 'Orgao', 'Secretaria')
       || '';
 
-    const secCodigoRaw = getTag('cdOrgao', 'secretariaCodigo', 'codOrgao', 'cd_orgao', 'cdUnidade');
+    const secCodigoRaw = getTag('cdOrgao', 'secretariaCodigo', 'codOrgao', 'cd_orgao', 'cdUnidade', 'CdOrgao');
     const secCodigo = this.inferSecCodigo(secNomeRaw, objeto, secCodigoRaw);
     const secNome = secNomeRaw || this.getSecNomeByCodigo(secCodigo);
 
-    const valTotalStr = getTag('vlContrato', 'vlOriginal', 'vlAtual', 'vl_contrato', 'valorTotal', 'valorGlobal', 'vlTotal', 'valor', 'vNF');
-    const valLiqStr = getTag('vlLiquidado', 'vlPago', 'vlExecutado', 'vl_liquidado', 'valorLiquidado');
+    const valTotalStr = getTag('vlContrato', 'vlOriginal', 'vlAtual', 'vl_contrato', 'valorTotal', 'valorGlobal', 'vlTotal', 'valor', 'vNF', 'VlContrato', 'ValorTotal');
+    const valLiqStr = getTag('vlLiquidado', 'vlPago', 'vlExecutado', 'vl_liquidado', 'valorLiquidado', 'VlLiquidado');
     const valTotal = this.parseVal(valTotalStr) || 50000;
     const valLiq = this.parseVal(valLiqStr) || Math.round(valTotal * 0.5);
 
-    const dtInicioRaw = getTag('dtAssinatura', 'dtInicioVigencia', 'dt_assinatura', 'dataInicio', 'dtInicio', 'dhEmi');
-    const dtFimRaw = getTag('dtFinalVigencia', 'dtTerminoVigencia', 'dt_vencimento', 'dataFim', 'dtFim');
+    const dtInicioRaw = getTag('dtAssinatura', 'dtInicioVigencia', 'dt_assinatura', 'dataInicio', 'dtInicio', 'dhEmi', 'DtAssinatura', 'DtInicioVigencia');
+    const dtFimRaw = getTag('dtFinalVigencia', 'dtTerminoVigencia', 'dt_vencimento', 'dataFim', 'dtFim', 'DtFinalVigencia', 'DtTerminoVigencia');
 
     const dtInicio = this.formatDate(dtInicioRaw, `${anoContrato}-01-01`);
     const dtFim = this.formatDate(dtFimRaw, `${anoContrato}-12-31`);
 
-    const processo = getTag('nrProcesso', 'numProcesso', 'processo', 'nr_processo')
+    const processo = getTag('nrProcesso', 'numProcesso', 'processo', 'nr_processo', 'NrProcesso')
       || `PA-${numero.replace(/\//g, '_')}`;
 
-    const modalidade = getTag('dsModalidade', 'modalidade', 'tpModalidade')
+    const modalidade = getTag('dsModalidade', 'modalidade', 'tpModalidade', 'DsModalidade')
       || 'Pregão Eletrônico (Lei 14.133/2021)';
 
     const foundReal = [
-      getTag('nrContrato', 'numContrato', 'numeroContrato', 'nr_contrato', 'numero', 'identificador'),
-      getTag('nmCredor', 'nmFornecedor', 'razaoSocial', 'nomeContratado', 'nm_fornecedor', 'nm_credor', 'fornecedor', 'empresa', 'xNome'),
-      getTag('dsObjeto', 'objetoContrato', 'ds_objeto', 'objeto', 'descricao', 'xProd'),
+      getTag('nrContrato', 'numContrato', 'numeroContrato', 'nr_contrato', 'numero', 'identificador', 'NrContrato'),
+      getTag('nmCredor', 'nmFornecedor', 'razaoSocial', 'nomeContratado', 'NmCredor'),
+      getTag('dsObjeto', 'objetoContrato', 'ds_objeto', 'objeto', 'DsObjeto'),
       valTotalStr,
     ].some(Boolean);
     if (!foundReal) return null;
@@ -213,38 +248,39 @@ export class XmlImporterService {
     };
 
     const anoAtual = new Date().getFullYear();
-    const anoContrato = getAttr('nrAnoContrato') || getAttr('anoContrato') || getAttr('exercicio') || getAttr('nrAno') || String(anoAtual);
+    const anoContrato = getAttr('nrAnoContrato') || getAttr('anoContrato') || getAttr('exercicio') || getAttr('nrAno') || getAttr('AnoContrato') || String(anoAtual);
 
-    const idContrato = getAttr('idContrato');
-    const nrContrato = getAttr('nrContrato') || getAttr('numContrato') || getAttr('numeroContrato');
+    const idContrato = getAttr('idContrato') || getAttr('IdContrato');
+    const nrContrato = getAttr('nrContrato') || getAttr('numContrato') || getAttr('numeroContrato') || getAttr('NrContrato');
     const numero = idContrato || (nrContrato ? `${nrContrato}/${anoContrato}` : `TCE-${count}/${anoContrato}`);
 
     const empresa = getAttr('nmContratado') || getAttr('nmFornecedor') || getAttr('razaoSocial')
-      || getAttr('nomeContratado') || getAttr('fornecedor') || getAttr('empresa');
+      || getAttr('nomeContratado') || getAttr('fornecedor') || getAttr('empresa')
+      || getAttr('NmContratado') || getAttr('NmFornecedor');
 
-    const cnpj = getAttr('nrDocContratado') || getAttr('nrCnpj') || getAttr('nrCpfCnpj') || getAttr('nrDocumento') || getAttr('cnpj');
+    const cnpj = getAttr('nrDocContratado') || getAttr('nrCnpj') || getAttr('nrCpfCnpj') || getAttr('nrDocumento') || getAttr('cnpj') || getAttr('NrCnpj');
 
-    const objeto = getAttr('dsObjeto') || getAttr('objetoContrato') || getAttr('ds_objeto') || getAttr('objeto');
+    const objeto = getAttr('dsObjeto') || getAttr('objetoContrato') || getAttr('ds_objeto') || getAttr('objeto') || getAttr('DsObjeto');
 
-    const secNomeRaw = getAttr('nmOrgao') || getAttr('secretaria') || getAttr('nmUnidade') || getAttr('orgao');
-    const secCodigoRaw = getAttr('cdOrgao') || getAttr('idOrgao') || getAttr('cdUnidade') || getAttr('codOrgao');
+    const secNomeRaw = getAttr('nmOrgao') || getAttr('secretaria') || getAttr('nmUnidade') || getAttr('orgao') || getAttr('NmOrgao');
+    const secCodigoRaw = getAttr('cdOrgao') || getAttr('idOrgao') || getAttr('cdUnidade') || getAttr('codOrgao') || getAttr('CdOrgao');
     const secCodigo = this.inferSecCodigo(secNomeRaw, objeto, secCodigoRaw);
     const secNome = secNomeRaw || this.getSecNomeByCodigo(secCodigo);
 
     const valTotalStr = getAttr('vlContrato') || getAttr('vlOriginal') || getAttr('vlAtual')
-      || getAttr('vlGlobal') || getAttr('valorTotal') || getAttr('vlTotal');
-    const valLiqStr = getAttr('vlLiquidado') || getAttr('vlPago') || getAttr('vlExecutado') || getAttr('valorLiquidado');
+      || getAttr('vlGlobal') || getAttr('valorTotal') || getAttr('vlTotal') || getAttr('VlContrato');
+    const valLiqStr = getAttr('vlLiquidado') || getAttr('vlPago') || getAttr('vlExecutado') || getAttr('valorLiquidado') || getAttr('VlLiquidado');
     const valTotal = this.parseVal(valTotalStr);
     const valLiq = this.parseVal(valLiqStr);
 
     const foundReal = Boolean(idContrato || nrContrato || objeto || cnpj || empresa || valTotal > 0);
     if (!foundReal) return null;
 
-    const dtInicioRaw = getAttr('dtAssinatura') || getAttr('dtInicio') || getAttr('dtInicioVigencia') || getAttr('dhEmi');
-    const dtFimRaw = getAttr('dtFim') || getAttr('dtFinalVigencia') || getAttr('dtTerminoVigencia') || getAttr('dtVencimento');
+    const dtInicioRaw = getAttr('dtAssinatura') || getAttr('dtInicio') || getAttr('dtInicioVigencia') || getAttr('dhEmi') || getAttr('DtAssinatura');
+    const dtFimRaw = getAttr('dtFim') || getAttr('dtFinalVigencia') || getAttr('dtTerminoVigencia') || getAttr('dtVencimento') || getAttr('DtFinalVigencia');
 
-    const processo = getAttr('nrProcesso') || getAttr('processo') || `PA-${nrContrato || numero}/${anoContrato}`;
-    const modalidade = getAttr('dsModalidade') || getAttr('dsTipoRegimeExecucaoContrato') || getAttr('modalidade')
+    const processo = getAttr('nrProcesso') || getAttr('processo') || getAttr('NrProcesso') || `PA-${nrContrato || numero}/${anoContrato}`;
+    const modalidade = getAttr('dsModalidade') || getAttr('dsTipoRegimeExecucaoContrato') || getAttr('modalidade') || getAttr('DsModalidade')
       || 'Pregão Eletrônico (Lei 14.133/2021)';
 
     return {
@@ -266,17 +302,20 @@ export class XmlImporterService {
 
   private static inferSecCodigo(secNome: string, objeto: string, codOrgao?: string): string {
     const text = `${secNome} ${objeto} ${codOrgao || ''}`.toLowerCase();
-    if (text.includes('saúde') || text.includes('saude') || text.includes('medic') || text.includes('hospital') || text.includes('ubs')) {
+    if (text.includes('saúde') || text.includes('saude') || text.includes('medic') || text.includes('hospital') || text.includes('ubs') || text.includes('farmácia') || text.includes('farmacia')) {
       return 'SAUDE';
     }
-    if (text.includes('educa') || text.includes('escola') || text.includes('merenda') || text.includes('cmei') || text.includes('ensino')) {
+    if (text.includes('educa') || text.includes('escola') || text.includes('merenda') || text.includes('cmei') || text.includes('ensino') || text.includes('creche')) {
       return 'EDUCACAO';
     }
-    if (text.includes('obra') || text.includes('pavim') || text.includes('asfalto') || text.includes('drenagem') || text.includes('engenharia')) {
+    if (text.includes('obra') || text.includes('pavim') || text.includes('asfalto') || text.includes('drenagem') || text.includes('engenharia') || text.includes('ponte') || text.includes('rodovia')) {
       return 'OBRAS';
     }
-    if (text.includes('social') || text.includes('assist') || text.includes('cras') || text.includes('familia')) {
+    if (text.includes('social') || text.includes('assist') || text.includes('cras') || text.includes('familia') || text.includes('bem-estar')) {
       return 'ASSISTENCIA';
+    }
+    if (text.includes('limpeza') || text.includes('coleta') || text.includes('limpeza pública') || text.includes('recurso hídrico') || text.includes('saneamento')) {
+      return 'OBRAS';
     }
     return 'ADMIN';
   }
@@ -295,8 +334,16 @@ export class XmlImporterService {
     if (!valStr) return 0;
     const clean = valStr.replace(/[^\d.,]/g, '').trim();
     if (!clean) return 0;
+    // Formato brasileiro: 1.250.000,50
     if (clean.includes(',') && clean.includes('.')) {
-      return parseFloat(clean.replace(/\./g, '').replace(',', '.'));
+      // Se a vírgula vem depois do último ponto, é separador decimal
+      const lastComma = clean.lastIndexOf(',');
+      const lastDot = clean.lastIndexOf('.');
+      if (lastComma > lastDot) {
+        return parseFloat(clean.replace(/\./g, '').replace(',', '.'));
+      }
+      // Caso contrário, ponto é separador de milhar
+      return parseFloat(clean.replace(/,/g, ''));
     }
     if (clean.includes(',')) {
       return parseFloat(clean.replace(',', '.'));
@@ -319,6 +366,11 @@ export class XmlImporterService {
     // YYYYMMDD
     if (/^\d{8}$/.test(trimmed)) {
       return `${trimmed.slice(0, 4)}-${trimmed.slice(4, 6)}-${trimmed.slice(6, 8)}`;
+    }
+    // DD-MM-YYYY
+    if (/^\d{2}-\d{2}-\d{4}/.test(trimmed)) {
+      const parts = trimmed.split('-');
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
     return fallback;
   }

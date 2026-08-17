@@ -322,9 +322,9 @@ model Contrato {
   id               String           @id @default(cuid())
   tenantId         String
   secretariaId     String
-  numero           String           @db.VarChar(50)   // ex: "142/2025"
-  empresa          String           @db.VarChar(255)
-  objeto           String           @db.VarChar(500)
+  numero           String           @db.VarChar(100)  // ex: "142/2025"
+  empresa          String           @db.VarChar(500)
+  objeto           String           @db.Text
   categoria        String           @db.VarChar(100)  // base da criticidade automática
   valorTotal       Decimal          @db.Decimal(18, 2)
   valorLiquidado   Decimal          @db.Decimal(18, 2) @default(0)
@@ -333,10 +333,10 @@ model Contrato {
   criticidadeFonte String           @default("AUTOMATICA") @db.VarChar(20) // AUTOMATICA | MANUAL
   criticidadeAutor String?          @db.VarChar(100) // userId que ajustou manualmente
   impactoMunicipal ImpactoMunicipal @default(MEDIO)
-  impactoSocial    String?          @db.VarChar(500) // ex: "45 postos de trabalho"
+  impactoSocial    String?          @db.Text // ex: "45 postos de trabalho"
   dataInicio       DateTime
   dataFim          DateTime
-  situacao         String           @default("ATIVO") @db.VarChar(30)
+  situacao         String           @default("ATIVO") @db.VarChar(50)
   isDemonstracao   Boolean          @default(true)
   ativo            Boolean          @default(true)
   createdAt        DateTime         @default(now())

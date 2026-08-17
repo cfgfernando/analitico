@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, IsEmail, MinLength } from 'class-validator';
-import { UserRole } from '../interfaces/jwt-payload.interface';
+import type { UserRole } from '../interfaces/jwt-payload.interface';
 
 export class LookupIdentifierDto {
   @IsNotEmpty({ message: 'Identificador (E-mail ou CPF) é obrigatório.' })

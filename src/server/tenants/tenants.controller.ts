@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, Inject, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, Inject } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { MunicipiosService } from '../municipios/municipios.service';
-import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 
 @Controller('api/saas')
@@ -13,11 +12,16 @@ export class TenantsController {
 
   @Public()
   @Get('municipios/lookup')
-  lookupMunicipio(@Query('termo') termo: string, @Query('codigoIbge') codigoIbge: string) {
-    const q = termo || codigoIbge || '';
+  lookupMunicipio(
+    @Query('termo') termo: string,
+    @Query('query') query: string,
+    @Query('codigoIbge') codigoIbge: string
+  ) {
+    const q = query || termo || codigoIbge || '';
     const discovered = this.municipiosService.discoverMunicipality(q);
     return {
       success: !!discovered,
+      municipality: discovered,
       municipio: discovered,
       message: discovered ? `Município de ${discovered.cidade} (${discovered.uf}) localizado!` : 'Município não encontrado.',
     };
@@ -50,6 +54,11 @@ export class TenantsController {
     return this.tenantsService.updateTenant(id, body);
   }
 
+  @Put('tenants/:id/branding')
+  updateBranding(@Param('id') id: string, @Body() body: any) {
+    return this.tenantsService.updateTenantBranding(id, body);
+  }
+
   @Delete('tenants/:id')
   deleteTenant(@Param('id') id: string) {
     return this.tenantsService.deleteTenant(id);
@@ -65,8 +74,19 @@ export class TenantsController {
     return this.tenantsService.createTenantApi(id, body);
   }
 
+  @Post('tenants/:id/apis/:apiId/sync')
+  syncTenantApi(@Param('id') id: string, @Param('apiId') apiId: string) {
+    return this.tenantsService.syncTenantApi(id, apiId);
+  }
+
   @Delete('tenants/:id/apis/:apiId')
   deleteTenantApi(@Param('id') id: string, @Param('apiId') apiId: string) {
     return this.tenantsService.deleteTenantApi(id, apiId);
+  }
+
+  @Public()
+  @Post('solicitacao-usuario')
+  solicitacaoUsuario(@Body() body: any) {
+    return this.tenantsService.solicitacaoUsuario(body);
   }
 }
