@@ -1,3 +1,4 @@
+import { Reflector } from '@nestjs/core';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -25,6 +26,7 @@ import { RepositoriesModule } from '../repositories/repositories.module';
   ],
   controllers: [AuthController],
   providers: [
+    Reflector,
     AuthService,
     JwtStrategy,
     JwtAuthGuard,

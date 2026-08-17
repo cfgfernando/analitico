@@ -11,12 +11,13 @@ import {
   corsSecurityMiddleware,
   apiRateLimiter,
 } from './security';
+import { AllExceptionsFilter } from './all-exceptions.filter';
 
 async function bootstrap() {
   const logger = new Logger('NestBootstrap');
-  const app = await NestFactory.create(AppModule, {
-    bodyParser: true,
-  });
+  const app = await NestFactory.create(AppModule);
+
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   const expressApp = app.getHttpAdapter().getInstance();
 
@@ -28,7 +29,7 @@ async function bootstrap() {
   // Validação Global de DTOs
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
+      whitelist: false,
       transform: true,
       forbidNonWhitelisted: false,
     })
@@ -40,7 +41,12 @@ async function bootstrap() {
       server: { middlewareMode: true },
       appType: 'spa',
     });
-    expressApp.use(vite.middlewares);
+    expressApp.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+      if (req.originalUrl.startsWith('/api') || req.url.startsWith('/api')) {
+        return next();
+      }
+      vite.middlewares(req, res, next);
+    });
     logger.log('Vite SPA middleware acoplado ao NestJS em modo desenvolvimento.');
   } else {
     const distPath = path.join(process.cwd(), 'dist');

@@ -260,12 +260,12 @@ export const TenantUserManagement: React.FC<TenantUserManagementProps> = ({
             </div>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-2xl font-bold text-[#168821]">
-                R$ {quota.valorTotalMensalidade.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                R$ {(quota?.valorTotalMensalidade ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
               <span className="text-xs text-gray-500">/mês</span>
             </div>
             <div className="mt-3 text-[11px] text-emerald-800 font-medium">
-              Base: R$ {quota.valorMensalBase.toFixed(2)} + Extras: R$ {quota.cobrancaExtraTotal.toFixed(2)}
+              Base: R$ {(quota?.valorMensalBase ?? 1890).toFixed(2)} + Extras: R$ {(quota?.cobrancaExtraTotal ?? 0).toFixed(2)}
             </div>
           </div>
         </div>

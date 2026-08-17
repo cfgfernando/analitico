@@ -1,4 +1,4 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException, Inject } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
@@ -6,26 +6,30 @@ import { UserRole, Permission, AuthenticatedUser, ROLE_PERMISSIONS } from '../in
 
 /**
  * RolesGuard — Controle de Acesso Baseado em Papel (RBAC) + Permissões Granulares
- *
- * Hierarquia de verificação:
- * 1. MASTER_ADMIN tem acesso irrestrito a todos os recursos
- * 2. Verifica @Roles(...) — quais papéis podem acessar
- * 3. Verifica @RequirePermissions(...) — permissões granulares (opcional)
  */
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(@Inject(Reflector) private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    if (!this.reflector) return true;
 
-    const requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(PERMISSIONS_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    let requiredRoles: UserRole[] | undefined;
+    let requiredPermissions: Permission[] | undefined;
+
+    if (typeof this.reflector.getAllAndOverride === 'function') {
+      requiredRoles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]);
+      requiredPermissions = this.reflector.getAllAndOverride<Permission[]>(PERMISSIONS_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]);
+    } else if (typeof this.reflector.get === 'function') {
+      requiredRoles = this.reflector.get<UserRole[]>(ROLES_KEY, context.getHandler());
+      requiredPermissions = this.reflector.get<Permission[]>(PERMISSIONS_KEY, context.getHandler());
+    }
 
     // Sem restrição declarada = rota aberta para qualquer autenticado
     if (!requiredRoles?.length && !requiredPermissions?.length) {

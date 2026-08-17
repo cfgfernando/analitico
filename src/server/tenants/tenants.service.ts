@@ -323,13 +323,17 @@ export class TenantsService {
   private getTenantWithStats(tenant: MockTenant) {
     const tenantApis = this.saasApiConfigs.filter(a => a.tenantId === tenant.id);
     const apisAtivas = tenantApis.filter(a => a.ativo).length;
+    const usuariosExcedentes = 0;
+    const valorTotalMensalidade = Number(tenant.valorMensalBase || 1890) + (usuariosExcedentes * Number(tenant.valorUsuarioExtra || 150));
     return {
       ...tenant,
-      totalUsers: 2,
+      totalUsuariosAtivos: 2,
       usuariosAtivos: 2,
       usuariosInclusos: 2,
-      usuariosExcedentes: 0,
-      faturamentoEstimadoTotal: tenant.valorMensalBase,
+      usuariosExcedentes,
+      valorTotalMensalidade,
+      faturamentoEstimadoTotal: valorTotalMensalidade,
+      apisConfiguradas: tenantApis.length,
       totalApisConfiguradas: tenantApis.length,
       apisAtivas,
     };

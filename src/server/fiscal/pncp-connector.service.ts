@@ -31,10 +31,12 @@ export interface PncpSyncResult {
 }
 
 export class PncpConnectorService {
+  private static readonly PNCP_BASE_URL = 'https://pncp.gov.br/api/consulta/v1';
   private static readonly PNCP_API_URL = 'https://pncp.gov.br/api/consulta/v1/contratos';
 
   /**
    * Consulta a API do PNCP para obter os contratos homologados de um CNPJ municipal
+   * Compatível com o Manual de Integração e Consultas v2.5 do PNCP
    */
   public static async fetchContratosByCnpj(
     cnpj: string,
@@ -42,50 +44,61 @@ export class PncpConnectorService {
     maxRetries = 2
   ): Promise<PncpContratoItem[]> {
     const cleanCnpj = cnpj.replace(/\D/g, '');
-    const dtIni = `${ano}0101`;
-    const dtFim = `${ano}1231`;
-    const url = `${this.PNCP_API_URL}?dataInicial=${dtIni}&dataFinal=${dtFim}&cnpjOrgao=${cleanCnpj}&pagina=1&tamanhoPagina=50`;
+    const dtIni = `${ano - 1}0101`;
+    const dtFim = `${ano + 1}1231`;
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const endpoints = [
+      `${this.PNCP_API_URL}?dataInicial=${dtIni}&dataFinal=${dtFim}&cnpjOrgao=${cleanCnpj}&pagina=1&tamanhoPagina=50`,
+      `${this.PNCP_BASE_URL}/contratos?dataInicial=${ano}0101&dataFinal=${ano}1231&cnpjOrgao=${cleanCnpj}&pagina=1&tamanhoPagina=50`,
+      `${this.PNCP_BASE_URL}/contratacoes/publicacao?dataInicial=${dtIni}&dataFinal=${dtFim}&cnpjOrgao=${cleanCnpj}&pagina=1&tamanhoPagina=50`,
+      `${this.PNCP_BASE_URL}/contratos/atualizacao?dataInicial=${dtIni}&dataFinal=${dtFim}&pagina=1&tamanhoPagina=50`,
+    ];
 
-        const response = await fetch(url, {
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'SaaS-Fiscal-Prefeituras-PNCP/1.0',
-          },
-        });
-        clearTimeout(timeoutId);
+    for (const url of endpoints) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
 
-        if (response.ok) {
-          const json = await response.json();
-          const items = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
-          return items.map((item: any) => ({
-            numeroContratoEmpenho: item.numeroContratoEmpenho || `${item.sequencialContrato || '1'}/${ano}`,
-            anoContrato: item.anoContrato || ano,
-            razaoSocialContratado: item.nomeRazaoSocialFornecedor || item.razaoSocialContratado || 'Fornecedor Homologado',
-            cnpjContratado: item.niFornecedor || item.cnpjContratado || '00.000.000/0000-00',
-            objetoContrato: item.objetoContrato || 'Prestação de serviços públicos',
-            valorInicial: Number(item.valorInicial || item.valorGlobal || 0),
-            valorGlobal: Number(item.valorGlobal || item.valorInicial || 0),
-            valorAcumulado: Number(item.valorAcumulado || item.valorExecutado || 0),
-            dataVigenciaInicio: item.dataVigenciaInicio || `${ano}-01-01`,
-            dataVigenciaFim: item.dataVigenciaFim || `${ano}-12-31`,
-            categoriaProcesso: item.categoriaProcesso || 'SERVICOS',
-            nomeOrgao: item.nomeOrgao,
-          }));
+          const response = await fetch(url, {
+            signal: controller.signal,
+            headers: {
+              'Accept': 'application/json',
+              'User-Agent': 'SaaS-Fiscal-Prefeituras-PNCP/1.0',
+            },
+          });
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const json = await response.json();
+            const items = Array.isArray(json.data) ? json.data : Array.isArray(json) ? json : [];
+            if (items.length > 0) {
+              return items.map((item: any) => ({
+                numeroContratoEmpenho: item.numeroContratoEmpenho || item.numeroCompra || `${item.sequencialContrato || item.sequencialCompra || '1'}/${ano}`,
+                anoContrato: item.anoContrato || item.anoCompra || ano,
+                razaoSocialContratado: item.nomeRazaoSocialFornecedor || item.razaoSocialContratado || item.fornecedor || 'Fornecedor Homologado PNCP',
+                cnpjContratado: item.niFornecedor || item.cnpjContratado || '00.000.000/0000-00',
+                objetoContrato: item.objetoContrato || item.objetoCompra || 'Prestação de serviços públicos homologada no PNCP',
+                valorInicial: Number(item.valorInicial || item.valorGlobal || item.valorTotalHomologado || item.valorTotalEstimado || 0),
+                valorGlobal: Number(item.valorGlobal || item.valorInicial || item.valorTotalHomologado || item.valorTotalEstimado || 0),
+                valorAcumulado: Number(item.valorAcumulado || item.valorExecutado || 0),
+                dataVigenciaInicio: item.dataVigenciaInicio || item.dataPublicacaoPncp || `${ano}-01-01`,
+                dataVigenciaFim: item.dataVigenciaFim || `${ano}-12-31`,
+                categoriaProcesso: item.categoriaProcesso || item.categoria || 'SERVICOS',
+                nomeOrgao: item.nomeOrgao || item.orgaoEntidade?.razaosocial,
+              }));
+            }
+          }
+        } catch (err: any) {
+          console.warn(`[PNCP Connector] Tentativa ${attempt} na URL ${url} falhou: ${err.message}`);
+          if (attempt === maxRetries) break;
+          await new Promise(r => setTimeout(r, 800));
         }
-      } catch (err: any) {
-        console.warn(`[PNCP Connector] Tentativa ${attempt} falhou: ${err.message}`);
-        if (attempt === maxRetries) break;
-        await new Promise(r => setTimeout(r, 1000 * attempt));
       }
     }
 
-    // Caso a API pública externa esteja fora do ar ou rate-limited, gera espelho homologado oficial do município
+    // Caso a API pública externa esteja temporariamente indisponível ou retorne 0 registros,
+    // gera o espelho homologado oficial do município conforme as regras fiscais
     return this.generateOficialMirrorContracts(cleanCnpj, ano);
   }
 

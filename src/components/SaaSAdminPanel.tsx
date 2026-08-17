@@ -938,7 +938,7 @@ CREATE TABLE tenant_api_configs (
             </div>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-2xl font-bold text-[#168821]">
-                R$ {metrics.mrrTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                R$ {(metrics?.mrrTotal ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
               </span>
             </div>
             <div className="mt-2 text-xs text-gray-600 font-medium">
@@ -1154,9 +1154,9 @@ CREATE TABLE tenant_api_configs (
 
                     <td className="py-3.5 px-4">
                       <div className="font-bold text-[#168821]">
-                        R$ {t.valorTotalMensalidade.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        R$ {(t.valorTotalMensalidade ?? t.valorMensalBase ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                       </div>
-                      <div className="text-[11px] text-gray-500">Venc. dia {t.diaVencimento}</div>
+                      <div className="text-[11px] text-gray-500">Venc. dia {t.diaVencimento || 10}</div>
                     </td>
 
                     <td className="py-3.5 px-4 text-center">
@@ -1333,7 +1333,7 @@ CREATE TABLE tenant_api_configs (
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
                 <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Mensalidade Total</span>
                 <div className="text-2xl font-black text-emerald-900 mt-1">
-                  R$ {tenantQuotaData.valorTotalMensalidade.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  R$ {(tenantQuotaData.valorTotalMensalidade ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </div>
                 <div className="text-xs text-emerald-800 mt-1">
                   Base + Acréscimos de licença
@@ -1556,7 +1556,7 @@ CREATE TABLE tenant_api_configs (
                         </div>
                         {api.totalRegistrosSincronizados !== undefined && (
                           <div className="col-span-2 text-xs text-gray-500">
-                            Registros no cache local: <strong>{api.totalRegistrosSincronizados.toLocaleString('pt-BR')}</strong>
+                            Registros no cache local: <strong>{(api.totalRegistrosSincronizados ?? 0).toLocaleString('pt-BR')}</strong>
                           </div>
                         )}
                       </div>
@@ -1645,7 +1645,7 @@ CREATE TABLE tenant_api_configs (
                     </td>
 
                     <td className="py-3.5 px-4 text-right font-bold text-[#168821] text-base">
-                      R$ {inv.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      R$ {(inv.valorTotal ?? 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </td>
 
                     <td className="py-3.5 px-4 text-center text-xs text-gray-600">
@@ -2442,7 +2442,7 @@ CREATE TABLE tenant_api_configs (
                           <span>•</span>
                           <span>CNPJ: <strong>{discoveredData.cnpj}</strong></span>
                           <span>•</span>
-                          <span>População: <strong>{discoveredData.populacaoEstimada.toLocaleString('pt-BR')} hab.</strong></span>
+                          <span>População: <strong>{(discoveredData.populacaoEstimada ?? 0).toLocaleString('pt-BR')} hab.</strong></span>
                           <span>•</span>
                           <span>Região: <strong>{discoveredData.regiao}</strong></span>
                         </div>

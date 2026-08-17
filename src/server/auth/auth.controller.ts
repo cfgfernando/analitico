@@ -1,10 +1,18 @@
 import { Controller, Post, Get, Body, Param, Inject, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import type { RegisterDto } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Roles } from './decorators/roles.decorator';
 import type { AuthenticatedUser } from './interfaces/jwt-payload.interface';
+import {
+  LookupIdentifierDto,
+  LoginTenantDto,
+  LoginDto,
+  LoginAdminDto,
+  RegisterDto,
+  RefreshTokenDto,
+  LogoutDto,
+} from './dto/auth.dto';
 
 @Controller('api/auth')
 export class AuthController {
@@ -28,8 +36,58 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() body: { email: string; senha: string }) {
-    return this.authService.login(body);
+  async login(@Body() body: any) {
+    return this.authService.login(body || {});
+  }
+
+  /**
+   * POST /api/auth/lookup-identifier
+   * Detecta automaticamente a prefeitura (tenant) de um usuário por E-mail ou CPF.
+   * Rota pública.
+   */
+  @Public()
+  @Post('lookup-identifier')
+  @HttpCode(HttpStatus.OK)
+  async lookupIdentifier(@Body() body: any) {
+    try {
+      const identifier =
+        typeof body === 'string'
+          ? body
+          : body?.identifier || body?.email || body?.cpf || '';
+      return await this.authService.lookupByIdentifier(identifier);
+    } catch (err: any) {
+      console.error('[lookupIdentifier Controller Error]:', err);
+      return { success: false, error: err.message, stack: err.stack };
+    }
+  }
+
+  /**
+   * POST /api/auth/login-tenant
+   * Login do portal municipal via E-mail ou CPF, retornando o tenant (prefeitura)
+   * para redirecionamento direto. Rota pública.
+   */
+  @Public()
+  @Post('login-tenant')
+  @HttpCode(HttpStatus.OK)
+  async loginTenant(@Body() body: any) {
+    try {
+      return await this.authService.loginTenant(body || {});
+    } catch (err: any) {
+      console.error('[loginTenant Controller Error]:', err);
+      return { success: false, error: err.message, stack: err.stack };
+    }
+  }
+
+  /**
+   * POST /api/auth/login-admin
+   * Login exclusivo para Administrador Master SaaS da plataforma.
+   * Rota pública.
+   */
+  @Public()
+  @Post('login-admin')
+  @HttpCode(HttpStatus.OK)
+  async loginAdmin(@Body() body: any) {
+    return this.authService.loginAdmin(body || {});
   }
 
   /**
@@ -40,8 +98,8 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(@Body('refreshToken') refreshToken: string) {
-    return this.authService.refreshToken(refreshToken);
+  async refresh(@Body() body: any) {
+    return this.authService.refreshToken(body?.refreshToken || '');
   }
 
   /**
@@ -51,10 +109,10 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(
-    @Body('refreshToken') refreshToken: string,
+    @Body() body: LogoutDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.authService.logout(refreshToken, user?.id);
+    return this.authService.logout(body?.refreshToken || '', user?.id);
   }
 
   /**

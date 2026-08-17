@@ -31,6 +31,7 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
   const [apiAuth, setApiAuth] = useState('');
   const [loadingApi, setLoadingApi] = useState(false);
   const [loadingPncpDireto, setLoadingPncpDireto] = useState(false);
+  const [loadingTodasFontes, setLoadingTodasFontes] = useState(false);
 
   // Estados Planilha
   const [filePlanilha, setFilePlanilha] = useState<File | null>(null);
@@ -77,7 +78,10 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ csvContent: content }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try { data = JSON.parse(text); } catch { data = { valid: false, erros: [{ mensagem: text }] }; }
+      
       setPreviewPlanilha(data);
       if (!data.valid) {
         setFeedback({ tipo: 'erro', texto: data.erros?.[0]?.mensagem || 'A planilha contém inconsistências.' });
@@ -99,7 +103,10 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ csvContent: csvText, tenantId, userNome: 'Gestor Municipal' }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try { data = JSON.parse(text); } catch { data = { success: false, error: text }; }
+
       if (data.success) {
         setFeedback({ tipo: 'sucesso', texto: data.message });
         setTimeout(() => {
@@ -140,10 +147,13 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ xmlContent: content }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try { data = JSON.parse(text); } catch { data = { valid: false, erros: [text] }; }
+
       setPreviewXml(data);
       if (!data.valid) {
-        setFeedback({ tipo: 'erro', texto: data.erros?.[0] || 'Arquivo XML inválido.' });
+        setFeedback({ tipo: 'erro', texto: data.erros?.[0] || data.mensagem || 'Arquivo XML inválido.' });
       }
     } catch {
       setFeedback({ tipo: 'erro', texto: 'Erro ao validar XML.' });
@@ -162,7 +172,10 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ xmlContent: xmlText, tenantId }),
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try { data = JSON.parse(text); } catch { data = { success: false, error: text }; }
+
       if (data.success) {
         setFeedback({ tipo: 'sucesso', texto: data.message });
         setTimeout(() => {
@@ -246,26 +259,59 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
     }
   };
 
+  const handleSincronizarTodasFontes = async () => {
+    setLoadingTodasFontes(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/painel/sincronizar-todas-fontes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantId, cnpj: '76.105.535/0001-99' }),
+      });
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { sucesso: false, error: text || 'Resposta vazia ou inválida do servidor.' };
+      }
+
+      if (res.ok && data.sucesso) {
+        setFeedback({ tipo: 'sucesso', texto: data.mensagem || 'Todas as fontes oficiais foram sincronizadas com sucesso!' });
+        setTimeout(() => {
+          onImportSuccess();
+          onClose();
+        }, 1500);
+      } else {
+        setFeedback({ tipo: 'erro', texto: data.error || 'Erro ao sincronizar fontes governamentais.' });
+      }
+    } catch (e: any) {
+      setFeedback({ tipo: 'erro', texto: `Erro de conexão: ${e.message}` });
+    } finally {
+      setLoadingTodasFontes(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200 font-sans">
-      <div className="bg-white dark:bg-navy-950 border border-slate-200 dark:border-navy-800 rounded-sm w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-white dark:bg-navy-950 border border-slate-200 dark:border-navy-800 rounded-sm shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="bg-[#0a1128] text-white p-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">
-              <Layers className="w-5 h-5" />
+              <Database className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-xs border border-emerald-500/40">
-                  CENTRAL DE IMPORTAÇÃO & SINCRONIZAÇÃO
+                  CENTRAL DE INTEGRAÇÃO MULTI-FONTES
                 </span>
                 <span className="text-[10px] text-slate-400 font-bold">
                   {cidade.toUpperCase()} / {uf}
                 </span>
               </div>
-              <h3 className="text-base sm:text-lg font-extrabold uppercase tracking-tight text-white mt-0.5">
-                Importar Contratos & Execução Orçamentária
+              <h3 className="text-base font-extrabold uppercase tracking-tight text-white mt-0.5">
+                Importação e Conexão de Fontes de Dados
               </h3>
             </div>
           </div>
@@ -277,42 +323,55 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
           </button>
         </div>
 
-        {/* Abas de Tipo de Importação */}
-        <div className="flex border-b border-slate-200 dark:border-navy-800 bg-slate-50 dark:bg-navy-900/80 px-4 pt-3 gap-2 shrink-0">
+        {/* Status de Sincronização Automática Contínua */}
+        <div className="bg-[#101b3b] text-white px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs border-b border-navy-800 shrink-0">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-bold text-[11px] text-emerald-300 uppercase tracking-wider">
+              Sincronização Contínua em Background Ativa (Ciclo 2h)
+            </span>
+          </div>
+          <span className="text-[11px] text-slate-400 font-mono">
+            PNCP • Compras.gov.br • Banco de Preços • dados.gov.br
+          </span>
+        </div>
+
+        {/* Abas */}
+        <div className="flex border-b border-slate-200 dark:border-navy-800 bg-slate-100 dark:bg-navy-900 px-4 pt-2 gap-2 text-xs font-bold shrink-0">
           <button
             onClick={() => { setActiveTab('api'); setFeedback(null); }}
-            className={`px-4 py-2 text-xs font-bold rounded-t-sm transition flex items-center gap-2 cursor-pointer border-t border-x ${
+            className={`px-4 py-2.5 rounded-t-sm border-t-2 transition cursor-pointer flex items-center gap-2 ${
               activeTab === 'api'
-                ? 'bg-white dark:bg-navy-950 text-slate-950 dark:text-white border-slate-200 dark:border-navy-800 border-b-transparent'
-                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white border-transparent'
+                ? 'bg-white dark:bg-navy-950 border-emerald-600 text-slate-900 dark:text-white'
+                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            <Globe className="w-4 h-4 text-sky-500" />
-            <span>1. Conectar APIs (PNCP, TCE-PR, ERP)</span>
+            <Globe className="w-4 h-4 text-emerald-600" />
+            <span>APIs & Portais Oficiais</span>
           </button>
 
           <button
             onClick={() => { setActiveTab('planilha'); setFeedback(null); }}
-            className={`px-4 py-2 text-xs font-bold rounded-t-sm transition flex items-center gap-2 cursor-pointer border-t border-x ${
+            className={`px-4 py-2.5 rounded-t-sm border-t-2 transition cursor-pointer flex items-center gap-2 ${
               activeTab === 'planilha'
-                ? 'bg-white dark:bg-navy-950 text-slate-950 dark:text-white border-slate-200 dark:border-navy-800 border-b-transparent'
-                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white border-transparent'
+                ? 'bg-white dark:bg-navy-950 border-emerald-600 text-slate-900 dark:text-white'
+                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
-            <span>2. Importar Planilha (CSV / Excel)</span>
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            <span>Planilhas (CSV / Excel)</span>
           </button>
 
           <button
             onClick={() => { setActiveTab('xml'); setFeedback(null); }}
-            className={`px-4 py-2 text-xs font-bold rounded-t-sm transition flex items-center gap-2 cursor-pointer border-t border-x ${
+            className={`px-4 py-2.5 rounded-t-sm border-t-2 transition cursor-pointer flex items-center gap-2 ${
               activeTab === 'xml'
-                ? 'bg-white dark:bg-navy-950 text-slate-950 dark:text-white border-slate-200 dark:border-navy-800 border-b-transparent'
-                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white border-transparent'
+                ? 'bg-white dark:bg-navy-950 border-emerald-600 text-slate-900 dark:text-white'
+                : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            <FileCode className="w-4 h-4 text-amber-500" />
-            <span>3. Importar Arquivo XML (TCE / NF-e)</span>
+            <FileCode className="w-4 h-4 text-emerald-600" />
+            <span>Arquivos XML (TCE / Siconfi)</span>
           </button>
         </div>
 
@@ -333,39 +392,112 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
           {/* ABA 1: APIs */}
           {activeTab === 'api' && (
             <div className="space-y-4">
-              {/* Card Destaque: Sincronização 1-Click com o PNCP Oficial */}
+              {/* Card Destaque: Sincronização em Lote de Todas as Fontes */}
               <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-700 p-4 rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-700 text-white px-2 py-0.5 rounded-xs">
-                    CONECTOR NATIVO HOMOLOGADO (LEI 14.133/2021)
+                    SINCRONIZAÇÃO AUTOMÁTICA EM TEMPO REAL
                   </span>
                   <h4 className="text-sm font-extrabold text-slate-950 dark:text-white uppercase mt-1">
-                    Portal Nacional de Contratações Públicas (PNCP)
+                    Conectar e Atualizar Todas as Fontes Governamentais
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
-                    Sincroniza automaticamente todos os contratos oficiais pelo CNPJ da Prefeitura Municipal ({cidade} / {uf}).
+                    Executa em paralelo a sincronização com o <strong>PNCP</strong>, <strong>Compras.gov.br</strong>, <strong>Banco de Preços</strong> e <strong>dados.gov.br</strong> para {cidade} / {uf}.
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={handleSincronizarPncpDireto}
-                  disabled={loadingPncpDireto}
-                  className="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider rounded-sm transition cursor-pointer flex items-center gap-1.5 shrink-0 shadow-xs"
+                  onClick={handleSincronizarTodasFontes}
+                  disabled={loadingTodasFontes}
+                  className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-bold uppercase tracking-wider rounded-sm transition cursor-pointer flex items-center gap-1.5 shrink-0 shadow-xs"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${loadingPncpDireto ? 'animate-spin' : ''}`} />
-                  <span>{loadingPncpDireto ? 'Sincronizando PNCP...' : 'Sincronizar PNCP Agora'}</span>
+                  <RefreshCw className={`w-4 h-4 ${loadingTodasFontes ? 'animate-spin' : ''}`} />
+                  <span>{loadingTodasFontes ? 'Atualizando Fontes...' : 'Sincronizar Todas as Fontes'}</span>
                 </button>
               </div>
 
-              <div className="bg-slate-50 dark:bg-navy-900/60 p-4 rounded-sm border border-slate-200 dark:border-navy-800 space-y-3">
-                <span className="text-xs font-bold text-slate-950 dark:text-white uppercase block">
-                  Ou Conectar Qualquer Outra API REST / Webservice Externo
-                </span>
-                <p className="text-xs text-slate-500 font-medium">
-                  Insira a URL pública ou privada do Webservice da Prefeitura, TCE-PR ou ERP Municipal (Betha, IPM, Elotech, Governa). Os dados recebidos serão persistidos na tabela oficial do município.
-                </p>
+              <div className="bg-slate-50 dark:bg-navy-900/60 p-4 rounded-sm border border-slate-200 dark:border-navy-800 space-y-4">
+                <div>
+                  <span className="text-xs font-bold text-slate-950 dark:text-white uppercase block">
+                    Conectar APIs e Portais de Dados Abertos Oficiais
+                  </span>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Selecione um template oficial pré-configurado do Governo Federal ou insira o endpoint personalizado do seu ERP/TCE:
+                  </p>
+                </div>
 
-                <div className="space-y-3 pt-2">
+                {/* Templates Rápidos */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setApiNome('PNCP Federal (Lei 14.133/2021)');
+                      setApiUrl('https://pncp.gov.br/api/consulta/v1/contratos');
+                    }}
+                    className="p-2.5 bg-white dark:bg-navy-950 border border-slate-200 dark:border-navy-700 hover:border-[#0a1128] dark:hover:border-navy-400 rounded-sm text-left transition cursor-pointer flex items-center justify-between group"
+                  >
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-white block group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                        🏛️ PNCP Federal (Lei 14.133/2021)
+                      </span>
+                      <span className="text-[10px] text-slate-500">API Oficial de Contratos Públicos</span>
+                    </div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200">Usar</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setApiNome('Compras.gov.br (Dados Abertos Federal)');
+                      setApiUrl('https://dadosabertos.compras.gov.br/modulo-contratacoes/1_consultarContratacoes');
+                    }}
+                    className="p-2.5 bg-white dark:bg-navy-950 border border-slate-200 dark:border-navy-700 hover:border-[#0a1128] dark:hover:border-navy-400 rounded-sm text-left transition cursor-pointer flex items-center justify-between group"
+                  >
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-white block group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                        📦 Compras.gov.br (Contratações)
+                      </span>
+                      <span className="text-[10px] text-slate-500">Módulo Contratações & Comprasnet</span>
+                    </div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200">Usar</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setApiNome('Compras.gov.br (Pesquisa de Preços Públicos)');
+                      setApiUrl('https://dadosabertos.compras.gov.br/modulo-pesquisa-preco/1_consultarMaterialItem');
+                    }}
+                    className="p-2.5 bg-white dark:bg-navy-950 border border-slate-200 dark:border-navy-700 hover:border-[#0a1128] dark:hover:border-navy-400 rounded-sm text-left transition cursor-pointer flex items-center justify-between group"
+                  >
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-white block group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                        🏷️ Banco de Preços Públicos
+                      </span>
+                      <span className="text-[10px] text-slate-500">Módulo Pesquisa de Preços de Referência</span>
+                    </div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200">Usar</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setApiNome('Portal Brasileiro de Dados Abertos (Conecta GOV.BR)');
+                      setApiUrl('https://dados.gov.br/api/publico/conjuntos-dados');
+                    }}
+                    className="p-2.5 bg-white dark:bg-navy-950 border border-slate-200 dark:border-navy-700 hover:border-[#0a1128] dark:hover:border-navy-400 rounded-sm text-left transition cursor-pointer flex items-center justify-between group"
+                  >
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-white block group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                        🌐 Portal de Dados Abertos (dados.gov.br)
+                      </span>
+                      <span className="text-[10px] text-slate-500">Catálogo Conecta GOV.BR</span>
+                    </div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200">Usar</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3 pt-1 border-t border-slate-200 dark:border-navy-800">
                   <div>
                     <label className="text-[11px] font-bold uppercase text-slate-600 dark:text-slate-300 block mb-1">
                       Nome / Identificador da Fonte
@@ -374,7 +506,7 @@ export const ModalCentralImportacao: React.FC<ModalCentralImportacaoProps> = ({
                       type="text"
                       value={apiNome}
                       onChange={e => setApiNome(e.target.value)}
-                      placeholder="Ex: PNCP Oficial, ERP Betha Saúde, etc."
+                      placeholder="Ex: Compras.gov.br, PNCP Oficial, ERP Betha Saúde, etc."
                       className="w-full px-3 py-2 text-xs bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-sm text-slate-900 dark:text-white focus:outline-none focus:border-navy-600"
                     />
                   </div>

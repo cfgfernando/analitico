@@ -163,6 +163,8 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
   const [filtroFonteContratos, setFiltroFonteContratos] = useState<'todas' | 'PNCP' | 'TCE-PR'>('todas');
   const [filtroStatusContratos, setFiltroStatusContratos] = useState<string>('todos');
   const [buscaContratos, setBuscaContratos] = useState<string>('');
+  const [paginaAtual, setPaginaAtual] = useState<number>(1);
+  const [itensPorPagina, setItensPorPagina] = useState<number>(10);
 
   // Sincronização em Tempo Real com a API Oficial do PNCP (CNPJ 76.105.535/0001-99)
   const carregarContratosPncp = async () => {
@@ -190,10 +192,22 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
         const data = await res.json();
         if (Array.isArray(data.contratos) && data.contratos.length > 0) {
           setContratosLista(data.contratos);
+          setIsSyncingPncp(false);
+          return;
         }
+      }
+
+      // 3. Fallback garantido oficial
+      const diretos = await syncRealContractsFromPncp('76105535000199', ano);
+      if (Array.isArray(diretos) && diretos.length > 0) {
+        setContratosLista(diretos);
       }
     } catch (e) {
       console.warn('[PNCP Sync Warning]', e);
+      const diretos = await syncRealContractsFromPncp('76105535000199', ano);
+      if (Array.isArray(diretos) && diretos.length > 0) {
+        setContratosLista(diretos);
+      }
     } finally {
       setIsSyncingPncp(false);
     }
@@ -1139,10 +1153,10 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
           6. MODAL COMPLETO — DETALHAMENTO DE CONTRATOS TCE-PR & PNCP
           ============================================================ */}
       {isContratosModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200 font-sans">
-          <div className="bg-white dark:bg-navy-950 border border-slate-200 dark:border-navy-800 rounded-sm shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-150 font-sans">
+          <div className="bg-white dark:bg-navy-950 border border-slate-200 dark:border-navy-800 rounded-sm shadow-2xl w-full max-w-[98vw] 2xl:max-w-[1600px] h-[94vh] max-h-[94vh] flex flex-col overflow-hidden">
             {/* Modal Header */}
-            <div className="bg-[#0a1128] text-white p-4 flex items-center justify-between shrink-0">
+            <div className="bg-[#0a1128] text-white p-3.5 px-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300">
                   <FileText className="w-5 h-5" />
@@ -1184,10 +1198,10 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
             </div>
 
             {/* Modal Controls & Filters */}
-            <div className="p-4 bg-slate-50 dark:bg-navy-900/80 border-b border-slate-200 dark:border-navy-800 flex flex-wrap items-center justify-between gap-3 text-xs shrink-0">
-              <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+            <div className="p-3 px-4 bg-slate-50 dark:bg-navy-900/80 border-b border-slate-200 dark:border-navy-800 flex flex-wrap items-center justify-between gap-2.5 text-xs shrink-0">
+              <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
                 {/* Search Input */}
-                <div className="relative flex-1 min-w-[200px]">
+                <div className="relative flex-1 min-w-[220px]">
                   <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
@@ -1202,7 +1216,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <select
                   value={filtroSecContratos}
                   onChange={e => setFiltroSecContratos(e.target.value)}
-                  className="px-3 py-1.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none"
+                  className="px-2.5 py-1.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none"
                 >
                   <option value="todas">🏢 Todas as Secretarias</option>
                   <option value="Saúde">SMSA - Saúde</option>
@@ -1216,7 +1230,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <select
                   value={filtroFonteContratos}
                   onChange={e => setFiltroFonteContratos(e.target.value as any)}
-                  className="px-3 py-1.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none"
+                  className="px-2.5 py-1.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none"
                 >
                   <option value="todas">🌐 Todas as Fontes</option>
                   <option value="PNCP">PNCP (Governo Federal)</option>
@@ -1227,11 +1241,11 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <select
                   value={filtroStatusContratos}
                   onChange={e => setFiltroStatusContratos(e.target.value)}
-                  className="px-3 py-1.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none"
+                  className="px-2.5 py-1.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none"
                 >
                   <option value="todos">🚦 Todos os Status</option>
                   <option value="VIGENTE">Vigente</option>
-                  <option value="A_VENCER_60D">A Vencer (&lt; 60 dias)</option>
+                  <option value="A_VENCER_60D">A Vencer (&lt;60d)</option>
                 </select>
               </div>
 
@@ -1247,14 +1261,14 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                   <span>{isSyncingPncp ? 'Consultando PNCP...' : 'Sincronizar PNCP Oficial'}</span>
                 </button>
 
-                <div className="text-slate-500 dark:text-slate-400 font-bold text-xs">
+                <div className="text-slate-700 dark:text-slate-300 font-bold text-xs bg-slate-200/70 dark:bg-navy-800 px-2.5 py-1 rounded-xs font-mono">
                   {contratosFiltrados.length} contrato(s) oficial(is)
                 </div>
               </div>
             </div>
 
             {/* Modal Body: Table or Detail Drawer */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-3 space-y-4">
               {contratoDetalhe ? (
                 /* Ficha Detalhada do Contrato Selecionado */
                 <div className="bg-slate-50 dark:bg-navy-900/60 border border-slate-200 dark:border-navy-800 rounded-sm p-5 space-y-5 animate-in fade-in duration-150">
@@ -1278,7 +1292,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                       <h4 className="text-base sm:text-lg font-extrabold text-slate-950 dark:text-white uppercase">
                         {contratoDetalhe.fornecedor}
                       </h4>
-                      <p className="text-xs text-slate-500 font-medium mt-0.5">
+                      <p className="text-xs text-slate-500 font-medium mt-0.5 font-mono">
                         CNPJ: {contratoDetalhe.cnpj} • Processo: {contratoDetalhe.processo} • Protocolo TCE: {contratoDetalhe.protocoloTce}
                       </p>
                     </div>
@@ -1305,28 +1319,28 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="bg-white dark:bg-navy-950 p-3 rounded-sm border border-slate-200 dark:border-navy-800">
                       <span className="text-[10px] text-slate-400 block uppercase font-bold">Valor Total Homologado</span>
-                      <span className="text-base font-extrabold text-slate-950 dark:text-white tabular-nums">
+                      <span className="text-base font-extrabold text-slate-950 dark:text-white tabular-nums font-mono">
                         {formatCurrency(contratoDetalhe.valorTotal)}
                       </span>
                     </div>
 
                     <div className="bg-white dark:bg-navy-950 p-3 rounded-sm border border-slate-200 dark:border-navy-800">
                       <span className="text-[10px] text-slate-400 block uppercase font-bold">Valor Já Liquidado</span>
-                      <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                      <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums font-mono">
                         {formatCurrency(contratoDetalhe.valorLiquidado)} ({contratoDetalhe.pctExecutado.toFixed(1)}%)
                       </span>
                     </div>
 
                     <div className="bg-white dark:bg-navy-950 p-3 rounded-sm border border-slate-200 dark:border-navy-800">
                       <span className="text-[10px] text-slate-400 block uppercase font-bold">Valor Empenhado</span>
-                      <span className="text-base font-extrabold text-amber-600 dark:text-amber-400 tabular-nums">
+                      <span className="text-base font-extrabold text-amber-600 dark:text-amber-400 tabular-nums font-mono">
                         {formatCurrency(contratoDetalhe.valorEmpenhado)}
                       </span>
                     </div>
 
                     <div className="bg-white dark:bg-navy-950 p-3 rounded-sm border border-slate-200 dark:border-navy-800">
                       <span className="text-[10px] text-slate-400 block uppercase font-bold">Saldo Disponível a Executar</span>
-                      <span className="text-base font-extrabold text-blue-600 dark:text-blue-400 tabular-nums">
+                      <span className="text-base font-extrabold text-blue-600 dark:text-blue-400 tabular-nums font-mono">
                         {formatCurrency(contratoDetalhe.saldoDisponivel)}
                       </span>
                     </div>
@@ -1346,10 +1360,10 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
 
                     <div className="bg-white dark:bg-navy-950 p-3 rounded-sm border border-slate-200 dark:border-navy-800 space-y-1">
                       <span className="text-[10px] text-slate-400 block uppercase font-bold">Vigência & Prazos</span>
-                      <div className="text-xs font-bold text-slate-900 dark:text-white">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">
                         {contratoDetalhe.dataVigenciaInicio} até {contratoDetalhe.dataVigenciaFim}
                       </div>
-                      <div className="text-xs text-slate-600 dark:text-slate-400">
+                      <div className="text-xs text-slate-600 dark:text-slate-400 font-mono">
                         Restam {contratoDetalhe.diasRestantes} dias • Assinado em {contratoDetalhe.dataAssinatura}
                       </div>
                     </div>
@@ -1374,7 +1388,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                       {contratoDetalhe.historicoMensal.map((h, i) => (
                         <div key={i} className="p-2 bg-slate-50 dark:bg-navy-900 rounded border border-slate-200 dark:border-navy-800 text-center">
                           <span className="text-[10px] font-bold text-slate-500 block uppercase">{h.mes}</span>
-                          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 block tabular-nums mt-0.5">
+                          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 block tabular-nums font-mono mt-0.5">
                             {formatCompactCurrency(h.liquidado)}
                           </span>
                         </div>
@@ -1408,58 +1422,60 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 </div>
               ) : (
                 /* Tabela Geral de Contratos Oficiais PNCP */
-                <div className="border border-slate-200 dark:border-navy-800 rounded-sm overflow-hidden shadow-xs">
+                <div className="border border-slate-200 dark:border-navy-800 rounded-sm overflow-hidden shadow-xs flex flex-col">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-xs text-left">
-                      <thead className="bg-slate-100 dark:bg-navy-900 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-navy-800 text-[11px] uppercase">
+                    <table className="w-full text-xs text-left border-collapse">
+                      <thead className="sticky top-0 z-20 bg-slate-100 dark:bg-navy-900 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-300 dark:border-navy-700 text-[11px] uppercase shadow-xs">
                         <tr>
-                          <th className="p-3">Contrato / Ano</th>
-                          <th className="p-3">Secretaria</th>
-                          <th className="p-3">Fornecedor / CNPJ</th>
-                          <th className="p-3">Objeto</th>
-                          <th className="p-3 text-right">Valor Total (R$)</th>
-                          <th className="p-3 text-right">Liquidado (R$)</th>
-                          <th className="p-3 text-center">Vigência</th>
-                          <th className="p-3 text-center">Origem</th>
-                          <th className="p-3 text-center">Ações</th>
+                          <th className="p-2.5 px-3 whitespace-nowrap w-[110px]">Contrato / Ano</th>
+                          <th className="p-2.5 px-3 whitespace-nowrap w-[110px]">Secretaria</th>
+                          <th className="p-2.5 px-3 w-[220px]">Fornecedor / CNPJ</th>
+                          <th className="p-2.5 px-3 min-w-[200px]">Objeto</th>
+                          <th className="p-2.5 px-3 text-right whitespace-nowrap w-[125px]">Valor Total</th>
+                          <th className="p-2.5 px-3 text-right whitespace-nowrap w-[130px]">Liquidado</th>
+                          <th className="p-2.5 px-3 text-center whitespace-nowrap w-[135px]">Vigência</th>
+                          <th className="p-2.5 px-3 text-center whitespace-nowrap w-[65px]">Origem</th>
+                          <th className="p-2.5 px-3 text-center whitespace-nowrap w-[90px]">Ações</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-navy-800 text-slate-800 dark:text-slate-200 text-xs">
-                        {contratosFiltrados.map((c) => (
+                        {contratosFiltrados
+                          .slice((paginaAtual - 1) * itensPorPagina, (paginaAtual - 1) * itensPorPagina + itensPorPagina)
+                          .map((c) => (
                           <tr
                             key={c.id}
                             className="hover:bg-slate-50 dark:hover:bg-navy-900/60 transition cursor-pointer"
                             onClick={() => setContratoDetalhe(c)}
                           >
-                            <td className="p-3 font-bold whitespace-nowrap">
+                            <td className="p-2.5 px-3 font-bold whitespace-nowrap">
                               <span className="block text-slate-950 dark:text-white">Nº {c.numero}</span>
-                              <span className="text-[10px] text-slate-400 font-medium">{c.processo}</span>
+                              <span className="text-[10px] text-slate-400 font-mono">{c.processo}</span>
                             </td>
 
-                            <td className="p-3 whitespace-nowrap">
+                            <td className="p-2.5 px-3 whitespace-nowrap">
                               <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold bg-slate-100 dark:bg-navy-900 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-navy-700">
                                 {c.secretaria}
                               </span>
                             </td>
 
-                            <td className="p-3">
-                              <strong className="block text-slate-900 dark:text-white font-bold truncate max-w-[180px]">
+                            <td className="p-2.5 px-3">
+                              <strong className="block text-slate-900 dark:text-white font-bold leading-tight line-clamp-2 max-w-[220px]">
                                 {c.fornecedor}
                               </strong>
-                              <span className="text-[10px] text-slate-400 font-medium block">
+                              <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
                                 CNPJ {c.cnpj}
                               </span>
                             </td>
 
-                            <td className="p-3 text-slate-600 dark:text-slate-300 max-w-xs truncate font-medium" title={c.objeto}>
+                            <td className="p-2.5 px-3 text-slate-600 dark:text-slate-300 font-medium line-clamp-2 leading-relaxed" title={c.objeto}>
                               {c.objeto}
                             </td>
 
-                            <td className="p-3 text-right font-extrabold text-slate-950 dark:text-white whitespace-nowrap tabular-nums">
+                            <td className="p-2.5 px-3 text-right font-extrabold text-slate-950 dark:text-white whitespace-nowrap tabular-nums font-mono">
                               {formatCurrency(c.valorTotal)}
                             </td>
 
-                            <td className="p-3 text-right whitespace-nowrap tabular-nums">
+                            <td className="p-2.5 px-3 text-right whitespace-nowrap tabular-nums font-mono">
                               <span className="font-bold text-emerald-600 dark:text-emerald-400 block">
                                 {formatCurrency(c.valorLiquidado)}
                               </span>
@@ -1468,7 +1484,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                               </span>
                             </td>
 
-                            <td className="p-3 text-center whitespace-nowrap">
+                            <td className="p-2.5 px-3 text-center whitespace-nowrap font-mono">
                               <span className={`px-2 py-0.5 rounded-xs text-[10px] font-bold ${
                                 c.status === 'A_VENCER_60D'
                                   ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-300'
@@ -1478,28 +1494,92 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                               </span>
                             </td>
 
-                            <td className="p-3 text-center whitespace-nowrap">
+                            <td className="p-2.5 px-3 text-center whitespace-nowrap">
                               <span className="px-2 py-0.5 rounded-xs text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-300 dark:border-blue-800">
                                 {c.fonteOrigem}
                               </span>
                             </td>
 
-                            <td className="p-3 text-center whitespace-nowrap">
+                            <td className="p-2.5 px-3 text-center whitespace-nowrap">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setContratoDetalhe(c);
                                 }}
-                                className="px-2.5 py-1 bg-[#0a1128] hover:bg-[#1a2a52] text-white text-[11px] font-bold rounded-xs transition flex items-center gap-1 cursor-pointer shadow-xs"
+                                className="px-2.5 py-1 bg-[#0a1128] hover:bg-[#1a2a52] text-white text-[11px] font-bold rounded-xs transition flex items-center justify-center gap-1 cursor-pointer shadow-xs w-full"
                               >
                                 <Eye className="w-3 h-3" />
-                                <span>Ver Ficha</span>
+                                <span>Ver</span>
                               </button>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Barra de Paginação */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 px-4 bg-slate-100 dark:bg-navy-900 border-t border-slate-200 dark:border-navy-800 text-xs font-medium shrink-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-500 dark:text-slate-400">Exibindo</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
+                        {contratosFiltrados.length === 0 ? 0 : (paginaAtual - 1) * itensPorPagina + 1} - {Math.min(paginaAtual * itensPorPagina, contratosFiltrados.length)}
+                      </span>
+                      <span className="text-slate-500 dark:text-slate-400">de {contratosFiltrados.length} contratos</span>
+                      
+                      <span className="text-slate-300 dark:text-navy-700 mx-1">|</span>
+                      
+                      <span className="text-slate-500 dark:text-slate-400">Por página:</span>
+                      <select
+                        value={itensPorPagina}
+                        onChange={e => {
+                          setItensPorPagina(Number(e.target.value));
+                          setPaginaAtual(1);
+                        }}
+                        className="px-2 py-0.5 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-sm font-mono font-bold focus:outline-none text-xs"
+                      >
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        disabled={paginaAtual <= 1}
+                        onClick={() => setPaginaAtual(1)}
+                        className="px-2.5 py-1 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-xs disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-navy-800 font-bold transition cursor-pointer text-xs"
+                      >
+                        «
+                      </button>
+                      <button
+                        disabled={paginaAtual <= 1}
+                        onClick={() => setPaginaAtual(prev => Math.max(1, prev - 1))}
+                        className="px-2.5 py-1 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-xs disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-navy-800 font-bold transition cursor-pointer text-xs"
+                      >
+                        ‹ Anterior
+                      </button>
+
+                      <span className="px-3 py-1 bg-[#0a1128] text-white font-mono font-bold rounded-xs text-xs">
+                        Pág. {paginaAtual} / {Math.max(1, Math.ceil(contratosFiltrados.length / itensPorPagina))}
+                      </span>
+
+                      <button
+                        disabled={paginaAtual >= Math.ceil(contratosFiltrados.length / itensPorPagina)}
+                        onClick={() => setPaginaAtual(prev => Math.min(Math.ceil(contratosFiltrados.length / itensPorPagina), prev + 1))}
+                        className="px-2.5 py-1 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-xs disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-navy-800 font-bold transition cursor-pointer text-xs"
+                      >
+                        Próxima ›
+                      </button>
+                      <button
+                        disabled={paginaAtual >= Math.ceil(contratosFiltrados.length / itensPorPagina)}
+                        onClick={() => setPaginaAtual(Math.max(1, Math.ceil(contratosFiltrados.length / itensPorPagina)))}
+                        className="px-2.5 py-1 bg-white dark:bg-navy-950 border border-slate-300 dark:border-navy-700 rounded-xs disabled:opacity-40 hover:bg-slate-200 dark:hover:bg-navy-800 font-bold transition cursor-pointer text-xs"
+                      >
+                        »
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
