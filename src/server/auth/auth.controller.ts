@@ -1,5 +1,6 @@
 import { Controller, Post, Get, Body, Param, Inject, HttpCode, HttpStatus } from '@nestjs/common';
-import { AuthService, RegisterDto } from './auth.service';
+import { AuthService } from './auth.service';
+import type { RegisterDto } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Roles } from './decorators/roles.decorator';

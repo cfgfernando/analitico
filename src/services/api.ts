@@ -316,5 +316,96 @@ export async function getSaaSMetrics(): Promise<{ success: boolean; metrics: Saa
   return res.json();
 }
 
+// ==========================================
+// AUTHENTICATION & WHITE-LABEL API SERVICES
+// ==========================================
 
+export async function lookupUserTenant(identifier: string): Promise<{
+  found: boolean;
+  message?: string;
+  user?: {
+    id: string;
+    nome: string;
+    email: string;
+    cpf: string;
+    cargo: string;
+    role: string;
+    secretariaRestrita?: string | null;
+  };
+  tenant?: {
+    id: string;
+    codigoIbge: string;
+    nomePrefeitura: string;
+    cidade: string;
+    uf: string;
+    cnpj: string;
+    status: string;
+    branding?: any;
+  };
+}> {
+  const res = await fetch('/api/auth/lookup-identifier', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identifier }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Erro ao consultar identificador');
+  }
+  return res.json();
+}
 
+export async function loginTenantUser(identifier: string, senha: string): Promise<{
+  success: boolean;
+  token: string;
+  user: any;
+  tenant: any;
+  message: string;
+}> {
+  const res = await fetch('/api/auth/login-tenant', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identifier, senha }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Credenciais inválidas ou prefeitura não encontrada.');
+  }
+  return res.json();
+}
+
+export async function loginAdminMaster(email: string, senha: string): Promise<{
+  success: boolean;
+  token: string;
+  user: any;
+  message: string;
+}> {
+  const res = await fetch('/api/auth/login-admin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, senha }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Credenciais de administrador master inválidas.');
+  }
+  return res.json();
+}
+
+export async function updateTenantBranding(tenantId: string, brandingData: any): Promise<{
+  success: boolean;
+  branding: any;
+  tenant: any;
+  message: string;
+}> {
+  const res = await fetch(`/api/saas/tenants/${tenantId}/branding`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(brandingData),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Falha ao atualizar personalização da prefeitura.');
+  }
+  return res.json();
+}

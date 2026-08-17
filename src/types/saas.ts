@@ -80,6 +80,18 @@ export interface AutoDiscoveredMunicipality {
   apisDisponiveis: DiscoveredApiTemplate[];
 }
 
+export interface TenantBrandingConfig {
+  isCustomized: boolean;
+  customLogoUrl?: string;
+  customPrimaryColor?: string;
+  customSecondaryColor?: string;
+  customPortalTitle?: string;
+  customSubtitle?: string;
+  showSaaSBranding: boolean;
+  taxaImplantacao: number;
+  mensalidadeCustomizacao: number;
+}
+
 export interface TenantSummary {
   id: string;
   codigoIbge: string;
@@ -96,10 +108,15 @@ export interface TenantSummary {
   valorUsuarioExtra: number; // e.g. 150.00
   diaVencimento: number;
   
+  // Branding & White-Label
+  branding?: TenantBrandingConfig;
+  taxaImplantacao?: number;
+  mensalidadeCustomizacao?: number;
+
   // Computed stats
   totalUsuariosAtivos: number;
   usuariosExcedentes: number;
-  valorTotalMensalidade: number; // valorMensalBase + (usuariosExcedentes * valorUsuarioExtra)
+  valorTotalMensalidade: number; // valorMensalBase + (usuariosExcedentes * valorUsuarioExtra) + mensalidadeCustomizacao
   
   // APIs count
   apisConfiguradas: number;
@@ -121,6 +138,8 @@ export interface SaaSInvoice {
   totalUsuarios: number;
   usuariosExcedentes: number;
   valorUsuariosExtras: number;
+  valorCustomizacao?: number;
+  taxaImplantacao?: number;
   valorTotal: number;
   dataVencimento: string;
   dataPagamento?: string | null;
@@ -136,6 +155,8 @@ export interface SaaSSummaryMetrics {
   totalUsuariosAtivos: number;
   totalUsuariosFaturadosExtras: number;
   faturamentoExtras: number;
+  faturamentoCustomizacao: number;
   taxaInadimplencia: number;
   apisOnlinePct: number;
 }
+

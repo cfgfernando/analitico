@@ -50,15 +50,14 @@ export class DataProvenanceService {
       await this.prisma.syncLog.create({
         data: {
           tenantId: params.tenantId,
-          provider: params.provider,
-          status: params.status === 'success' ? 'SUCCESS'
-            : params.status === 'error' ? 'ERROR'
-            : params.status === 'partial' ? 'PARTIAL'
-            : 'PENDING',
-          recordsIngested: params.recordsIngested ?? 0,
+          sourceKey: params.provider,
+          status: (params.status as string) === 'success' || (params.status as string) === 'SUCESSO' ? 'SUCESSO'
+            : (params.status as string) === 'error' || (params.status as string) === 'ERRO' ? 'ERRO'
+            : 'PENDENTE',
+          recordsImported: params.recordsIngested ?? 0,
           errorMessage: params.errorMessage ?? null,
-          metadata: params.metadata ? JSON.stringify(params.metadata) : null,
-          syncedAt: new Date(),
+          startedAt: new Date(),
+          finishedAt: new Date(),
         },
       });
 
@@ -79,7 +78,7 @@ export class DataProvenanceService {
     try {
       return await this.prisma.syncLog.findMany({
         where: { tenantId },
-        orderBy: { syncedAt: 'desc' },
+        orderBy: { startedAt: 'desc' },
         take: limit,
       });
     } catch {
@@ -96,8 +95,8 @@ export class DataProvenanceService {
     // Agrupa por provider e pega o mais recente
     const byProvider = new Map<string, any>();
     for (const log of allLogs) {
-      if (!byProvider.has(log.provider)) {
-        byProvider.set(log.provider, log);
+      if (!byProvider.has(log.sourceKey)) {
+        byProvider.set(log.sourceKey, log);
       }
     }
 
@@ -108,9 +107,9 @@ export class DataProvenanceService {
         origin: byProvider.has('SICONFI') ? 'OFICIAL' : 'DEMONSTRACAO',
         source: 'API SICONFI — Secretaria do Tesouro Nacional',
         confidence: byProvider.has('SICONFI') ? 'OFICIAL_HOMOLOGADO' : 'ESTIMATIVA_ALTA_CONFIANCA',
-        lastSync: byProvider.get('SICONFI')?.syncedAt?.toISOString() ?? null,
+        lastSync: byProvider.get('SICONFI')?.startedAt?.toISOString() ?? null,
         lastSyncStatus: this._mapStatus(byProvider.get('SICONFI')?.status),
-        totalRecords: byProvider.get('SICONFI')?.recordsIngested ?? 0,
+        totalRecords: byProvider.get('SICONFI')?.recordsImported ?? 0,
         url: 'https://apidatalake.tesouro.gov.br/ords/siconfi/tt',
         anexo: 'RREO / RGF',
       },
@@ -120,9 +119,9 @@ export class DataProvenanceService {
         origin: byProvider.has('TRANSFEREGOV') ? 'OFICIAL' : 'DEMONSTRACAO',
         source: 'API Transferegov — Ministério do Planejamento',
         confidence: byProvider.has('TRANSFEREGOV') ? 'OFICIAL_HOMOLOGADO' : 'ESTIMATIVA_ALTA_CONFIANCA',
-        lastSync: byProvider.get('TRANSFEREGOV')?.syncedAt?.toISOString() ?? null,
+        lastSync: byProvider.get('TRANSFEREGOV')?.startedAt?.toISOString() ?? null,
         lastSyncStatus: this._mapStatus(byProvider.get('TRANSFEREGOV')?.status),
-        totalRecords: byProvider.get('TRANSFEREGOV')?.recordsIngested ?? 0,
+        totalRecords: byProvider.get('TRANSFEREGOV')?.recordsImported ?? 0,
         url: 'https://transferegov.sistema.gov.br',
       },
       {

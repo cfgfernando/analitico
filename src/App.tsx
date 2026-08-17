@@ -1,11 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Header } from './components/Header';
 import { SidebarNav } from './components/SidebarNav';
 import { ToastContainer } from './components/Toast';
 import { ToastMessage, ComparativeMode } from './types/fiscal';
 import { DashboardPage } from './pages/DashboardPage';
+import { TenantLoginPage } from './pages/TenantLoginPage';
+import { AdminLoginPage } from './pages/AdminLoginPage';
 import { AuthProvider, useAuthContext, AuthRole } from './contexts/AuthContext';
-import { TenantProvider, useTenantContext, TenantInfoState } from './contexts/TenantContext';
+import { TenantProvider, useTenantContext } from './contexts/TenantContext';
 import { useFiscalData } from './hooks/useFiscalData';
 import { exportToCSV, isEmendaRecente } from './utils/formatters';
 import { buildMonthlyComparativeAnalysis, buildQuarterlyComparativeAnalysis } from './utils/comparative';
@@ -37,22 +39,36 @@ const PRESENTATION_TABS = [
 ];
 
 function MainDashboardApp() {
-  const { authRole, setAuthRole } = useAuthContext();
+  const { isAuthenticated, authRole, setAuthRole, logout } = useAuthContext();
   const { activeTenant, setActiveTenant } = useTenantContext();
 
+  const [authScreen, setAuthScreen] = useState<'tenant_login' | 'admin_login'>('tenant_login');
+
   const [ano, setAno] = useState<number>(2026);
-  const [activeTab, setActiveTab] = useState<string>('painel_prefeito');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    return authRole === 'EMPRESA_MASTER' ? 'saas_admin' : 'painel_prefeito';
+  });
   const [isPresentationMode, setIsPresentationMode] = useState<boolean>(false);
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Sidebar Retrátil States (Padrão: Fechada / Collapsed para tela limpa)
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  // Keep tab updated on role change
+  useEffect(() => {
+    if (authRole === 'EMPRESA_MASTER' && activeTab !== 'saas_admin') {
+      setActiveTab('saas_admin');
+    }
+  }, [authRole]);
+
+  // Sidebar Retrátil States (Aberto por padrão em Desktop)
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
+  );
   const [isSidebarPinned, setIsSidebarPinned] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('sgf_sidebar_pinned') === 'true';
+      const stored = localStorage.getItem('sgf_sidebar_pinned');
+      return stored !== null ? stored === 'true' : true;
     } catch {
-      return false;
+      return true;
     }
   });
 
@@ -77,7 +93,7 @@ function MainDashboardApp() {
     return false;
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     const root = document.documentElement;
     if (isDarkMode) root.classList.add('dark');
     else root.classList.remove('dark');
@@ -127,6 +143,11 @@ function MainDashboardApp() {
 
   const handleRoleChange = (newRole: AuthRole) => {
     setAuthRole(newRole);
+    if (newRole === 'EMPRESA_MASTER') {
+      setActiveTab('saas_admin');
+    } else {
+      setActiveTab('painel_prefeito');
+    }
     addToast({
       type: newRole === 'EMPRESA_MASTER' ? 'info' : 'success',
       title: `Perfil: ${newRole === 'EMPRESA_MASTER' ? '🏢 Empresa SaaS (Master)' : `🏛️ ${activeTenant.cidade} (Cliente)`}`,
@@ -141,6 +162,9 @@ function MainDashboardApp() {
       cidade: tenant.cidade,
       uf: tenant.uf,
       codigoIbge: tenant.codigoIbge,
+      cnpj: tenant.cnpj,
+      status: tenant.status,
+      branding: tenant.branding,
     });
     addToast({
       type: 'success',
@@ -157,6 +181,16 @@ function MainDashboardApp() {
     setIsComparativoAnual(false);
     setSelectedMonth(8);
     setSelectedQuarter(1);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setAuthScreen('tenant_login');
+    addToast({
+      type: 'info',
+      title: 'Sessão Encerrada',
+      message: 'Você saiu da plataforma com segurança.',
+    });
   };
 
   // Comparatives
@@ -196,8 +230,46 @@ function MainDashboardApp() {
     }
   };
 
+  // =========================================================================
+  // GATEWAY DE AUTENTICAÇÃO: Se não estiver logado, exibe Login Único ou Admin
+  // =========================================================================
+  if (!isAuthenticated) {
+    if (authScreen === 'admin_login') {
+      return (
+        <AdminLoginPage
+          onNavigateToTenantLogin={() => setAuthScreen('tenant_login')}
+          onLoginSuccess={() => {
+            setActiveTab('saas_admin');
+            addToast({
+              type: 'info',
+              title: 'Backoffice Master SaaS Conectado',
+              message: 'Gestão global de prefeituras e White-Label liberada.',
+            });
+          }}
+        />
+      );
+    }
+
+    return (
+      <TenantLoginPage
+        onNavigateToAdminLogin={() => setAuthScreen('admin_login')}
+        onLoginSuccess={() => {
+          setActiveTab('painel_prefeito');
+          addToast({
+            type: 'success',
+            title: 'Sessão Iniciada com Sucesso',
+            message: `Acesso autenticado ao portal de ${activeTenant.cidade} (${activeTenant.uf}).`,
+          });
+        }}
+      />
+    );
+  }
+
+  // =========================================================================
+  // AMBIENTE AUTENTICADO: Dashboard Municipal ou Master Backoffice
+  // =========================================================================
   return (
-    <div className="dashboard-full min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col antialiased selection:bg-emerald-500 selection:text-white relative overflow-x-hidden max-w-full">
+    <div className="dashboard-full min-h-screen bg-white dark:bg-[#0a1128] text-slate-900 dark:text-slate-100 font-sans flex flex-col antialiased selection:bg-emerald-500 selection:text-white relative overflow-x-hidden max-w-full transition-colors duration-200">
       <ToastContainer
         toasts={toasts}
         onDismiss={(id) => setToasts(prev => prev.filter(t => t.id !== id))}
@@ -220,7 +292,7 @@ function MainDashboardApp() {
         />
       )}
 
-      {/* Main Layout Area com Margem Dinâmica da Sidebar (pl-0 em mobile, lg:pl-16 ou lg:pl-80 em desktop) */}
+      {/* Main Layout Area com Margem Dinâmica da Sidebar */}
       <div
         className={`flex-1 flex flex-col transition-all duration-300 ease-in-out pl-0 ${
           !isPresentationMode
@@ -249,6 +321,7 @@ function MainDashboardApp() {
           onToggleDarkMode={() => setIsDarkMode(prev => !prev)}
           onToggleSidebar={handleToggleSidebar}
           onSelectTenant={handleTenantSelect}
+          onLogout={handleLogout}
         />
 
         {/* Presentation Mode Slide Bar */}
@@ -313,7 +386,7 @@ function MainDashboardApp() {
           </div>
         )}
 
-        <main className="flex-1 w-full max-w-full px-2 sm:px-4 lg:px-6 py-3 sm:py-4 transition-all duration-300 pb-16 overflow-x-hidden">
+        <main className="flex-1 w-full max-w-full px-2 sm:px-4 lg:px-6 py-3 sm:py-4 transition-all duration-300 pb-16 overflow-x-hidden bg-white dark:bg-[#0a1128]">
           <DashboardPage
             activeTab={activeTab}
             ano={ano}
@@ -347,6 +420,7 @@ function MainDashboardApp() {
             quarterlyComparativeData={quarterlyComparativeData}
             activeTenant={activeTenant}
             authRole={authRole}
+            userSecretariaId={undefined}
             onNavigateToTab={setActiveTab}
             onAddToast={addToast}
             onSelectTenant={handleTenantSelect}
@@ -355,16 +429,21 @@ function MainDashboardApp() {
         </main>
 
         {!isPresentationMode && (
-          <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 text-xs py-6 mt-12">
+          <footer className="bg-navy-950 border-t border-navy-800 text-slate-400 text-xs py-6 mt-12">
             <div className="w-full px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3">
               <div className="flex items-center space-x-2">
                 <Building className="w-4 h-4 text-emerald-400" />
                 <span className="font-semibold text-white">
-                  Sistema de Monitoramento Fiscal Municipal — {activeTenant.nomePrefeitura}
+                  {activeTenant.branding?.customPortalTitle || 'Sistema de Monitoramento Fiscal Municipal'} — {activeTenant.nomePrefeitura}
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-400 font-mono text-[11px]">
-                <span>Fontes: Siconfi / Tesouro Nacional • TCE • Transferegov • FNDE • IBGE</span>
+                {activeTenant.branding?.showSaaSBranding !== false && (
+                  <span className="text-emerald-400 font-bold">Tecnologia por Escrita.Online</span>
+                )}
+                <span>•</span>
+                <span>Fontes: Siconfi / STN • TCE • Transferegov • FNDE</span>
+                <span>•</span>
                 <span>Código IBGE: {activeTenant.codigoIbge}</span>
               </div>
             </div>

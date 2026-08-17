@@ -302,7 +302,14 @@ export interface SeloConformidadePayload {
   };
   ano: number;
   nivelSelo: 'DIAMANTE' | 'OURO' | 'PRATA' | 'BRONZE' | 'IRREGULAR';
+  notaConceito?: string;
   pontuacaoTotal: number;
+  historicoScore?: Array<{
+    ano: number;
+    score: number;
+    nota: string;
+    status: string;
+  }>;
   dataEmissao: string;
   codigoAutenticidade: string;
   criterios: CriterioConformidade[];

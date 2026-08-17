@@ -55,6 +55,7 @@ export interface RegisterDto {
   senha: string;
   nomeCompleto: string;
   tenantId: string;
+  cpf?: string;
   role?: UserRole;
   secretaria?: string;
 }
@@ -96,6 +97,7 @@ export class AuthService {
       email,
       senhaHash,
       nomeCompleto: dto.nomeCompleto,
+      cpf: dto.cpf || '000.000.000-00',
       role,
       secretaria: dto.secretaria || null,
       ativo: true,
@@ -398,8 +400,8 @@ export class AuthService {
           tenantId: entry.tenantId,
           userId: entry.userId || null,
           action: entry.action,
-          resource: entry.resource,
-          changes: entry.metadata ? JSON.stringify(entry.metadata) : null,
+          entity: entry.resource || 'AUTH',
+          entityId: entry.userId || null,
         },
       });
     } catch { /* Não bloqueia o fluxo principal */ }

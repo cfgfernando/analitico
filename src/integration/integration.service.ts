@@ -43,11 +43,12 @@ export class IntegrationService {
     const tenants = await this.tenantsRepo.findAll();
     for (const tenant of tenants) {
       if (tenant.status === 'ATIVO') {
+        const uf = (tenant as any).uf || 'PR';
         try {
           await Promise.allSettled([
-            this.syncSiops(tenant.id, tenant.codigoIbge, tenant.uf, 2026),
-            this.syncSiope(tenant.id, tenant.codigoIbge, tenant.uf, 2026),
-            this.syncPncp(tenant.id, tenant.codigoIbge, tenant.uf, 2026),
+            this.syncSiops(tenant.id, tenant.codigoIbge, uf, 2026),
+            this.syncSiope(tenant.id, tenant.codigoIbge, uf, 2026),
+            this.syncPncp(tenant.id, tenant.codigoIbge, uf, 2026),
           ]);
         } catch (err: any) {
           this.logger.error(`[CRON] Erro no tenant ${tenant.cidade}: ${err.message}`);
@@ -62,12 +63,13 @@ export class IntegrationService {
     const tenants = await this.tenantsRepo.findAll();
     for (const tenant of tenants) {
       if (tenant.status === 'ATIVO') {
+        const uf = (tenant as any).uf || 'PR';
         try {
           await Promise.allSettled([
-            this.syncCauc(tenant.id, tenant.codigoIbge, tenant.uf),
-            this.syncTransparencia(tenant.id, tenant.codigoIbge, tenant.uf),
-            this.syncBacen(tenant.id, tenant.codigoIbge, tenant.uf),
-            this.syncPac(tenant.id, tenant.codigoIbge, tenant.uf),
+            this.syncCauc(tenant.id, tenant.codigoIbge, uf),
+            this.syncTransparencia(tenant.id, tenant.codigoIbge, uf),
+            this.syncBacen(tenant.id, tenant.codigoIbge, uf),
+            this.syncPac(tenant.id, tenant.codigoIbge, uf),
           ]);
         } catch (err: any) {
           this.logger.error(`[CRON] Erro no tenant ${tenant.cidade}: ${err.message}`);

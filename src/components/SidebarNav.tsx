@@ -24,12 +24,14 @@ import {
   HelpCircle,
   Zap,
   Sliders,
+  BarChart2,
   X,
 } from 'lucide-react';
 
 export interface NavItem {
   id: string;
   number?: string;
+  emoji?: string;
   label: string;
   shortLabel: string;
   icon: React.ElementType;
@@ -80,6 +82,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'painel_prefeito',
           number: 'PREF',
+          emoji: '🏛️',
           label: 'Painel do Prefeito',
           shortLabel: 'Gabinete',
           icon: Landmark,
@@ -89,8 +92,21 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           shortcut: 'P',
         },
         {
+          id: 'painel_gestao',
+          number: 'GES',
+          emoji: '📊',
+          label: 'Saúde Financeira',
+          shortLabel: 'Gestão',
+          icon: BarChart2,
+          badge: 'Contratos',
+          badgeColor: 'blue',
+          desc: 'Contratos, índice de corte, simulador de contingenciamento e alertas de decisão',
+          shortcut: 'G',
+        },
+        {
           id: 'benchmark',
           number: '07',
+          emoji: '🏆',
           label: 'Benchmark Regional',
           shortLabel: 'Benchmark',
           icon: Trophy,
@@ -102,6 +118,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'selo',
           number: '08',
+          emoji: '🎖️',
           label: 'Selo de Conformidade',
           shortLabel: 'Selo Fiscal',
           icon: Award,
@@ -113,6 +130,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'alertas_prazos',
           number: '09',
+          emoji: '🔔',
           label: 'Alertas & Prazos Críticos',
           shortLabel: 'Radar Riscos',
           icon: BellRing,
@@ -124,6 +142,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'simulador_loa',
           number: 'E SE',
+          emoji: '🎛️',
           label: 'Simulador LOA ("E Se")',
           shortLabel: 'Simulador LOA',
           icon: Sliders,
@@ -141,6 +160,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'modulo1',
           number: '01',
+          emoji: '📈',
           label: 'Dashboard Geral & KPIs',
           shortLabel: 'Dashboard',
           icon: LayoutDashboard,
@@ -150,6 +170,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'modulo2',
           number: '02',
+          emoji: '💰',
           label: 'Receitas & Reforma Tributária',
           shortLabel: 'Receitas & IBS',
           icon: TrendingUp,
@@ -161,6 +182,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'modulo3',
           number: '03',
+          emoji: '🧾',
           label: 'Despesas e Funções',
           shortLabel: 'Despesas',
           icon: Receipt,
@@ -170,6 +192,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'modulo4',
           number: '04',
+          emoji: '⚖️',
           label: 'Limites LRF & Folha',
           shortLabel: 'Limites LRF',
           icon: Scale,
@@ -181,6 +204,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'modulo5',
           number: '05',
+          emoji: '🤝',
           label: 'Captação & Convênios',
           shortLabel: 'Captação',
           icon: HandCoins,
@@ -192,6 +216,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'modulo6',
           number: '06',
+          emoji: '🎓',
           label: 'FUNDEB & Educação',
           shortLabel: 'FUNDEB',
           icon: GraduationCap,
@@ -207,6 +232,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'diagnostico',
           number: 'IA',
+          emoji: '✨',
           label: 'Diagnóstico IA Especialista',
           shortLabel: 'IA Auditor',
           icon: Sparkles,
@@ -218,6 +244,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'obras',
           number: 'GEO',
+          emoji: '📍',
           label: 'Mapa de Obras Municipal',
           shortLabel: 'Obras',
           icon: MapPin,
@@ -227,6 +254,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'siconfi',
           number: 'API',
+          emoji: '🗄️',
           label: 'Console API SICONFI Live',
           shortLabel: 'Siconfi Live',
           icon: Database,
@@ -246,6 +274,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               {
                 id: 'saas_admin',
                 number: 'ADM',
+                emoji: '🏢',
                 label: 'Painel Master SaaS (Empresa)',
                 shortLabel: 'Gestão SaaS',
                 icon: Building,
@@ -259,6 +288,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         {
           id: 'tenant_users',
           number: 'USR',
+          emoji: '👥',
           label: `Usuários de ${cidade}`,
           shortLabel: 'Usuários',
           icon: Users,
@@ -310,7 +340,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       case 'emerald':
         return 'bg-emerald-500/25 text-emerald-200 border-emerald-500/50 font-bold';
       default:
-        return 'bg-slate-800 text-slate-200 border-slate-700 font-bold';
+        return 'bg-navy-800 text-slate-200 border-navy-700 font-bold';
     }
   };
 
@@ -320,14 +350,14 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       {isOpen && (
         <div
           onClick={onToggleOpen}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-300 animate-in fade-in"
+          className="fixed inset-0 bg-navy-950/80 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-300 animate-in fade-in"
         />
       )}
 
       {/* Sidebar Container: Gaveta deslizante em Mobile e Dock em Desktop */}
       <aside
         id="sidebar-navigation"
-        className={`fixed top-0 left-0 h-full z-50 bg-slate-950 border-r border-slate-800 text-white transition-all duration-300 ease-in-out flex flex-col shadow-2xl ${
+        className={`fixed top-0 left-0 h-full z-50 bg-navy-950 border-r border-navy-800 text-white transition-all duration-300 ease-in-out flex flex-col shadow-2xl overflow-x-hidden ${
           // Em mobile: esconde com -translate-x-full se fechada, desliza se aberta
           isOpen
             ? 'translate-x-0 w-80 max-w-[85vw]'
@@ -345,8 +375,8 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         }}
       >
         {/* Sidebar Header */}
-        <div className="h-14 border-b border-slate-800 flex items-center justify-between px-3.5 shrink-0 bg-slate-900/90">
-          <div className="flex items-center gap-3 overflow-hidden">
+        <div className="h-14 border-b border-navy-800 flex items-center justify-between px-3 shrink-0 bg-navy-950">
+          <div className="flex items-center gap-2.5 overflow-hidden">
             <div className="w-8 h-8 rounded-sm bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center font-bold text-slate-950 text-sm shrink-0 shadow-sm">
               🏛️
             </div>
@@ -369,7 +399,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 className={`p-1.5 rounded-sm transition cursor-pointer ${
                   isPinned
                     ? 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/40'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent'
+                    : 'text-slate-400 hover:text-white hover:bg-navy-800 border border-transparent'
                 }`}
                 title={isPinned ? 'Desafixar menu (fechar automático)' : 'Fixar menu aberto'}
               >
@@ -378,7 +408,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
               <button
                 onClick={onToggleOpen}
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-sm transition cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-navy-800 rounded-sm transition cursor-pointer"
                 title="Recolher menu lateral ([)"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -389,7 +419,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
         {/* Search in Sidebar (Only when open) */}
         {isOpen && (
-          <div className="p-3 border-b border-slate-800/80 bg-slate-950/60 shrink-0">
+          <div className="p-3 border-b border-navy-800/80 bg-navy-950/60 shrink-0">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
@@ -397,7 +427,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 value={searchFilter}
                 onChange={e => setSearchFilter(e.target.value)}
                 placeholder="Buscar módulos (atalhos 1..9, P, B)..."
-                className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-500 font-mono"
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-navy-900 border border-navy-700 rounded-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-emerald-500 font-mono"
               />
               {searchFilter && (
                 <button
@@ -412,7 +442,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         )}
 
         {/* Nav Items List com Altíssima Legibilidade */}
-        <div className="flex-1 overflow-y-auto py-3 px-2 space-y-4 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-4 custom-scrollbar">
           {navGroups.map(group => {
             const filteredItems = group.items.filter(
               item =>
@@ -426,7 +456,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             return (
               <div key={group.id} className="space-y-1.5">
                 {isOpen && (
-                  <div className="px-2.5 py-1 text-[11px] font-mono font-bold tracking-wider text-slate-300 uppercase border-b border-slate-800/60 pb-1">
+                  <div className="px-2.5 py-1 text-[11px] font-mono font-bold tracking-wider text-slate-400 uppercase border-b border-navy-800/60 pb-1">
                     {group.title}
                   </div>
                 )}
@@ -450,17 +480,19 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                               onToggleOpen();
                             }
                           }}
-                          className={`w-full flex items-center gap-3 px-2.5 py-2 rounded-sm text-xs transition-all duration-150 cursor-pointer text-left group ${
+                          className={`w-full flex items-center ${
+                            isOpen ? 'gap-3 px-2.5 text-left' : 'justify-center px-0 text-center'
+                          } py-2 rounded-sm text-xs transition-all duration-150 cursor-pointer group border ${
                             isActive
-                              ? 'bg-emerald-500/20 text-white font-bold border-l-4 border-l-emerald-500 shadow-xs'
-                              : 'text-slate-200 hover:bg-slate-900 hover:text-white border-l-4 border-l-transparent'
+                              ? 'bg-navy-900 border-emerald-400 text-white font-bold shadow-xs'
+                              : 'bg-navy-800 border-navy-700 text-slate-300 hover:bg-navy-700 hover:text-white'
                           }`}
                         >
                           <div
                             className={`p-1.5 rounded-sm shrink-0 transition-colors ${
                               isActive
                                 ? 'bg-emerald-500 text-slate-950 font-bold shadow-xs'
-                                : 'bg-slate-900 text-slate-300 group-hover:text-white group-hover:bg-slate-800 border border-slate-800'
+                                : 'bg-navy-900 text-slate-300 group-hover:text-white group-hover:bg-navy-800 border border-navy-700'
                             }`}
                           >
                             <Icon className="w-4 h-4" />
@@ -468,7 +500,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
                           {isOpen && (
                             <div className="flex-1 min-w-0 flex items-center justify-between gap-2 overflow-hidden">
-                              <span className="text-[13px] font-medium text-slate-100 group-hover:text-white truncate">
+                              <span className="text-[13px] font-medium text-slate-200 group-hover:text-white truncate">
                                 {item.label}
                               </span>
 
@@ -483,7 +515,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                                   </span>
                                 )}
                                 {item.shortcut && (
-                                  <kbd className="hidden lg:inline-block px-1.5 py-0.5 bg-slate-900 border border-slate-700 rounded-xs text-[10px] text-slate-300 font-mono font-bold">
+                                  <kbd className="hidden lg:inline-block px-1.5 py-0.5 bg-navy-900 border border-navy-700 rounded-xs text-[10px] text-slate-300 font-mono font-bold">
                                     {item.shortcut}
                                   </kbd>
                                 )}
@@ -494,11 +526,11 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
                         {/* Floating Tooltip when Collapsed */}
                         {!isOpen && hoveredTab === item.id && (
-                          <div className="fixed left-16 ml-2 z-50 bg-slate-900 border border-slate-700 text-white rounded-sm py-2 px-3.5 shadow-2xl pointer-events-none min-w-[240px] animate-in fade-in zoom-in-95 duration-150">
-                            <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-1.5 mb-1.5">
+                          <div className="fixed left-16 ml-2 z-50 bg-navy-900 border border-navy-700 text-white rounded-sm py-2 px-3.5 shadow-2xl pointer-events-none min-w-[240px] animate-in fade-in zoom-in-95 duration-150">
+                            <div className="flex items-center justify-between gap-2 border-b border-navy-800 pb-1.5 mb-1.5">
                               <span className="font-bold text-xs font-mono text-emerald-300">{item.label}</span>
                               {item.shortcut && (
-                                <kbd className="px-1.5 bg-slate-800 border border-slate-700 rounded-xs text-[10px] text-slate-200 font-mono font-bold">
+                                <kbd className="px-1.5 bg-navy-800 border border-navy-700 rounded-xs text-[10px] text-slate-200 font-mono font-bold">
                                   {item.shortcut}
                                 </kbd>
                               )}
@@ -506,7 +538,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                             <p className="text-xs text-slate-200 leading-relaxed font-sans">{item.desc}</p>
                             {item.badge && (
                               <span
-                                className={`inline-block mt-2 px-2 py-0.5 text-[10px] font-mono uppercase rounded-xs border ${badgeStyle(
+                                className={`inline-block mt-2 px-2 py-0.5 text-[10px] font-mono rounded-xs border ${badgeStyle(
                                   item.badgeColor
                                 )}`}
                               >
@@ -525,14 +557,14 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-2.5 border-t border-slate-800 bg-slate-900/80 shrink-0 text-center">
+        <div className="p-2.5 border-t border-navy-800 bg-navy-950/90 shrink-0 text-center">
           {!isOpen ? (
             <button
               onClick={onToggleOpen}
-              className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded-sm w-full flex justify-center transition cursor-pointer"
+              className="p-2 text-slate-300 hover:text-white hover:bg-navy-900 rounded-sm w-full flex justify-center transition cursor-pointer"
               title="Expandir menu lateral ([)"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 text-emerald-400" />
             </button>
           ) : (
             <div className="flex items-center justify-between text-[11px] font-mono text-slate-300 px-1">

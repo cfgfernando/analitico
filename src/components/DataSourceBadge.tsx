@@ -94,7 +94,7 @@ export const DataSourceBadge: React.FC<DataSourceBadgeProps> = ({
             ? `Dado Oficial: ${meta.source}${meta.collectedAt ? ` • Atualizado: ${meta.collectedAt}` : ''}`
             : `Estimativa / Demonstração: ${meta.source}`
         }
-        className={`inline-flex items-center font-mono font-bold uppercase tracking-wider rounded-md border transition-all select-none shadow-xs ${
+        className={`inline-flex items-center font-mono font-bold uppercase tracking-wider rounded-md border transition-all select-none shadow-xs badge-text ${
           sizeClasses[size]
         } ${
           isOficial

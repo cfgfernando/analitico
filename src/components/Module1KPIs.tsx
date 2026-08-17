@@ -258,12 +258,12 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
         <button
           type="button"
           onClick={() => onNavigateToTab('modulo2')}
-          className="text-left bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-emerald-500 dark:hover:border-emerald-500 transition group cursor-pointer"
-          title="[Conceito Fiscal: Receita Total Realizada] Somatório dos recursos efetivamente arrecadados pelo Tesouro Municipal no exercício (tributos próprios como IPTU/ISSQN, transferências constitucionais como ICMS/FPM e convênios). Clique para abrir o Módulo 02 - Receitas."
+          className="text-left bg-white dark:bg-navy-900 p-4 border border-slate-200 dark:border-navy-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-emerald-500 dark:hover:border-emerald-500 transition group cursor-pointer"
+          title="[Conceito Fiscal: Arrecadação Líquida] Representa os recursos financeiros efetivamente recolhidos à Conta Única do Tesouro Municipal. Clique para abrir o Módulo 02 - Receitas."
         >
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition flex items-center gap-1">
+              <span className="kpi-label group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition flex items-center gap-1">
                 RECEITA TOTAL →
                 <span
                   className="text-slate-400 hover:text-emerald-600 transition"
@@ -303,17 +303,17 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
                 <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
               )}
             </div>
-            <div className="text-2xl font-bold font-mono tracking-tighter text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
+            <div className="kpi-value text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition font-mono">
               {formatCompactCurrency(summary.receitaTotalRealizada)}
             </div>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 mt-2">
+            <div className="w-full bg-slate-100 dark:bg-navy-800 h-1 mt-2">
               <div
                 className="bg-emerald-500 h-1 transition-all"
                 style={{ width: `${Math.min(100, (summary.receitaTotalRealizada / summary.receitaTotalReestimada) * 100)}%` }}
               ></div>
             </div>
           </div>
-          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-slate-800 pt-2">
+          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-navy-800 pt-2">
             <div className="flex justify-between" title="Previsão inicial de arrecadação aprovada na LOA (Lei Orçamentária Anual)">
               <span>Orçado:</span>
               <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCompactCurrency(summary.receitaTotalOrcada)}</span>
@@ -329,12 +329,12 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
         <button
           type="button"
           onClick={() => onNavigateToTab('modulo3')}
-          className="text-left bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-blue-500 dark:hover:border-blue-500 transition group cursor-pointer"
+          className="text-left bg-white dark:bg-navy-900 p-4 border border-slate-200 dark:border-navy-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-blue-500 dark:hover:border-blue-500 transition group cursor-pointer"
           title="[Conceito Fiscal: Despesa Liquidada] Segundo estágio da despesa pública (Lei 4.320/64, Art. 63). Representa o reconhecimento formal de que o bem foi entregue ou o serviço foi prestado pelo credor, gerando a obrigação irrevogável de pagamento pelo Ente. Clique para abrir o Módulo 03 - Despesas."
         >
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-blue-600 transition flex items-center gap-1">
+              <span className="kpi-label group-hover:text-blue-600 dark:group-hover:text-blue-400 transition flex items-center gap-1">
                 DESPESA TOTAL →
                 <span
                   className="text-slate-400 hover:text-blue-600 transition"
@@ -374,59 +374,63 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
                 <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
               )}
             </div>
-            <div className="text-2xl font-bold font-mono tracking-tighter text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+            <div className="kpi-value text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition font-mono">
               {formatCompactCurrency(summary.despesaTotalLiquidada)}
             </div>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 mt-2">
+            <div className="w-full bg-slate-100 dark:bg-navy-800 h-1 mt-2">
               <div
                 className="bg-blue-500 h-1 transition-all"
                 style={{ width: `${Math.min(100, (summary.despesaTotalLiquidada / summary.receitaTotalReestimada) * 100)}%` }}
               ></div>
             </div>
           </div>
-          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-slate-800 pt-2">
+          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-navy-800 pt-2">
             <div className="flex justify-between" title="Empenhado: 1º estágio da despesa (reserva prévia de dotação orçamentária para fim específico)">
               <span>Empenhada:</span>
               <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCompactCurrency(summary.despesaTotalEmpenhada)}</span>
             </div>
-            <div className="flex justify-between text-slate-600 dark:text-slate-400" title="Paga: 3º estágio da despesa (efetiva saída financeira do caixa municipal)">
+            <div className="flex justify-between" title="Pago: 3º estágio da despesa (emissão de ordem bancária e débito em conta)">
               <span>Paga:</span>
-              <span className="font-semibold">{formatCompactCurrency(summary.despesaTotalPaga)}</span>
+              <span>{formatCompactCurrency(summary.despesaTotalPaga)}</span>
             </div>
           </div>
         </button>
 
-        {/* Card 3: Folha de Pessoal */}
+        {/* Card 3: Pessoal / LRF */}
         <button
           type="button"
           onClick={() => onNavigateToTab('modulo4')}
-          className="text-left bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-amber-500 dark:hover:border-amber-500 transition group cursor-pointer"
-          title="[Conceito Fiscal: Limite de Despesa com Pessoal (Art. 19 e 20 da LRF)] Relação percentual entre os gastos totais com pessoal ativo/inativo/encargos nos últimos 12 meses e a Receita Corrente Líquida (RCL). Limites: Alerta = 48,60%, Prudencial = 51,30%, Máximo Legal = 54,00% do Executivo. Clique para abrir o Módulo 04 - Limites LRF."
+          className="text-left bg-white dark:bg-navy-900 p-4 border border-slate-200 dark:border-navy-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-amber-500 dark:hover:border-amber-500 transition group cursor-pointer"
+          title="[Conceito Fiscal: Despesa Total com Pessoal / RCL] Apuração dos últimos 12 meses (Art. 18 e 19 da LRF). O limite legal para o Poder Executivo é de 54% da RCL. Clique para abrir o Módulo 04 - Limites LRF."
         >
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-amber-600 transition flex items-center gap-1">
-                FOLHA DE PESSOAL →
+              <span className="kpi-label group-hover:text-amber-600 dark:group-hover:text-amber-400 transition flex items-center gap-1">
+                PESSOAL / RCL (LRF) →
                 <span
                   className="text-slate-400 hover:text-amber-600 transition"
-                  title="Conceito Fiscal: Gastos com servidores, subsídios, proventos e encargos sociais computados em base móvel de 12 meses em proporção da RCL."
+                  title="Conceito Fiscal: Relação entre a Despesa Total com Pessoal (ativos, inativos e pensionistas) e a Receita Corrente Líquida dos últimos 12 meses."
                 >
                   <Info className="w-3 h-3 opacity-60 group-hover:opacity-100" />
                 </span>
               </span>
-              {activeMode === 'anual' && comparativeData?.despesaPessoalPercentualRCL.deltaPp ? (
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                  {comparativeData.despesaPessoalPercentualRCL.deltaPp >= 0 ? '+' : ''}
-                  {comparativeData.despesaPessoalPercentualRCL.deltaPp.toFixed(2)} p.p.
-                </span>
-              ) : activeMode === 'trimestral' && quarterlyComparativeData ? (
+              {activeMode === 'anual' && comparativeData ? (
                 <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
-                  quarterlyComparativeData.folhaRclPercentual.deltaPp <= 0
+                  comparativeData.despesaPessoalPercentualRCL.diferencaPontosPercentuais <= 0
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
                     : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                 }`}>
-                  {quarterlyComparativeData.folhaRclPercentual.deltaPp >= 0 ? '+' : ''}
-                  {quarterlyComparativeData.folhaRclPercentual.deltaPp.toFixed(2)} p.p.
+                  {comparativeData.despesaPessoalPercentualRCL.diferencaPontosPercentuais >= 0 ? '▲ +' : '▼ '}
+                  {Math.abs(comparativeData.despesaPessoalPercentualRCL.diferencaPontosPercentuais).toFixed(2)} p.p. YoY
+                </span>
+              ) : activeMode === 'trimestral' && quarterlyComparativeData ? (
+                <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
+                  quarterlyComparativeData.despesaPessoalTrimestral.variacaoPct <= 0
+                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                }`}>
+                  {quarterlyComparativeData.despesaPessoalTrimestral.variacaoPct >= 0 ? '+' : ''}
+                  {quarterlyComparativeData.despesaPessoalTrimestral.variacaoPct.toFixed(1)}% Tri
                 </span>
               ) : activeMode === 'mensal' && monthlyComparativeData ? (
                 <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
@@ -443,11 +447,11 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
                 </span>
               )}
             </div>
-            <div className="text-2xl font-bold font-mono tracking-tighter text-amber-600 dark:text-amber-400">
+            <div className="kpi-value font-mono text-amber-600 dark:text-amber-400">
               {formatPercent(summary.despesaPessoalPercentualRCL)}
             </div>
             {/* LRF Progress bar with limit indicators */}
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 mt-2 relative">
+            <div className="w-full bg-slate-100 dark:bg-navy-800 h-1 mt-2 relative">
               <div
                 className="bg-amber-500 h-1 transition-all"
                 style={{ width: `${(summary.despesaPessoalPercentualRCL / 60) * 100}%` }}
@@ -459,7 +463,7 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
               ></div>
             </div>
           </div>
-          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-slate-800 pt-2">
+          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-navy-800 pt-2">
             <div className="flex justify-between text-amber-600 font-semibold" title="Limite de Alerta do TCE-PR (Art. 59 §1º II da LRF): 90% do teto legal (48,60%)">
               <span>Alerta LRF:</span>
               <span>48,60%</span>
@@ -475,12 +479,12 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
         <button
           type="button"
           onClick={() => onNavigateToTab('modulo3')}
-          className="text-left bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-indigo-500 dark:hover:border-indigo-500 transition group cursor-pointer"
+          className="text-left bg-white dark:bg-navy-900 p-4 border border-slate-200 dark:border-navy-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-indigo-500 dark:hover:border-indigo-500 transition group cursor-pointer"
           title="[Conceito Fiscal: Aporte Previdenciário RPPS/FPMA] Contribuição suplementar e plano de amortização patronal do Ente para cobrir o déficit atuarial do Fundo de Previdência Municipal de Araucária (FPMA), garantindo o equilíbrio financeiro e atuarial (Art. 40 da CF/88). Clique para ver detalhes das despesas."
         >
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-indigo-600 transition flex items-center gap-1">
+              <span className="kpi-label group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition flex items-center gap-1">
                 APORTES FPMA →
                 <span
                   className="text-slate-400 hover:text-indigo-600 transition"
@@ -498,14 +502,14 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
                 <div className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
               )}
             </div>
-            <div className="text-2xl font-bold font-mono tracking-tighter text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
+            <div className="kpi-value text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition font-mono">
               {formatCompactCurrency(summary.aportePrevidenciarioFPMA)}
             </div>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 mt-2">
+            <div className="w-full bg-slate-100 dark:bg-navy-800 h-1 mt-2">
               <div className="bg-indigo-500 h-1" style={{ width: '65%' }}></div>
             </div>
           </div>
-          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-slate-800 pt-2">
+          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-navy-800 pt-2">
             <div className="flex justify-between" title="Plano de amortização estabelecido por lei municipal sob cálculo atuarial">
               <span>Equacionamento:</span>
               <span className="font-semibold text-indigo-600 dark:text-indigo-400">Atuarial</span>
@@ -521,12 +525,12 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
         <button
           type="button"
           onClick={() => onNavigateToTab('modulo4')}
-          className="text-left bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-teal-500 dark:hover:border-teal-500 transition group cursor-pointer"
+          className="text-left bg-white dark:bg-navy-900 p-4 border border-slate-200 dark:border-navy-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-teal-500 dark:hover:border-teal-500 transition group cursor-pointer"
           title="[Conceito Fiscal: Serviço da Dívida e Dívida Consolidada Líquida (DCL)] Pagamento de amortização do principal, juros e encargos contratuais de operações de crédito (ex: Finisa/Caixa, Paranacidade). Limite do Senado (RSF 43/2001): DCL de até 120% da RCL. Clique para abrir o Módulo 04 - Limites LRF."
         >
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-teal-600 transition flex items-center gap-1">
+              <span className="kpi-label group-hover:text-teal-600 dark:group-hover:text-teal-400 transition flex items-center gap-1">
                 SERVIÇO DÍVIDA →
                 <span
                   className="text-slate-400 hover:text-teal-600 transition"
@@ -544,14 +548,14 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
                 <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.5)]"></div>
               )}
             </div>
-            <div className="text-2xl font-bold font-mono tracking-tighter text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition">
+            <div className="kpi-value text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400 transition font-mono">
               {formatCompactCurrency(summary.servicoDivida)}
             </div>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 mt-2">
+            <div className="w-full bg-slate-100 dark:bg-navy-800 h-1 mt-2">
               <div className="bg-teal-500 h-1" style={{ width: '12.8%' }}></div>
             </div>
           </div>
-          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-slate-800 pt-2">
+          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-navy-800 pt-2">
             <div className="flex justify-between" title="Dívida Consolidada Líquida em relação à Receita Corrente Líquida (atualmente 12,8%, patamar muito confortável)">
               <span>DCL / RCL:</span>
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">12,8% (OK)</span>
@@ -567,12 +571,12 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
         <button
           type="button"
           onClick={() => onNavigateToTab('modulo2')}
-          className="text-left bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-emerald-500 dark:hover:border-emerald-500 transition group cursor-pointer"
+          className="text-left bg-white dark:bg-navy-900 p-4 border border-slate-200 dark:border-navy-800 shadow-sm rounded-sm flex flex-col justify-between hover:border-emerald-500 dark:hover:border-emerald-500 transition group cursor-pointer"
           title="[Conceito Fiscal: Resultado Primário] Diferença entre Receitas Primárias (arrecadação total menos receitas financeiras/aplicações) e Despesas Primárias (despesas totais menos juros/serviço da dívida). Mede a capacidade fiscal do Ente de honrar seus compromissos operacionais sem contrair novas dívidas. Clique para ver detalhes."
         >
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-emerald-600 transition flex items-center gap-1">
+              <span className="kpi-label group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition flex items-center gap-1">
                 RESULTADO PRIMÁRIO →
                 <span
                   className="text-slate-400 hover:text-emerald-600 transition"
@@ -592,8 +596,7 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
                     ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
                     : 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
                 }`}>
-                  {quarterlyComparativeData.resultadoTrimestral.diferencaNominal >= 0 ? '▲ +' : '▼ '}
-                  {formatCompactCurrency(Math.abs(quarterlyComparativeData.resultadoTrimestral.diferencaNominal))} Tri
+                  {quarterlyComparativeData.resultadoTrimestral.diferencaNominal >= 0 ? '▲ +' : '▼ '}{formatCompactCurrency(Math.abs(quarterlyComparativeData.resultadoTrimestral.diferencaNominal))} Tri
                 </span>
               ) : activeMode === 'mensal' && monthlyComparativeData ? (
                 <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${
@@ -608,14 +611,14 @@ export const Module1KPIs: React.FC<Module1KPIsProps> = ({
                 <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
               )}
             </div>
-            <div className="text-2xl font-bold font-mono tracking-tighter text-emerald-600 dark:text-emerald-400">
+            <div className="kpi-value text-emerald-600 dark:text-emerald-400 font-mono">
               +{formatCompactCurrency(summary.resultadoPrimario)}
             </div>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 mt-2">
+            <div className="w-full bg-slate-100 dark:bg-navy-800 h-1 mt-2">
               <div className="bg-emerald-500 h-1" style={{ width: '85%' }}></div>
             </div>
           </div>
-          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-slate-800 pt-2">
+          <div className="mt-3 text-[10px] font-mono text-slate-500 dark:text-slate-400 space-y-0.5 border-t border-slate-100 dark:border-navy-800 pt-2">
             <div className="flex justify-between" title="Condição de superávit primário (receitas primárias superiores às despesas primárias)">
               <span>Superávit:</span>
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">Equilibrado</span>

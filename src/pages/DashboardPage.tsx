@@ -16,6 +16,7 @@ import { BenchmarkMunicipal } from '../components/BenchmarkMunicipal';
 import { SeloConformidade } from '../components/SeloConformidade';
 import { AlertasPrazosCriticos } from '../components/AlertasPrazosCriticos';
 import { SimuladorCenariosLoa } from '../components/SimuladorCenariosLoa';
+import { PainelGestaoPage } from '../components/PainelGestao/PainelGestaoPage';
 import {
   FiscalKPIs,
   RevenueSource,
@@ -76,7 +77,8 @@ interface DashboardPageProps {
   monthlyComparativeData: MonthlyComparativeAnalysis | null;
   quarterlyComparativeData: QuarterlyComparativeAnalysis | null;
   activeTenant: { id: string; nomePrefeitura: string; cidade: string; uf: string; codigoIbge: string };
-  authRole: 'EMPRESA_MASTER' | 'PREFEITURA_CLIENTE';
+  authRole: 'EMPRESA_MASTER' | 'PREFEITURA_CLIENTE' | string;
+  userSecretariaId?: string;
   onNavigateToTab: (tabId: string) => void;
   onAddToast: (toast: Omit<ToastMessage, 'id' | 'timestamp'>) => void;
   onSelectTenant: (tenant: any) => void;
@@ -116,6 +118,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   quarterlyComparativeData,
   activeTenant,
   authRole,
+  userSecretariaId,
   onNavigateToTab,
   onAddToast,
   onSelectTenant,
@@ -151,6 +154,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             activeTenant={activeTenant}
             ano={ano}
             onNavigateToTab={onNavigateToTab}
+          />
+        )}
+
+        {activeTab === 'painel_gestao' && (
+          <PainelGestaoPage
+            tenantId={activeTenant.id}
+            cidade={activeTenant.cidade}
+            uf={activeTenant.uf}
+            authRole={authRole}
+            userSecretariaId={userSecretariaId}
           />
         )}
 
@@ -252,9 +265,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <SimuladorCenariosLoa
             cidade={activeTenant.cidade}
             uf={activeTenant.uf}
-            orcamentoBase={summary?.receitaTotal?.orcada || 1910000000}
-            rclBase={summary?.rcl?.valor || 1354000000}
-            despesaPessoalBase={summary?.despesaPessoal?.valor || 679029000}
+            orcamentoBase={summary?.receitaTotalOrcada || 1910000000}
+            rclBase={summary?.rcl || 1354000000}
+            despesaPessoalBase={summary?.despesaPessoalTotal || 679029000}
           />
         )}
 
@@ -291,7 +304,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             <TenantUserManagement
               tenantId={activeTenant.id}
               tenantName={activeTenant.nomePrefeitura}
-              authRole={authRole}
+              authRole={authRole as any}
             />
           )
         )}

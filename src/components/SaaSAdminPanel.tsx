@@ -37,6 +37,7 @@ import {
   SaaSSummaryMetrics,
   AutoDiscoveredMunicipality,
   DiscoveredApiTemplate,
+  TenantBrandingConfig,
 } from '../types/saas';
 import {
   getSaaSTenants,
@@ -55,6 +56,7 @@ import {
   getSaaSMetrics,
   searchMunicipiosLookup,
   getMunicipiosSuggestions,
+  updateTenantBranding,
 } from '../services/api';
 
 interface SaaSAdminPanelProps {
@@ -66,7 +68,7 @@ export const SaaSAdminPanel: React.FC<SaaSAdminPanelProps> = ({
   onSelectTenantToPreview,
   activeTenantId,
 }) => {
-  const [activeTab, setActiveTab] = useState<'tenants' | 'users' | 'apis' | 'invoices' | 'database'>('tenants');
+  const [activeTab, setActiveTab] = useState<'tenants' | 'users' | 'apis' | 'invoices' | 'branding' | 'database'>('tenants');
   const [tenants, setTenants] = useState<TenantSummary[]>([]);
   const [metrics, setMetrics] = useState<SaaSSummaryMetrics | null>(null);
   const [invoices, setInvoices] = useState<SaaSInvoice[]>([]);
@@ -75,6 +77,21 @@ export const SaaSAdminPanel: React.FC<SaaSAdminPanelProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [syncingApiId, setSyncingApiId] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
+
+  // White-Label & Branding State (Company Exclusive)
+  const [selectedTenantForBranding, setSelectedTenantForBranding] = useState<string>('tenant-araucaria');
+  const [isSavingBranding, setIsSavingBranding] = useState(false);
+  const [brandingForm, setBrandingForm] = useState<TenantBrandingConfig>({
+    isCustomized: false,
+    customLogoUrl: '',
+    customPrimaryColor: '#10b981',
+    customSecondaryColor: '#059669',
+    customPortalTitle: 'Sistema de Monitoramento Fiscal Municipal',
+    customSubtitle: 'Prefeitura Municipal de Araucária — Estado do Paraná',
+    showSaaSBranding: true,
+    taxaImplantacao: 0,
+    mensalidadeCustomizacao: 0,
+  });
 
   // Modals
   const [showAddTenantModal, setShowAddTenantModal] = useState(false);
@@ -746,6 +763,38 @@ export const SaaSAdminPanel: React.FC<SaaSAdminPanelProps> = ({
     }
   };
 
+  // --- Handlers for White-Labeling & Municipal Customization (Company Exclusive) ---
+  useEffect(() => {
+    const target = tenants.find(t => t.id === selectedTenantForBranding);
+    if (target) {
+      setBrandingForm({
+        isCustomized: Boolean(target.branding?.isCustomized),
+        customLogoUrl: target.branding?.customLogoUrl || '',
+        customPrimaryColor: target.branding?.customPrimaryColor || '#10b981',
+        customSecondaryColor: target.branding?.customSecondaryColor || '#059669',
+        customPortalTitle: target.branding?.customPortalTitle || 'Sistema de Monitoramento Fiscal Municipal',
+        customSubtitle: target.branding?.customSubtitle || `${target.nomePrefeitura} — ${target.uf}`,
+        showSaaSBranding: target.branding?.showSaaSBranding !== undefined ? target.branding.showSaaSBranding : !target.branding?.isCustomized,
+        taxaImplantacao: target.branding?.taxaImplantacao || 0,
+        mensalidadeCustomizacao: target.branding?.mensalidadeCustomizacao || 0,
+      });
+    }
+  }, [selectedTenantForBranding, tenants]);
+
+  const handleSaveBranding = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingBranding(true);
+    try {
+      const res = await updateTenantBranding(selectedTenantForBranding, brandingForm);
+      showToast(res.message || 'Configuração White-Label salva com sucesso!', 'success');
+      await loadAllData();
+    } catch (err: any) {
+      showToast(err.message || 'Falha ao salvar personalização', 'error');
+    } finally {
+      setIsSavingBranding(false);
+    }
+  };
+
   const copySqlMigration = () => {
     const sql = `-- MIGRAÇÃO DE SCHEMA PRISMA / SUPABASE PARA MYSQL
 -- 1. Tenants (Prefeituras)
@@ -989,6 +1038,19 @@ CREATE TABLE tenant_api_configs (
         >
           <DollarSign className="w-4 h-4" />
           Faturamento & Usuários Extras ({invoices.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab('branding')}
+          id="tab-saas-branding"
+          className={`px-4 py-3 text-sm font-semibold border-b-2 flex items-center gap-2 transition-colors whitespace-nowrap ${
+            activeTab === 'branding'
+              ? 'border-[#0c326f] text-[#0c326f]'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Sliders className="w-4 h-4" />
+          Personalização & White-Label
         </button>
 
         <button
@@ -1611,6 +1673,360 @@ CREATE TABLE tenant_api_configs (
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* TAB: PERSONALIZAÇÃO & WHITE-LABEL (COMPLETO) */}
+      {activeTab === 'branding' && (
+        <div className="bg-white rounded-b-xl border border-gray-200 border-t-0 shadow-sm p-6 space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-gray-200 pb-5">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                Personalização Visual & White-Label dos Painéis
+                <span className="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-0.5 rounded-full border border-indigo-300">
+                  Custom Branding Engine
+                </span>
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Configure a identidade visual exclusiva de cada município. O pacote básico inclui a marca da empresa SaaS. A personalização completa gera cobrança adicional de implantação e mensalidade.
+              </p>
+            </div>
+
+            {/* Tenant Selector Dropdown */}
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-bold text-gray-700 whitespace-nowrap">
+                Município:
+              </label>
+              <select
+                value={selectedTenantForBranding}
+                onChange={(e) => setSelectedTenantForBranding(e.target.value)}
+                className="bg-slate-50 hover:bg-white text-slate-900 font-bold border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-[#1351b4] focus:outline-none transition shadow-xs"
+              >
+                {tenants.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.nomePrefeitura} ({t.uf}) — {t.branding?.isCustomized ? '🌟 100% Personalizado' : '📦 Pacote Básico'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Form and Preview Grid */}
+          <form onSubmit={handleSaveBranding} className="space-y-6">
+            {/* Plan / Package Type Selector */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div
+                onClick={() => setBrandingForm({ ...brandingForm, isCustomized: false, showSaaSBranding: true })}
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  !brandingForm.isCustomized
+                    ? 'border-emerald-600 bg-emerald-50/70 shadow-sm'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                    📦 Pacote Básico (Standard)
+                  </span>
+                  <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    Sem Custo Adicional
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Utiliza o layout padrão governamental com a marca d'água e logo institucional da empresa fornecedora do SaaS (<strong className="text-slate-800">Escrita.Online</strong>) no cabeçalho e rodapé.
+                </p>
+                <div className="mt-3 text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+                  ✓ Inclui 2 usuários • Cores padrão DSGov / Modern Fiscal
+                </div>
+              </div>
+
+              <div
+                onClick={() => setBrandingForm({ ...brandingForm, isCustomized: true, showSaaSBranding: false, taxaImplantacao: brandingForm.taxaImplantacao || 2500, mensalidadeCustomizacao: brandingForm.mensalidadeCustomizacao || 450 })}
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                  brandingForm.isCustomized
+                    ? 'border-indigo-600 bg-indigo-50/70 shadow-sm'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-sm text-indigo-950 flex items-center gap-2">
+                    🌟 Pacote 100% Personalizado (White-Label Premium)
+                  </span>
+                  <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 border border-indigo-300">
+                    Faturamento Extra
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Identidade visual exclusiva da prefeitura, brasão municipal em destaque, cores customizadas do município, remoção de referências do SaaS e domínio institucional próprio.
+                </p>
+                <div className="mt-3 text-[11px] text-indigo-700 font-semibold flex items-center gap-1">
+                  ★ Setup customizado + Mensalidade de manutenção White-Label
+                </div>
+              </div>
+            </div>
+
+            {/* Customization Details (When 100% Customized is Enabled) */}
+            {brandingForm.isCustomized && (
+              <div className="bg-slate-50 border border-indigo-200 rounded-xl p-5 space-y-5 animate-fadeIn">
+                <div className="flex items-center justify-between border-b border-indigo-100 pb-3">
+                  <h4 className="text-xs font-bold text-indigo-950 uppercase tracking-wider flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-indigo-600" />
+                    Parâmetros de Customização Visual & Cobrança White-Label
+                  </h4>
+                  <span className="text-[11px] font-mono text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded font-semibold">
+                    Aplicado na Fatura do Município
+                  </span>
+                </div>
+
+                {/* Financial Rates */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-white p-3.5 rounded-lg border border-slate-200">
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                      <span>Taxa Única de Implantação e Setup (R$)</span>
+                      <span className="text-[10px] text-slate-400 font-mono">Cobrança única</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-xs font-mono text-slate-400 font-bold">R$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={brandingForm.taxaImplantacao}
+                        onChange={(e) => setBrandingForm({ ...brandingForm, taxaImplantacao: Number(e.target.value) })}
+                        placeholder="2500.00"
+                        className="w-full pl-9 pr-3 py-1.5 text-sm font-mono font-bold text-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Valor faturado na implantação da identidade visual exclusiva da prefeitura.
+                    </p>
+                  </div>
+
+                  <div className="bg-white p-3.5 rounded-lg border border-slate-200">
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                      <span>Mensalidade Adicional de White-Label (R$/mês)</span>
+                      <span className="text-[10px] text-emerald-600 font-mono font-bold">+ Recorrente</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2 text-xs font-mono text-slate-400 font-bold">R$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={brandingForm.mensalidadeCustomizacao}
+                        onChange={(e) => setBrandingForm({ ...brandingForm, mensalidadeCustomizacao: Number(e.target.value) })}
+                        placeholder="450.00"
+                        className="w-full pl-9 pr-3 py-1.5 text-sm font-mono font-bold text-indigo-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Valor somado à mensalidade base em todas as faturas mensais da prefeitura.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Colors and Titles */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Título Personalizado do Portal Municipal
+                    </label>
+                    <input
+                      type="text"
+                      value={brandingForm.customPortalTitle || ''}
+                      onChange={(e) => setBrandingForm({ ...brandingForm, customPortalTitle: e.target.value })}
+                      placeholder="Ex: Portal Executivo de Inteligência Fiscal"
+                      className="w-full px-3 py-2 text-sm text-slate-900 font-medium border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      Subtítulo / Secretaria Gestora
+                    </label>
+                    <input
+                      type="text"
+                      value={brandingForm.customSubtitle || ''}
+                      onChange={(e) => setBrandingForm({ ...brandingForm, customSubtitle: e.target.value })}
+                      placeholder="Ex: Secretaria Municipal de Finanças e Orçamento"
+                      className="w-full px-3 py-2 text-sm text-slate-900 font-medium border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      URL da Logo / Brasão Oficial (PNG / SVG)
+                    </label>
+                    <input
+                      type="text"
+                      value={brandingForm.customLogoUrl || ''}
+                      onChange={(e) => setBrandingForm({ ...brandingForm, customLogoUrl: e.target.value })}
+                      placeholder="https://exemplo.gov.br/brasao-oficial.png"
+                      className="w-full px-3 py-2 text-xs font-mono text-slate-900 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                      <span>Cores Temáticas do Município</span>
+                      <span className="text-[11px] text-slate-400 font-mono">Hex Code</span>
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <input
+                          type="color"
+                          value={brandingForm.customPrimaryColor || '#10b981'}
+                          onChange={(e) => setBrandingForm({ ...brandingForm, customPrimaryColor: e.target.value })}
+                          className="w-8 h-8 rounded border border-slate-300 cursor-pointer p-0"
+                        />
+                        <input
+                          type="text"
+                          value={brandingForm.customPrimaryColor || '#10b981'}
+                          onChange={(e) => setBrandingForm({ ...brandingForm, customPrimaryColor: e.target.value })}
+                          className="w-full px-2 py-1.5 text-xs font-mono text-slate-900 border border-slate-300 rounded focus:outline-none bg-white"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <input
+                          type="color"
+                          value={brandingForm.customSecondaryColor || '#059669'}
+                          onChange={(e) => setBrandingForm({ ...brandingForm, customSecondaryColor: e.target.value })}
+                          className="w-8 h-8 rounded border border-slate-300 cursor-pointer p-0"
+                        />
+                        <input
+                          type="text"
+                          value={brandingForm.customSecondaryColor || '#059669'}
+                          onChange={(e) => setBrandingForm({ ...brandingForm, customSecondaryColor: e.target.value })}
+                          className="w-full px-2 py-1.5 text-xs font-mono text-slate-900 border border-slate-300 rounded focus:outline-none bg-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preset Palettes */}
+                <div>
+                  <span className="text-xs font-semibold text-slate-600 block mb-1.5">
+                    Paletas Rápidas Pré-configuradas:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setBrandingForm({ ...brandingForm, customPrimaryColor: '#0284c7', customSecondaryColor: '#0369a1' })}
+                      className="px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold border border-sky-300 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span className="w-3 h-3 rounded-full bg-sky-600 inline-block" />
+                      Azul Metrópole (Curitiba)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBrandingForm({ ...brandingForm, customPrimaryColor: '#10b981', customSecondaryColor: '#059669' })}
+                      className="px-2.5 py-1 rounded bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-semibold border border-emerald-300 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span className="w-3 h-3 rounded-full bg-emerald-600 inline-block" />
+                      Verde Araucária
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBrandingForm({ ...brandingForm, customPrimaryColor: '#8b5cf6', customSecondaryColor: '#6d28d9' })}
+                      className="px-2.5 py-1 rounded bg-purple-100 hover:bg-purple-200 text-purple-800 text-xs font-semibold border border-purple-300 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span className="w-3 h-3 rounded-full bg-purple-600 inline-block" />
+                      Violeta Moderno (Maringá)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBrandingForm({ ...brandingForm, customPrimaryColor: '#0d9488', customSecondaryColor: '#0f766e' })}
+                      className="px-2.5 py-1 rounded bg-teal-100 hover:bg-teal-200 text-teal-800 text-xs font-semibold border border-teal-300 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span className="w-3 h-3 rounded-full bg-teal-600 inline-block" />
+                      Teal Executivo (Londrina)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Toggle SaaS Branding Notice */}
+                <div className="pt-2 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="chk-show-saas-branding"
+                    checked={brandingForm.showSaaSBranding}
+                    onChange={(e) => setBrandingForm({ ...brandingForm, showSaaSBranding: e.target.checked })}
+                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500"
+                  />
+                  <label htmlFor="chk-show-saas-branding" className="text-xs text-slate-700 font-semibold cursor-pointer">
+                    Manter selo discreto "Tecnologia por Escrita.Online" no rodapé
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* LIVE PREVIEW BOX */}
+            <div className="border border-slate-300 rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-slate-800 text-white px-4 py-2 text-xs font-bold font-mono flex items-center justify-between">
+                <span>👁️ PRÉ-VISUALIZAÇÃO EM TEMPO REAL DO PORTAL DO MUNICÍPIO</span>
+                <span className="text-emerald-400">
+                  {brandingForm.isCustomized ? '100% White-Label' : 'Modo Padrão'}
+                </span>
+              </div>
+
+              <div
+                className="p-5 text-white flex flex-col sm:flex-row items-center justify-between gap-4 transition-all"
+                style={{
+                  backgroundColor: brandingForm.isCustomized
+                    ? (brandingForm.customPrimaryColor || '#0c326f')
+                    : '#0c326f',
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center font-bold text-xl border border-white/30 shadow-sm">
+                    {brandingForm.customLogoUrl ? (
+                      <img src={brandingForm.customLogoUrl} alt="Logo" className="w-8 h-8 object-contain" />
+                    ) : (
+                      '🏛️'
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-base tracking-tight text-white">
+                      {brandingForm.customPortalTitle || 'Sistema de Monitoramento Fiscal Municipal'}
+                    </h4>
+                    <p className="text-xs text-white/80">
+                      {brandingForm.customSubtitle || 'Prefeitura Municipal • Estado do Paraná'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs px-2.5 py-1 rounded bg-black/20 text-white font-mono border border-white/20">
+                    Exercício 2026
+                  </span>
+                  {!brandingForm.isCustomized && (
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-200 border border-emerald-400/40 font-semibold">
+                      Powered by Escrita.Online
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Form Actions */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+              <button
+                type="submit"
+                disabled={isSavingBranding}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-6 py-2.5 rounded-lg shadow-md transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
+              >
+                {isSavingBranding ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Salvando Personalização...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Salvar Configurações de White-Label & Faturamento</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 

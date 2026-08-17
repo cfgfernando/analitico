@@ -407,16 +407,16 @@ export const PainelDoPrefeito: React.FC<PainelDoPrefeitoProps> = ({
 
   return (
     <div className={`space-y-6 ${isFullscreen ? 'p-8 bg-slate-950 min-h-screen' : ''}`}>
-      {/* Top Action Bar: Modo Apresentação & Impressão */}
-      <div className="bg-slate-900 border border-slate-800 rounded-sm p-4 text-white shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 rounded-sm text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+      {/* Header com Identificação do Município e Modo Apresentação */}
+      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-950 text-white rounded-sm p-4 sm:p-6 shadow-sm border border-navy-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-mono font-bold tracking-widest text-emerald-400 uppercase bg-emerald-950/80 border border-emerald-800/80 px-2 py-0.5 rounded-xs">
               VISÃO EXECUTIVA — GABINETE DO PREFEITO
             </span>
             <DataSourceBadge dataSource={panelData.dataSource} size="xs" showDetails />
           </div>
-          <h2 className="text-xl font-bold uppercase tracking-tight">
+          <h2 className="panel-title text-xl font-bold uppercase tracking-tight text-white">
             PAINEL DO PREFEITO — {panelData.municipio.cidade} / {panelData.municipio.uf}
           </h2>
           <p className="text-xs text-slate-300">

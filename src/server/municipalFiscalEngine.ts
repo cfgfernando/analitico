@@ -2620,7 +2620,7 @@ export function getMunicipalBenchmark(tenant: TenantInfo) {
       cidade: tenant.cidade,
       uf: tenant.uf,
       populacao: pop,
-      porte: pop > 500000 ? 'Grande' : pop > 100000 ? 'Médio' : 'Pequeno',
+      porte: pop > 1000000 ? ('Metrópole' as const) : pop > 300000 ? ('Grande' as const) : ('Médio' as const),
       rclTotal: profile.rcl,
       despesaPessoalPct: profile.despesaPessoalPct,
       arrecadacaoPropriaTotal: Math.round(profile.orcamento * 0.25),

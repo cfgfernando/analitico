@@ -170,17 +170,12 @@ export class SiconfiSyncService {
           await this.prisma.syncLog.create({
             data: {
               tenantId,
-              provider: 'SICONFI',
+              sourceKey: 'SICONFI',
               status: SyncStatus.SUCESSO,
-              recordsIngested: financialRecordsToInsert.length,
+              recordsImported: financialRecordsToInsert.length,
               errorMessage: null,
-              syncedAt: new Date(),
-              metadata: JSON.stringify({
-                ano,
-                anexosProcessados,
-                codigoIbge,
-                registros: financialRecordsToInsert.length,
-              }),
+              startedAt,
+              finishedAt: new Date(),
             },
           });
         } catch {}

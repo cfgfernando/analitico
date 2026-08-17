@@ -19,6 +19,8 @@ async function runAllSuites() {
     { name: 'Fase 10: Benchmark Municipal & Eficiência Fiscal', file: 'src/server/fiscal/benchmark.spec.ts' },
     { name: 'Fase 11: Selo de Conformidade & Certificado Oficial', file: 'src/server/fiscal/selo-conformidade.spec.ts' },
     { name: 'Fase 12: Sistema Proativo de Alertas, FUNDEB, SIOPE & MSC', file: 'src/server/fiscal/alertas-proativos.spec.ts' },
+    { name: 'Fase 13: Painel Gerencial de Saúde Financeira Municipal (Prompt V2)', file: 'src/server/fiscal/painel-gestao.spec.ts' },
+    { name: 'Fase 14: Importador de Planilhas CSV/Excel & Conector PNCP Oficial', file: 'src/server/fiscal/spreadsheet-importer.spec.ts' },
   ];
 
   let totalSuites = suites.length;

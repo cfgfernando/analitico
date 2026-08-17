@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { TenantBrandingConfig } from '../types/saas';
 
 export interface TenantInfoState {
   id: string;
@@ -6,11 +7,15 @@ export interface TenantInfoState {
   cidade: string;
   uf: string;
   codigoIbge: string;
+  cnpj?: string;
+  status?: string;
+  branding?: TenantBrandingConfig;
 }
 
 interface TenantContextType {
   activeTenant: TenantInfoState;
   setActiveTenant: (tenant: TenantInfoState) => void;
+  updateActiveTenantBranding: (branding: TenantBrandingConfig) => void;
 }
 
 const defaultTenant: TenantInfoState = {
@@ -19,6 +24,18 @@ const defaultTenant: TenantInfoState = {
   cidade: 'Araucária',
   uf: 'PR',
   codigoIbge: '4101804',
+  cnpj: '76.105.535/0001-99',
+  status: 'ATIVO',
+  branding: {
+    isCustomized: false,
+    showSaaSBranding: true,
+    customPortalTitle: 'Sistema de Monitoramento Fiscal Municipal',
+    customSubtitle: 'Prefeitura Municipal de Araucária — Estado do Paraná',
+    customPrimaryColor: '#10b981',
+    customSecondaryColor: '#059669',
+    taxaImplantacao: 0.00,
+    mensalidadeCustomizacao: 0.00,
+  },
 };
 
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
@@ -40,8 +57,18 @@ export const TenantProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     } catch {}
   };
 
+  const updateActiveTenantBranding = (branding: TenantBrandingConfig) => {
+    setActiveTenantState(prev => {
+      const updated = { ...prev, branding };
+      try {
+        localStorage.setItem('sgf_active_tenant', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
   return (
-    <TenantContext.Provider value={{ activeTenant, setActiveTenant }}>
+    <TenantContext.Provider value={{ activeTenant, setActiveTenant, updateActiveTenantBranding }}>
       {children}
     </TenantContext.Provider>
   );
@@ -52,3 +79,4 @@ export const useTenantContext = () => {
   if (!ctx) throw new Error('useTenantContext deve ser usado dentro de um TenantProvider');
   return ctx;
 };
+

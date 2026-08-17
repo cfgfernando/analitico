@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export type AuthRole = 'EMPRESA_MASTER' | 'PREFEITURA_CLIENTE';
 
@@ -6,35 +6,50 @@ export interface AuthUser {
   id: string;
   nome: string;
   email: string;
-  role: AuthRole;
+  cpf?: string;
+  cargo?: string;
+  role: AuthRole | string;
   tenantId?: string;
+  secretariaRestrita?: string | null;
 }
 
 interface AuthContextType {
+  isAuthenticated: boolean;
   authRole: AuthRole;
   setAuthRole: (role: AuthRole) => void;
   currentUser: AuthUser | null;
   setCurrentUser: (user: AuthUser | null) => void;
+  loginTenantSession: (user: AuthUser, token?: string) => void;
+  loginAdminSession: (user: AuthUser, token?: string) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
+    try {
+      const savedUser = localStorage.getItem('sgf_auth_user');
+      if (savedUser) return JSON.parse(savedUser);
+    } catch {}
+    return null;
+  });
+
   const [authRole, setAuthRoleState] = useState<AuthRole>(() => {
     try {
       const saved = localStorage.getItem('sgf_auth_role');
       if (saved === 'PREFEITURA_CLIENTE' || saved === 'EMPRESA_MASTER') return saved;
     } catch {}
-    return 'EMPRESA_MASTER';
+    return 'PREFEITURA_CLIENTE';
   });
 
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => ({
-    id: 'user-ara-1',
-    nome: 'Dr. Hissam Hussein Dehaini',
-    email: 'gabinete.prefeito@araucaria.pr.gov.br',
-    role: authRole,
-  }));
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    try {
+      return Boolean(localStorage.getItem('sgf_auth_token') && localStorage.getItem('sgf_auth_user'));
+    } catch {
+      return false;
+    }
+  });
 
   const setAuthRole = (newRole: AuthRole) => {
     setAuthRoleState(newRole);
@@ -43,19 +58,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch {}
   };
 
-  const logout = () => {
+  const loginTenantSession = (user: AuthUser, token?: string) => {
+    setCurrentUser(user);
+    setAuthRoleState('PREFEITURA_CLIENTE');
+    setIsAuthenticated(true);
     try {
-      localStorage.removeItem('sgf_access_token');
+      localStorage.setItem('sgf_auth_user', JSON.stringify(user));
+      localStorage.setItem('sgf_auth_role', 'PREFEITURA_CLIENTE');
+      localStorage.setItem('sgf_auth_token', token || `token-${Date.now()}`);
+    } catch {}
+  };
+
+  const loginAdminSession = (user: AuthUser, token?: string) => {
+    setCurrentUser(user);
+    setAuthRoleState('EMPRESA_MASTER');
+    setIsAuthenticated(true);
+    try {
+      localStorage.setItem('sgf_auth_user', JSON.stringify(user));
+      localStorage.setItem('sgf_auth_role', 'EMPRESA_MASTER');
+      localStorage.setItem('sgf_auth_token', token || `master-token-${Date.now()}`);
+    } catch {}
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    try {
+      localStorage.removeItem('sgf_auth_user');
+      localStorage.removeItem('sgf_auth_role');
+      localStorage.removeItem('sgf_auth_token');
     } catch {}
   };
 
   return (
     <AuthContext.Provider
       value={{
+        isAuthenticated,
         authRole,
         setAuthRole,
         currentUser,
         setCurrentUser,
+        loginTenantSession,
+        loginAdminSession,
         logout,
       }}
     >
@@ -69,3 +113,4 @@ export const useAuthContext = () => {
   if (!ctx) throw new Error('useAuthContext deve ser usado dentro de um AuthProvider');
   return ctx;
 };
+
