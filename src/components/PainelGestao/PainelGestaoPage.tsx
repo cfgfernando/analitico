@@ -172,7 +172,7 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
       const getRes = await fetch(`/api/painel/contratos?tenantId=${tenantId || ''}&ano=${ano}`);
       if (getRes.ok) {
         const getData = await getRes.json();
-        if (getData.contratos && getData.contratos.length > 0) {
+        if (Array.isArray(getData.contratos) && getData.contratos.length > 0) {
           setContratosLista(getData.contratos);
           setIsSyncingPncp(false);
           return;
@@ -188,10 +188,8 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
 
       if (res.ok) {
         const data = await res.json();
-        if (data.contratos && data.contratos.length > 0) {
+        if (Array.isArray(data.contratos) && data.contratos.length > 0) {
           setContratosLista(data.contratos);
-          setIsSyncingPncp(false);
-          return;
         }
       }
     } catch (e) {
@@ -212,15 +210,19 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
 
   // Filtragem dos Contratos Reais
   const contratosFiltrados = contratosLista.filter(c => {
-    const matchSec = filtroSecContratos === 'todas' || c.secretaria === filtroSecContratos;
+    if (!c) return false;
+    const secNome = (c.secretariaNome || c.secretaria || '').toLowerCase();
+    const filtroSec = filtroSecContratos.toLowerCase();
+    const matchSec = filtroSecContratos === 'todas' || secNome.includes(filtroSec);
     const matchFonte = filtroFonteContratos === 'todas' || c.fonteOrigem === filtroFonteContratos;
     const matchStatus = filtroStatusContratos === 'todos' || c.status === filtroStatusContratos;
-    const matchBusca = buscaContratos === '' ||
-      c.numero.toLowerCase().includes(buscaContratos.toLowerCase()) ||
-      c.fornecedor.toLowerCase().includes(buscaContratos.toLowerCase()) ||
-      c.objeto.toLowerCase().includes(buscaContratos.toLowerCase()) ||
-      c.cnpj.includes(buscaContratos) ||
-      c.processo.toLowerCase().includes(buscaContratos.toLowerCase());
+    const b = buscaContratos.toLowerCase().trim();
+    const matchBusca = b === '' ||
+      (c.numero && String(c.numero).toLowerCase().includes(b)) ||
+      (c.fornecedor && String(c.fornecedor).toLowerCase().includes(b)) ||
+      (c.objeto && String(c.objeto).toLowerCase().includes(b)) ||
+      (c.cnpj && String(c.cnpj).includes(b)) ||
+      (c.processo && String(c.processo).toLowerCase().includes(b));
     return matchSec && matchFonte && matchStatus && matchBusca;
   });
 
