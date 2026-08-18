@@ -44,19 +44,67 @@ export class IbgeAdapter implements BaseIntegrationAdapter<IbgeData> {
   readonly defaultEndpoint = 'https://servicodados.ibge.gov.br/api/v1';
 
   async fetchData(codigoIbge: string, uf: string, exercicio = 2026): Promise<any> {
-    const isAraucaria = codigoIbge === '4101804';
-    const isCuritiba = codigoIbge === '4106902';
-    const isMaringa = codigoIbge === '4115200';
+    const cleanIbge = (codigoIbge || '').replace(/\D/g, '');
+    let municipioNome = 'Município';
+    let ufSigla = uf || 'PR';
+    let populacao = 0;
+    let areaKm2 = 400.0;
+
+    try {
+      // 1. Consulta Localidades IBGE
+      const locRes = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${cleanIbge}`, {
+        headers: { 'Accept': 'application/json', 'User-Agent': 'SaaS-Fiscal-IBGE-Adapter/1.0' }
+      });
+      if (locRes.ok) {
+        const locData = await locRes.json();
+        if (locData && locData.nome) {
+          municipioNome = locData.nome;
+          ufSigla = locData.microrregiao?.mesorregiao?.UF?.sigla || ufSigla;
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`[IBGE Adapter] Erro ao consultar dados de localidade para IBGE ${cleanIbge}: ${err.message}`);
+    }
+
+    try {
+      // 2. Consulta População do Censo Demográfico no IBGE (Indicador 29171)
+      const popRes = await fetch(`https://servicodados.ibge.gov.br/api/v1/pesquisas/indicadores/29171/resultados/${cleanIbge}`, {
+        headers: { 'Accept': 'application/json', 'User-Agent': 'SaaS-Fiscal-IBGE-Adapter/1.0' }
+      });
+      if (popRes.ok) {
+        const popData = await popRes.json();
+        const serie = popData?.[0]?.res?.[0]?.res;
+        if (serie) {
+          const anos = Object.keys(serie).sort();
+          const ultimoAno = anos[anos.length - 1];
+          if (ultimoAno && serie[ultimoAno]) {
+            populacao = parseInt(serie[ultimoAno], 10) || 0;
+          }
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`[IBGE Adapter] Erro ao consultar população IBGE para ${cleanIbge}: ${err.message}`);
+    }
+
+    // Se população não retornou da API externa em tempo real, verifica no catálogo oficial de referência de censos
+    if (populacao <= 0) {
+      const ref = (await import('../../data/municipiosBrasil')).MUNICIPIOS_REFERENCIA.find(m => m.codigoIbge === cleanIbge);
+      if (ref) {
+        populacao = ref.populacaoEstimada;
+        municipioNome = ref.cidade;
+        ufSigla = ref.uf;
+      }
+    }
 
     return {
-      codigoIbge,
-      municipio: isCuritiba ? 'Curitiba' : isAraucaria ? 'Araucária' : isMaringa ? 'Maringá' : 'Município',
-      uf,
-      populacao: isCuritiba ? 1773733 : isAraucaria ? 151666 : isMaringa ? 409657 : 85000,
-      pibTotal: isCuritiba ? 98000000000 : isAraucaria ? 17800000000 : isMaringa ? 22500000000 : 3500000000,
-      pibPerCapita: isCuritiba ? 55250 : isAraucaria ? 117363 : isMaringa ? 54924 : 41176,
-      idhm: isCuritiba ? 0.823 : isAraucaria ? 0.740 : 0.808,
-      areaKm2: isCuritiba ? 435.0 : isAraucaria ? 469.2 : 487.9,
+      codigoIbge: cleanIbge,
+      municipio: municipioNome,
+      uf: ufSigla,
+      populacao,
+      pibTotal: 0,
+      pibPerCapita: 0,
+      idhm: 0.75,
+      areaKm2,
       anoCenso: 2022,
     };
   }

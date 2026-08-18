@@ -48,12 +48,21 @@ export class SiconfiSyncService {
 
     let codigoIbge = '4101804'; // Default Araucária
     if (tenantId === 'tenant-curitiba' || tenantId === '4106902') codigoIbge = '4106902';
-    if (tenantId === 'tenant-londrina' || tenantId === '4113700') codigoIbge = '4113700';
-    if (tenantId === 'tenant-maringa' || tenantId === '4115200') codigoIbge = '4115200';
-    if (tenantId === 'tenant-pontagrossa' || tenantId === '4119905') codigoIbge = '4119905';
-    if (tenantId === 'tenant-cascavel' || tenantId === '4104808') codigoIbge = '4104808';
-    if (tenantId === 'tenant-saojosedospinhais' || tenantId === '4125506') codigoIbge = '4125506';
-    if (tenantId === 'tenant-fozdoiguacu' || tenantId === '4108304') codigoIbge = '4108304';
+    else if (tenantId === 'tenant-londrina' || tenantId === '4113700') codigoIbge = '4113700';
+    else if (tenantId === 'tenant-maringa' || tenantId === '4115200') codigoIbge = '4115200';
+    else if (tenantId === 'tenant-pontagrossa' || tenantId === '4119905') codigoIbge = '4119905';
+    else if (tenantId === 'tenant-cascavel' || tenantId === '4104808') codigoIbge = '4104808';
+    else if (tenantId === 'tenant-saojosedospinhais' || tenantId === '4125506') codigoIbge = '4125506';
+    else if (tenantId === 'tenant-fozdoiguacu' || tenantId === '4108304') codigoIbge = '4108304';
+    else if (tenantId === 'tenant-contenda' || tenantId === '4106209') codigoIbge = '4106209';
+    else if (tenantId.replace(/\D/g, '').length === 7) codigoIbge = tenantId.replace(/\D/g, '');
+
+    try {
+      const tenant = await this.tenantsRepository.findByIdOrIbge(tenantId);
+      if (tenant && tenant.codigoIbge) {
+        codigoIbge = tenant.codigoIbge;
+      }
+    } catch {}
 
     const anexosProcessados: string[] = [];
     const financialRecordsToInsert: any[] = [];
@@ -105,51 +114,10 @@ export class SiconfiSyncService {
         }
       }
 
-      // 3. Fallback inteligente: se API do Siconfi estiver indisponível ou retornar vazio para o ano recente, gera dados base homologados
-      if (financialRecordsToInsert.length === 0) {
-        anexosProcessados.push('SICONFI DCA / Demonstrativos Base Homologados');
-        financialRecordsToInsert.push(
-          {
-            tenantId,
-            sourceKey: 'SICONFI_RREO_03_RCL',
-            exercicioAno: ano,
-            periodo: '1',
-            categoria: FinancialCategory.RECEITA,
-            accountCode: 'RCL_TOTAL',
-            accountName: 'Receita Corrente Líquida Ajustada (RCL)',
-            valor: 1460000000.0,
-            isDemonstracao: false,
-            syncedAt: new Date(),
-          },
-          {
-            tenantId,
-            sourceKey: 'SICONFI_RGF_01_DTP',
-            exercicioAno: ano,
-            periodo: '1',
-            categoria: FinancialCategory.RGF,
-            accountCode: 'DTP_TOTAL',
-            accountName: 'Despesa Total com Pessoal — Poder Executivo',
-            valor: 749000000.0,
-            isDemonstracao: false,
-            syncedAt: new Date(),
-          },
-          {
-            tenantId,
-            sourceKey: 'SICONFI_RREO_08_MDE',
-            exercicioAno: ano,
-            periodo: '1',
-            categoria: FinancialCategory.DESPESA,
-            accountCode: 'MDE_TOTAL',
-            accountName: 'Aplicação em Manutenção e Desenvolvimento do Ensino (MDE)',
-            valor: 391380000.0,
-            isDemonstracao: false,
-            syncedAt: new Date(),
-          }
-        );
+      // 3. Persiste no Repositório / Banco de Dados somente os registros reais importados
+      if (financialRecordsToInsert.length > 0) {
+        await this.financialRepository.saveBatch(financialRecordsToInsert);
       }
-
-      // 4. Persiste no Repositório / Banco de Dados
-      await this.financialRepository.saveBatch(financialRecordsToInsert);
 
       // 5. Registra Log de Sincronização
       const logEntry = {

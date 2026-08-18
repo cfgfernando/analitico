@@ -77,22 +77,41 @@ export class SiopsAdapter implements BaseIntegrationAdapter<SiopsHealthData> {
       }
     }
 
-    // Fallback estruturado oficial com base nas características fiscais do município
-    return this.getOfficialFallbackData(codigoIbge, uf, exercicio);
+    return null;
   }
 
   /**
    * 2. NORMALIZE: Transforma payload bruto em modelo unificado
    */
   normalizeData(rawData: any, tenantId: string, codigoIbge: string, exercicio: number): SiopsHealthData {
-    const receitaImpostos = Number(rawData.receitaImpostosTransferencias || 1280000000);
-    const despesaPropria = Number(rawData.despesaPropriaSaudeLiquidata || 235520000);
-    const percentual = Number(((despesaPropria / (receitaImpostos || 1)) * 100).toFixed(2));
+    if (!rawData) {
+      return {
+        municipio: '',
+        codigoIbge,
+        uf: '',
+        exercicio,
+        bimestre: 0,
+        receitaImpostosTransferencias: 0,
+        despesaPropriaSaudeLiquidata: 0,
+        percentualAplicacaoSaude: 0,
+        pisoConstitucionalAtingido: false,
+        deficitOuSuperavitPiso: 0,
+        recursosSusTransferidos: 0,
+        despesaTotalSaude: 0,
+        financialRecords: [],
+      };
+    }
+
+    const receitaImpostos = Number(rawData.receitaImpostosTransferencias || rawData.receitaImpostos || 0);
+    const despesaPropria = Number(rawData.despesaPropriaSaudeLiquidata || rawData.despesaPropria || 0);
+    const percentual = receitaImpostos > 0 ? Number(((despesaPropria / receitaImpostos) * 100).toFixed(2)) : 0;
     const piso15 = receitaImpostos * 0.15;
     const deficitSuperavit = despesaPropria - piso15;
 
-    const financialRecords: SiopsHealthData['financialRecords'] = [
-      {
+    const financialRecords: SiopsHealthData['financialRecords'] = [];
+
+    if (despesaPropria > 0) {
+      financialRecords.push({
         tenantId,
         sourceKey: 'SIOPS_SAUDE',
         exercicioAno: exercicio,
@@ -104,8 +123,11 @@ export class SiopsAdapter implements BaseIntegrationAdapter<SiopsHealthData> {
         dadosOrigemJson: JSON.stringify({ ...rawData, fonte: 'SIOPS/MS' }),
         isDemonstracao: false,
         syncedAt: new Date(),
-      },
-      {
+      });
+    }
+
+    if (receitaImpostos > 0) {
+      financialRecords.push({
         tenantId,
         sourceKey: 'SIOPS_SAUDE',
         exercicioAno: exercicio,
@@ -117,8 +139,8 @@ export class SiopsAdapter implements BaseIntegrationAdapter<SiopsHealthData> {
         dadosOrigemJson: JSON.stringify({ ...rawData, fonte: 'SIOPS/MS' }),
         isDemonstracao: false,
         syncedAt: new Date(),
-      },
-    ];
+      });
+    }
 
     return {
       municipio: rawData.municipio || 'Município',
@@ -131,9 +153,9 @@ export class SiopsAdapter implements BaseIntegrationAdapter<SiopsHealthData> {
       percentualAplicacaoSaude: percentual,
       pisoConstitucionalAtingido: percentual >= 15.0,
       deficitOuSuperavitPiso: deficitSuperavit,
-      recursosSusTransferidos: Number(rawData.recursosSusTransferidos || 84200000),
-      despesaTotalSaude: Number(rawData.despesaTotalSaude || (despesaPropria + 84200000)),
-      dataHomologacao: rawData.dataHomologacao || new Date().toISOString().split('T')[0],
+      recursosSusTransferidos: Number(rawData.recursosSusTransferidos || 0),
+      despesaTotalSaude: Number(rawData.despesaTotalSaude || despesaPropria),
+      dataHomologacao: rawData.dataHomologacao,
       financialRecords,
     };
   }
@@ -146,12 +168,6 @@ export class SiopsAdapter implements BaseIntegrationAdapter<SiopsHealthData> {
 
     if (!normalizedData.codigoIbge || normalizedData.codigoIbge.length !== 7) {
       errors.push('Código IBGE inválido (deve possuir 7 dígitos).');
-    }
-    if (normalizedData.percentualAplicacaoSaude < 0 || normalizedData.percentualAplicacaoSaude > 100) {
-      errors.push(`Percentual de aplicação em saúde fora da faixa razoável: ${normalizedData.percentualAplicacaoSaude}%`);
-    }
-    if (normalizedData.receitaImpostosTransferencias <= 0) {
-      errors.push('Base de cálculo de impostos para saúde deve ser positiva.');
     }
 
     return {
@@ -171,7 +187,7 @@ export class SiopsAdapter implements BaseIntegrationAdapter<SiopsHealthData> {
       const validation = this.validateData(normalized);
 
       return {
-        success: validation.valid,
+        success: Boolean(rawData) && validation.valid,
         tenantId,
         codigoIbge,
         source: 'SIOPS',
@@ -179,47 +195,25 @@ export class SiopsAdapter implements BaseIntegrationAdapter<SiopsHealthData> {
         recordsCount: normalized.financialRecords.length,
         data: normalized,
         rawResponse: rawData,
-        errors: validation.errors,
+        errors: rawData ? validation.errors : ['Dados SIOPS não disponíveis para este município/exercício.'],
         latencyMs: Date.now() - start,
         timestamp: new Date().toISOString(),
       };
     } catch (err: any) {
       this.logger.error(`[SIOPS Sync Error] ${err.message}`);
-      const fallback = this.normalizeData(this.getOfficialFallbackData(codigoIbge, uf, exercicio), tenantId, codigoIbge, exercicio);
+      const empty = this.normalizeData(null, tenantId, codigoIbge, exercicio);
       return {
-        success: true,
+        success: false,
         tenantId,
         codigoIbge,
         source: 'SIOPS',
         sourceKey: 'SIOPS_SAUDE',
-        recordsCount: fallback.financialRecords.length,
-        data: fallback,
+        recordsCount: 0,
+        data: empty,
+        errors: [err.message],
         latencyMs: Date.now() - start,
         timestamp: new Date().toISOString(),
       };
     }
-  }
-
-  private getOfficialFallbackData(codigoIbge: string, uf: string, exercicio: number) {
-    // Estimativas baseadas nas prestações de contas oficiais do SIOPS
-    const isAraucaria = codigoIbge === '4101804';
-    const isCuritiba = codigoIbge === '4106902';
-
-    const receita = isCuritiba ? 8500000000 : isAraucaria ? 1280000000 : 450000000;
-    const percAplicacao = isAraucaria ? 18.4 : isCuritiba ? 21.2 : 16.5;
-    const despesa = Math.round(receita * (percAplicacao / 100));
-
-    return {
-      municipio: isAraucaria ? 'Araucária' : isCuritiba ? 'Curitiba' : 'Município',
-      codigoIbge,
-      uf,
-      exercicio,
-      bimestre: 6,
-      receitaImpostosTransferencias: receita,
-      despesaPropriaSaudeLiquidata: despesa,
-      recursosSusTransferidos: Math.round(despesa * 0.35),
-      despesaTotalSaude: Math.round(despesa * 1.35),
-      dataHomologacao: `${exercicio}-01-30`,
-    };
   }
 }

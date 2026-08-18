@@ -97,9 +97,8 @@ export class PncpConnectorService {
       }
     }
 
-    // Caso a API pública externa esteja temporariamente indisponível ou retorne 0 registros,
-    // gera o espelho homologado oficial do município conforme as regras fiscais
-    return this.generateOficialMirrorContracts(cleanCnpj, ano);
+    // Se a API PNCP não retornar registros ou falhar, retorna array vazio
+    return [];
   }
 
   /**
@@ -137,78 +136,5 @@ export class PncpConnectorService {
     }
 
     return { criticidade: 'DIFERIVEL', impacto: 'BAIXO' };
-  }
-
-  /**
-   * Gera lote oficial formatado do município para contingência de rede
-   */
-  private static generateOficialMirrorContracts(cnpj: string, ano: number): PncpContratoItem[] {
-    return [
-      {
-        numeroContratoEmpenho: `042/${ano}`,
-        anoContrato: ano,
-        razaoSocialContratado: 'BioFarma Distribuição de Insumos Hospitalares S.A.',
-        cnpjContratado: '12.345.678/0001-90',
-        objetoContrato: 'Fornecimento contínuo de medicamentos essenciais e materiais hospitalares',
-        valorInicial: 4200000,
-        valorGlobal: 4200000,
-        valorAcumulado: 2100000,
-        dataVigenciaInicio: `${ano}-01-10`,
-        dataVigenciaFim: `${ano}-12-31`,
-        categoriaProcesso: 'SAUDE',
-      },
-      {
-        numeroContratoEmpenho: `055/${ano}`,
-        anoContrato: ano,
-        razaoSocialContratado: 'NutriBrasil Alimentos e Refeições Escolares',
-        cnpjContratado: '98.765.432/0001-11',
-        objetoContrato: 'Preparação e distribuição de merenda escolar balanceada para escolas e CMEIs',
-        valorInicial: 3100000,
-        valorGlobal: 3100000,
-        valorAcumulado: 1550000,
-        dataVigenciaInicio: `${ano}-01-15`,
-        dataVigenciaFim: `${ano}-12-31`,
-        categoriaProcesso: 'EDUCACAO',
-      },
-      {
-        numeroContratoEmpenho: `078/${ano}`,
-        anoContrato: ano,
-        razaoSocialContratado: 'SegurTec Monitoramento e Vigilância Armada Ltda',
-        cnpjContratado: '33.222.111/0001-44',
-        objetoContrato: 'Serviços de segurança eletrônica, monitoramento 24h e portaria das unidades municipais',
-        valorInicial: 1800000,
-        valorGlobal: 1800000,
-        valorAcumulado: 900000,
-        dataVigenciaInicio: `${ano}-02-01`,
-        dataVigenciaFim: `${ano}-12-31`,
-        categoriaProcesso: 'ADMINISTRACAO',
-      },
-      {
-        numeroContratoEmpenho: `089/${ano}`,
-        anoContrato: ano,
-        razaoSocialContratado: 'EcoLimp Serviços Terceirizados e Limpeza Predial',
-        cnpjContratado: '55.666.777/0001-88',
-        objetoContrato: 'Higienização, limpeza e conservação de prédios públicos e secretarias',
-        valorInicial: 1450000,
-        valorGlobal: 1450000,
-        valorAcumulado: 725000,
-        dataVigenciaInicio: `${ano}-01-05`,
-        dataVigenciaFim: `${ano}-12-31`,
-        categoriaProcesso: 'ADMINISTRACAO',
-      },
-      {
-        numeroContratoEmpenho: `112/${ano}`,
-        anoContrato: ano,
-        razaoSocialContratado: 'CoffeeBreak Locações e Catering Corporativo',
-        cnpjContratado: '77.888.999/0001-22',
-        objetoContrato: 'Locação de máquinas de café, insumos de copa e água mineral para gabinetes',
-        valorInicial: 110000,
-        valorGlobal: 110000,
-        valorAcumulado: 55000,
-        dataVigenciaInicio: `${ano}-01-01`,
-        dataVigenciaFim: `${ano}-12-31`,
-        categoriaProcesso: 'ADMINISTRACAO',
-      },
-    ];
   }
 }

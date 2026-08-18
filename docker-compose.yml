@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saas-fiscal-app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=mysql://saas_user:saas_secret_pwd@mysql:3306/saas_fiscal_prefeituras
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-saas_fiscal_jwt_secret_must_change_in_prod_min_32_chars}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-saas_fiscal_jwt_refresh_secret_min_32_chars}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - saas-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: saas-fiscal-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_master_password
+      MYSQL_DATABASE: saas_fiscal_prefeituras
+      MYSQL_USER: saas_user
+      MYSQL_PASSWORD: saas_secret_pwd
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - saas-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_master_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    container_name: saas-fiscal-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - saas-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+networks:
+  saas-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:

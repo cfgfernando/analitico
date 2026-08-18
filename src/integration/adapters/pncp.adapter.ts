@@ -162,14 +162,14 @@ export class PncpAdapter implements BaseIntegrationAdapter<PncpData> {
     ];
 
     return {
-      municipio: isAraucaria ? 'Araucária' : isCuritiba ? 'Curitiba' : 'Município',
+      municipio: rawData?.municipio || (codigoIbge === '4101804' ? 'Araucária' : codigoIbge === '4106902' ? 'Curitiba' : 'Município'),
       codigoIbge,
-      cnpj: isAraucaria ? '76.105.535/0001-99' : '76.417.005/0001-86',
-      totalContratosAtivos: isCuritiba ? 342 : isAraucaria ? 128 : 45,
-      valorGlobalContratadoAtivo: isCuritiba ? 1450000000 : isAraucaria ? 186400000 : 38000000,
+      cnpj: rawData?.cnpj || '',
+      totalContratosAtivos: contratos.length,
+      valorGlobalContratadoAtivo: valorGlobalAtivo,
       contratosVencendo60Dias: contratosVencendo.length,
       valorContratosVencendo60Dias: valorVencendo,
-      totalLicitacoesAno: isCuritiba ? 184 : isAraucaria ? 76 : 28,
+      totalLicitacoesAno: contratos.length,
       maioresContratos: contratos,
       contratosCriticosRenovacao: contratosVencendo,
       ultimaConsulta: new Date().toISOString(),
@@ -182,8 +182,8 @@ export class PncpAdapter implements BaseIntegrationAdapter<PncpData> {
     if (!normalizedData.codigoIbge || normalizedData.codigoIbge.length !== 7) {
       errors.push('Código IBGE inválido.');
     }
-    if (normalizedData.valorGlobalContratadoAtivo <= 0) {
-      errors.push('Valor global contratado deve ser positivo.');
+    if (normalizedData.valorGlobalContratadoAtivo < 0) {
+      errors.push('Valor global contratado não pode ser negativo.');
     }
     return {
       valid: errors.length === 0,

@@ -593,11 +593,11 @@ export function generateApisForMunicipality(
     {
       providerName: 'TRANSFEREGOV',
       label: `Transferegov / Obrasgov Federal (${cidade})`,
-      baseUrl: `https://api.transferegov.sistema.gov.br/v1/convenios?municipio_ibge=${codigoIbge}`,
+      baseUrl: `http://api-publica.transferegov.gestao.gov.br/api/v1/convenios?municipio_ibge=${codigoIbge}`,
       authType: 'NONE',
       apiKeyMasked: `transferegov-fed-${codigoIbge}`,
       syncFrequency: '0 6,18 * * *',
-      descricao: 'Monitoramento em tempo real de convênios federais, contratos de repasse da Caixa e medições físicas de obras públicas.',
+      descricao: 'Monitoramento em tempo real de convênios federais, contratos de repasse da Caixa e medições físicas de obras públicas via nova API pública.',
       recursos: ['Convênios Federais', 'Contratos de Repasse', 'Obrasgov', 'Prestações de Contas'],
     },
     {
@@ -612,12 +612,12 @@ export function generateApisForMunicipality(
     },
     {
       providerName: 'PORTAL_TRANSPARENCIA',
-      label: `Portal da Transparência REST (${cidade})`,
-      baseUrl: `https://transparencia.${cidadeSlug}.${ufLower}.gov.br/api/v1`,
-      authType: 'NONE',
-      apiKeyMasked: `portal-${cidadeSlug}-v1`,
+      label: `Portal da Transparência / ERP Local (${cidade})`,
+      baseUrl: '',
+      authType: 'API_KEY',
+      apiKeyMasked: '',
       syncFrequency: '*/30 * * * *',
-      descricao: 'Ingestão contínua em tempo real de despesas, empenhos, liquidações, pagamentos, receitas arrecadadas e licitações.',
+      descricao: 'Conector customizável configurado por prefeitura para importação de dados de ERP ou Portal de Transparência local.',
       recursos: ['Empenhos', 'Liquidações', 'Pagamentos', 'Receitas Arrecadadas', 'Contratos'],
     },
     {
@@ -633,7 +633,7 @@ export function generateApisForMunicipality(
     {
       providerName: 'SIOPE_EDUCACAO',
       label: `SIOPE / FNDE - Ministério da Educação (${cidade})`,
-      baseUrl: `https://www.fnde.gov.br/siope/api/v1/relatorios?ibge=${codigoIbge}`,
+      baseUrl: `https://www.fnde.gov.br/olinda-ide/servico/DADOS_ABERTOS_SIOPE/`,
       authType: 'NONE',
       apiKeyMasked: `siope-${codigoIbge}`,
       syncFrequency: '0 6 * * *',
@@ -692,9 +692,7 @@ export function autoDiscoverMunicipality(query: string): AutoDiscoveredMunicipal
     return buildDiscoveredResponse(matchByName);
   }
 
-  // 4. Dynamic synthetic generator for any other Brazilian municipality
-  // If the query is an unknown city name (e.g. "Toledo", "Pato Branco", "Umuarama", "Chapecó", "Pelotas", "Franca", etc.)
-  // or a custom 7-digit IBGE / 14-digit CNPJ, generate a mathematically valid, rich municipal profile with all 7 APIs mapped!
+  // 4. Perfil básico aguardando confirmação e busca no IBGE (sem inventar população)
   if (normalizedQuery.length >= 3) {
     return generateDynamicMunicipalityProfile(rawClean, digitsOnly);
   }
@@ -724,19 +722,16 @@ function buildDiscoveredResponse(base: MunicipioBase): AutoDiscoveredMunicipalit
 }
 
 function generateDynamicMunicipalityProfile(rawQuery: string, digitsOnly: string): AutoDiscoveredMunicipality {
-  // Clean clean name
   let cityName = (rawQuery || '')
     .replace(/^(prefeitura municipal de|prefeitura de|municipio de|governo de)\s+/i, '')
     .trim() || 'Município';
   
-  // Capitalize words
   cityName = cityName
     .split(' ')
     .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : '')
     .filter(Boolean)
     .join(' ') || 'Município';
 
-  // Guess UF if specified like "Campinas - SP" or default to PR
   let uf = 'PR';
   const ufMatches = (rawQuery || '').match(/\b(AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO)\b/i);
   if (ufMatches) {
@@ -744,12 +739,10 @@ function generateDynamicMunicipalityProfile(rawQuery: string, digitsOnly: string
     cityName = cityName.replace(new RegExp(`[-/\\s]*${uf}\\b`, 'i'), '').trim() || 'Município';
   }
 
-  // Generate deterministic IBGE & CNPJ if not provided
-  const hash = Math.abs((cityName || 'Municipio').split('').reduce((acc, char) => acc + char.charCodeAt(0), 1000));
-  const codigoIbge = (digitsOnly && digitsOnly.length === 7) ? digitsOnly : `41${String(10000 + (hash % 89999))}`;
+  const codigoIbge = (digitsOnly && digitsOnly.length === 7) ? digitsOnly : '0000000';
   const cnpj = (digitsOnly && digitsOnly.length === 14)
     ? `${digitsOnly.substring(0, 2)}.${digitsOnly.substring(2, 5)}.${digitsOnly.substring(5, 8)}/${digitsOnly.substring(8, 12)}-${digitsOnly.substring(12, 14)}`
-    : `76.${String(100 + (hash % 899))}.${String(100 + ((hash * 3) % 899))}/0001-${String(10 + (hash % 89))}`;
+    : '00.000.000/0001-00';
 
   const cidadeSlug = normalizeText(cityName).replace(/\s+/g, '');
   const ufLower = uf.toLowerCase();
@@ -762,13 +755,13 @@ function generateDynamicMunicipalityProfile(rawQuery: string, digitsOnly: string
     cnpj,
     regiao: uf === 'PR' || uf === 'SC' || uf === 'RS' ? 'Sul' : 'Sudeste',
     mesorregiao: `Região Administrativa de ${cityName}`,
-    populacaoEstimada: 45000 + (hash % 150000),
+    populacaoEstimada: 0, // População oficial deve ser carregada do IBGE
     emailFaturamento: `fazenda@${cidadeSlug}.${ufLower}.gov.br`,
-    telefoneContato: `(${uf === 'PR' ? '41' : uf === 'SP' ? '11' : '48'}) 3000-0000`,
+    telefoneContato: '',
     websiteOficial: `https://${cidadeSlug}.${ufLower}.gov.br`,
     prefeitoNome: `Gabinete do(a) Prefeito(a) de ${cityName}`,
     prefeitoEmail: `gabinete@${cidadeSlug}.${ufLower}.gov.br`,
-    secFinancasNome: `Secretaria Municipal de Finanças e Fazenda`,
+    secFinancasNome: `Secretaria Municipal de Finanças`,
     secFinancasEmail: `financas@${cidadeSlug}.${ufLower}.gov.br`,
     apisDisponiveis: generateApisForMunicipality(cityName, uf, codigoIbge),
   };

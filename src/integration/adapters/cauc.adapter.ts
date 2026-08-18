@@ -90,85 +90,42 @@ export class CaucAdapter implements BaseIntegrationAdapter<CaucStatusData> {
       }
     }
 
-    return this.getOfficialFallbackData(codigoIbge, uf);
+    return null;
   }
 
   /**
    * 2. NORMALIZE: Transforma requisitos do CAUC em objeto estruturado
    */
   normalizeData(rawData: any, tenantId: string, codigoIbge: string, exercicio = 2026): CaucStatusData {
-    const requisitos: CaucItemRequirement[] = rawData.requisitos || [
-      {
-        codigo: '1.1',
-        descricao: 'Certidão Negativa de Débitos Federais e Dívida Ativa da União (CND/PGFN)',
-        grupo: 'OBRIGACOES_FINANCEIRAS',
-        situacao: 'REGULAR',
-        orgaoResponsavel: 'Receita Federal / PGFN',
-        dataValidade: '2026-10-15',
-      },
-      {
-        codigo: '1.2',
-        descricao: 'Regularidade perante o FGTS (CRF)',
-        grupo: 'OBRIGACOES_FINANCEIRAS',
-        situacao: 'REGULAR',
-        orgaoResponsavel: 'Caixa Econômica Federal',
-        dataValidade: '2026-09-20',
-      },
-      {
-        codigo: '1.3',
-        descricao: 'Regularidade de Contribuições Previdenciárias (RPPS/INSS e CRP)',
-        grupo: 'OBRIGACOES_FINANCEIRAS',
-        situacao: 'REGULAR',
-        orgaoResponsavel: 'Ministério da Previdência Social',
-        dataValidade: '2026-12-31',
-      },
-      {
-        codigo: '2.1',
-        descricao: 'Prestação de Contas de Convênios Federais (Transferegov / SIAFI)',
-        grupo: 'PRESTACAO_CONTAS',
-        situacao: rawData.restricaoConvenios ? 'RESTRICAO' : 'REGULAR',
-        orgaoResponsavel: 'Controladoria Geral da União / Ministérios Concedentes',
-        detalheInconsistencia: rawData.restricaoConvenios ? 'Convênio nº 891234/2023 com pendência de prestação de contas final.' : undefined,
-      },
-      {
-        codigo: '3.1',
-        descricao: 'Publicação e Homologação Tempestiva do RREO no SICONFI',
-        grupo: 'TRANSPARENCIA',
-        situacao: 'REGULAR',
-        orgaoResponsavel: 'Secretaria do Tesouro Nacional (STN)',
-      },
-      {
-        codigo: '3.2',
-        descricao: 'Publicação e Homologação Tempestiva do RGF no SICONFI',
-        grupo: 'TRANSPARENCIA',
-        situacao: 'REGULAR',
-        orgaoResponsavel: 'Secretaria do Tesouro Nacional (STN)',
-      },
-      {
-        codigo: '4.1',
-        descricao: 'Aplicação Mínima em Saúde (15% da Receita de Impostos — SIOPS)',
-        grupo: 'LIMITES_CONSTITUCIONAIS',
-        situacao: 'REGULAR',
-        orgaoResponsavel: 'Ministério da Saúde',
-      },
-      {
-        codigo: '4.2',
-        descricao: 'Aplicação Mínima em Educação (25% da Receita de Impostos — SIOPE)',
-        grupo: 'LIMITES_CONSTITUCIONAIS',
-        situacao: 'REGULAR',
-        orgaoResponsavel: 'Ministério da Educação / FNDE',
-      },
-    ];
+    if (!rawData) {
+      return {
+        municipio: '',
+        codigoIbge,
+        cnpj: '',
+        uf: '',
+        statusGeral: 'ADIMPLENTE',
+        totalRequisitos: 0,
+        totalRegulares: 0,
+        totalRestricoes: 0,
+        podeReceberTransferenciasVoluntarias: true,
+        podeReceberEmendasParlamentares: true,
+        valorPotencialBloqueadoReais: 0,
+        alertaBloqueioTexto: 'Aguardando sincronização de dados do CAUC/STN.',
+        requisitos: [],
+        ultimaConsulta: new Date().toISOString(),
+        financialRecords: [],
+      };
+    }
 
+    const requisitos: CaucItemRequirement[] = rawData.requisitos || [];
     const totalRestricoes = requisitos.filter(r => r.situacao === 'RESTRICAO').length;
     const totalRegulares = requisitos.filter(r => r.situacao === 'REGULAR').length;
     const isAdimplente = totalRestricoes === 0;
 
-    // Estimativa de valor potencial de emendas/repasses sob risco se houver restrição
-    const valorBloqueado = isAdimplente ? 0 : 18500000;
+    const valorBloqueado = isAdimplente ? 0 : 0;
     const alertaTexto = isAdimplente
-      ? 'Município plenamente ADIMPLENTE no CAUC. Apto a receber 100% das transferências voluntárias e emendas parlamentares.'
-      : `ATENÇÃO: Seu município possui ${totalRestricoes} restrição(ões) ativa(s) no CAUC. Enquanto não regularizar, ficam bloqueados até R$ ${(valorBloqueado / 1_000_000).toFixed(1)} milhões em emendas e convênios em aberto.`;
+      ? 'Município plenamente ADIMPLENTE no CAUC. Apto a receber transferências voluntárias e emendas.'
+      : `ATENÇÃO: Município possui ${totalRestricoes} restrição(ões) ativa(s) no CAUC.`;
 
     const financialRecords: CaucStatusData['financialRecords'] = [
       {
@@ -192,9 +149,9 @@ export class CaucAdapter implements BaseIntegrationAdapter<CaucStatusData> {
     ];
 
     return {
-      municipio: rawData.municipio || 'Araucária',
+      municipio: rawData.municipio || rawData.ente || 'Município',
       codigoIbge,
-      cnpj: rawData.cnpj || '76.105.535/0001-99',
+      cnpj: rawData.cnpj || '',
       uf: rawData.uf || 'PR',
       statusGeral: isAdimplente ? 'ADIMPLENTE' : 'INADIMPLENTE_COM_RESTRICOES',
       totalRequisitos: requisitos.length,
@@ -218,9 +175,6 @@ export class CaucAdapter implements BaseIntegrationAdapter<CaucStatusData> {
     if (!normalizedData.codigoIbge || normalizedData.codigoIbge.length !== 7) {
       errors.push('Código IBGE inválido para consulta do CAUC.');
     }
-    if (!normalizedData.requisitos || normalizedData.requisitos.length === 0) {
-      errors.push('Lista de requisitos avaliados do CAUC não pode ser vazia.');
-    }
     return {
       valid: errors.length === 0,
       errors,
@@ -238,7 +192,7 @@ export class CaucAdapter implements BaseIntegrationAdapter<CaucStatusData> {
       const validation = this.validateData(normalized);
 
       return {
-        success: validation.valid,
+        success: Boolean(rawData) && validation.valid,
         tenantId,
         codigoIbge,
         source: 'CAUC',
@@ -246,35 +200,25 @@ export class CaucAdapter implements BaseIntegrationAdapter<CaucStatusData> {
         recordsCount: normalized.financialRecords.length,
         data: normalized,
         rawResponse: rawData,
-        errors: validation.errors,
+        errors: rawData ? validation.errors : ['Dados do CAUC não disponíveis para este município/exercício.'],
         latencyMs: Date.now() - start,
         timestamp: new Date().toISOString(),
       };
     } catch (err: any) {
       this.logger.error(`[CAUC Sync Error] ${err.message}`);
-      const fallback = this.normalizeData(this.getOfficialFallbackData(codigoIbge, uf), tenantId, codigoIbge, exercicio);
+      const empty = this.normalizeData(null, tenantId, codigoIbge, exercicio);
       return {
-        success: true,
+        success: false,
         tenantId,
         codigoIbge,
         source: 'CAUC',
         sourceKey: 'CAUC_STN',
-        recordsCount: fallback.financialRecords.length,
-        data: fallback,
+        recordsCount: 0,
+        data: empty,
+        errors: [err.message],
         latencyMs: Date.now() - start,
         timestamp: new Date().toISOString(),
       };
     }
-  }
-
-  private getOfficialFallbackData(codigoIbge: string, uf: string) {
-    const isAraucaria = codigoIbge === '4101804';
-    return {
-      municipio: isAraucaria ? 'Araucária' : 'Município',
-      codigoIbge,
-      cnpj: isAraucaria ? '76.105.535/0001-99' : '00.000.000/0001-00',
-      uf,
-      restricaoConvenios: false,
-    };
   }
 }

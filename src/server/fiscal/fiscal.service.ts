@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
+import { PrismaService } from '../database/prisma.service';
 import {
   TenantInfo,
   resolveTenant,
@@ -27,6 +28,10 @@ import {
 
 @Injectable()
 export class FiscalService {
+  private readonly logger = new Logger(FiscalService.name);
+
+  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+
   getSummary(tenant: TenantInfo, ano: number = 2026) {
     return getMunicipalFiscalSummary(tenant, ano);
   }

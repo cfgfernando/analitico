@@ -102,7 +102,7 @@ async function main() {
       diaVencimento: 10,
       emailFaturamento: 'fazenda@araucaria.pr.gov.br',
       telefoneContato: '(41) 3614-1400',
-      isDemonstracao: true,
+      isDemonstracao: false,
       users: [
         {
           id: 'user-ara-1',
@@ -151,7 +151,7 @@ async function main() {
       diaVencimento: 15,
       emailFaturamento: 'financas@curitiba.pr.gov.br',
       telefoneContato: '(41) 3350-8484',
-      isDemonstracao: true,
+      isDemonstracao: false,
       users: [
         {
           id: 'user-cur-1',
@@ -190,7 +190,7 @@ async function main() {
       diaVencimento: 10,
       emailFaturamento: 'fazenda@londrina.pr.gov.br',
       telefoneContato: '(43) 3372-4000',
-      isDemonstracao: true,
+      isDemonstracao: false,
       users: [
         {
           id: 'user-lon-1',
@@ -229,7 +229,7 @@ async function main() {
       diaVencimento: 20,
       emailFaturamento: 'contabilidade@maringa.pr.gov.br',
       telefoneContato: '(44) 3221-1234',
-      isDemonstracao: true,
+      isDemonstracao: false,
       users: [
         {
           id: 'user-mar-1',
@@ -309,7 +309,7 @@ async function main() {
             authType: AuthType.NONE,
             syncFrequency: '0 6,18 * * *',
             ativo: true,
-            totalRegistrosSincronizados: 1500,
+            totalRegistrosSincronizados: 0,
           },
         });
       }

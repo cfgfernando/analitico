@@ -32,12 +32,12 @@ async function bootstrap() {
   expressApp.use(corsSecurityMiddleware);
   expressApp.use('/api/', apiRateLimiter);
 
-  // Validação Global de DTOs
+  // Validação Global Estrita de DTOs
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: false,
+      whitelist: true,
       transform: true,
-      forbidNonWhitelisted: false,
+      forbidNonWhitelisted: true,
     })
   );
 

@@ -40,14 +40,49 @@ export class BacenSgsAdapter implements BaseIntegrationAdapter<BacenSgsData> {
   readonly defaultEndpoint = 'https://api.bcb.gov.br/dados/serie/bcdata.sgs';
 
   async fetchData(codigoIbge: string, uf: string, exercicio = 2026): Promise<any> {
+    let selic = 10.50;
+    let ipca12M = 4.15;
+    let dataRef = new Date().toISOString().split('T')[0];
+
+    try {
+      // 1. Consulta Selic Meta (SGS 432)
+      const selicRes = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json', {
+        headers: { 'Accept': 'application/json', 'User-Agent': 'SaaS-Fiscal-BACEN/1.0' }
+      });
+      if (selicRes.ok) {
+        const selicJson = await selicRes.json();
+        if (selicJson && selicJson[0] && selicJson[0].valor) {
+          selic = parseFloat(selicJson[0].valor) || selic;
+          dataRef = selicJson[0].data || dataRef;
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`[BACEN SGS] Erro ao consultar Selic: ${err.message}`);
+    }
+
+    try {
+      // 2. Consulta IPCA acumulado 12 meses (SGS 13522)
+      const ipcaRes = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.13522/dados/ultimos/1?formato=json', {
+        headers: { 'Accept': 'application/json', 'User-Agent': 'SaaS-Fiscal-BACEN/1.0' }
+      });
+      if (ipcaRes.ok) {
+        const ipcaJson = await ipcaRes.json();
+        if (ipcaJson && ipcaJson[0] && ipcaJson[0].valor) {
+          ipca12M = parseFloat(ipcaJson[0].valor) || ipca12M;
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`[BACEN SGS] Erro ao consultar IPCA: ${err.message}`);
+    }
+
     return {
-      ipca12M: 4.15,
-      selic: 10.50,
-      cdi: 10.40,
+      ipca12M,
+      selic,
+      cdi: Number((selic - 0.10).toFixed(2)),
       igpm: 3.80,
-      inpc: 4.05,
+      inpc: Number((ipca12M - 0.10).toFixed(2)),
       focusAno: 3.90,
-      data: new Date().toISOString().split('T')[0],
+      data: dataRef,
     };
   }
 

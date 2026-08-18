@@ -4,15 +4,19 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import env from '../config/env';
 
+const isProduction = env.NODE_ENV === 'production';
+
 /**
- * Helmet Security Headers configurados para compatibilidade com Vite,
+ * Helmet Security Headers configurados para produção e compatibilidade com Vite em dev,
  * CDNs institucionais do Gov.br (Serpro) e Google Fonts.
  */
 export const helmetSecurityMiddleware = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      scriptSrc: isProduction
+        ? ["'self'"]
+        : ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       styleSrc: [
         "'self'",
         "'unsafe-inline'",
@@ -29,14 +33,27 @@ export const helmetSecurityMiddleware = helmet({
       connectSrc: [
         "'self'",
         'https://apidatalake.tesouro.gov.br',
+        'https://pncp.gov.br',
+        'https://servicodados.ibge.gov.br',
+        'https://www.fnde.gov.br',
+        'https://siops.saude.gov.br',
+        'https://www.tesourotransparente.gov.br',
+        'http://api-publica.transferegov.gestao.gov.br',
+        'https://api.bcb.gov.br',
         'https://generativelanguage.googleapis.com',
-        'https:',
-        'ws:',
-        'wss:',
+        ...(isProduction ? [] : ['https:', 'ws:', 'wss:']),
       ],
     },
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  dnsPrefetchControl: { allow: false },
+  frameguard: { action: 'deny' },
+  hidePoweredBy: true,
+  hsts: isProduction ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
+  ieNoOpen: true,
+  noSniff: true,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 });
 
 /**
@@ -44,15 +61,14 @@ export const helmetSecurityMiddleware = helmet({
  */
 export const corsSecurityMiddleware = cors({
   origin: (origin, callback) => {
-    // Permite requisições sem origin (como mobile apps, curl, server-to-server) em desenvolvimento
     if (!origin) return callback(null, true);
 
     const isAllowed = env.CORS_ORIGIN.some(allowed => {
       if (allowed === '*') return true;
-      return origin.toLowerCase() === allowed.toLowerCase() || origin.startsWith('http://localhost:');
+      return origin.toLowerCase() === allowed.toLowerCase() || (!isProduction && origin.startsWith('http://localhost:'));
     });
 
-    if (isAllowed || env.NODE_ENV === 'development') {
+    if (isAllowed || (!isProduction && env.NODE_ENV === 'development')) {
       callback(null, true);
     } else {
       callback(new Error(`[Segurança CORS] Origem '${origin}' não autorizada.`));
