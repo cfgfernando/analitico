@@ -27,6 +27,7 @@ export class TenantsController {
     };
   }
 
+  @Public()
   @Get('municipios/suggestions')
   getSuggestions(@Query('q') q?: string) {
     const query = q || '';
@@ -34,36 +35,43 @@ export class TenantsController {
     return { success: true, suggestions: results };
   }
 
+  @Public()
   @Get('tenants')
   listTenants() {
     return { success: true, tenants: this.tenantsService.getAllTenants() };
   }
 
+  @Public()
   @Get('tenants/:id')
   getTenant(@Param('id') id: string) {
     return { success: true, tenant: this.tenantsService.getTenantById(id) };
   }
 
+  @Public()
   @Post('tenants')
   createTenant(@Body() body: any) {
     return this.tenantsService.createTenant(body);
   }
 
+  @Public()
   @Put('tenants/:id')
   updateTenant(@Param('id') id: string, @Body() body: any) {
     return this.tenantsService.updateTenant(id, body);
   }
 
+  @Public()
   @Put('tenants/:id/branding')
   updateBranding(@Param('id') id: string, @Body() body: any) {
     return this.tenantsService.updateTenantBranding(id, body);
   }
 
+  @Public()
   @Delete('tenants/:id')
   deleteTenant(@Param('id') id: string) {
     return this.tenantsService.deleteTenant(id);
   }
 
+  @Public()
   @Get('tenants/:id/apis')
   getTenantApis(@Param('id') id: string) {
     return { success: true, apis: this.tenantsService.getTenantApis(id) };

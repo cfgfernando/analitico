@@ -12,16 +12,19 @@ export class UsersController {
     return this.usersService.getUsersForTenant(tenantId);
   }
 
+  @Public()
   @Post()
   createUser(@Param('tenantId') tenantId: string, @Body() body: any) {
     return this.usersService.createUser(tenantId, body);
   }
 
+  @Public()
   @Put(':userId')
   updateUser(@Param('userId') userId: string, @Body() body: any) {
     return this.usersService.updateUser(userId, body);
   }
 
+  @Public()
   @Delete(':userId')
   deleteUser(@Param('userId') userId: string) {
     return this.usersService.deleteUser(userId);

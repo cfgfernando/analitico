@@ -17,7 +17,7 @@ async function main() {
   console.log(`- Logs Oficiais de Sincronização: ${totalSyncLogs}`);
 
   const recentRecords = await prisma.financialRecord.findMany({
-    take: 5,
+    take: 6,
     orderBy: { syncedAt: 'desc' },
     select: {
       accountCode: true,
@@ -26,13 +26,18 @@ async function main() {
       sourceKey: true,
       exercicioAno: true,
       tenantId: true,
+      syncedAt: true,
     },
   });
 
-  console.log('\nExemplos de Registros Recentes Carregados das APIs:');
+  console.log('\nExemplos de Registros Recentes Persistidos no Banco:');
   console.table(recentRecords);
 }
 
-main().finally(async () => {
-  await prisma.$disconnect();
-});
+main()
+  .catch((e) => {
+    console.error('Erro ao verificar banco de dados:', e);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

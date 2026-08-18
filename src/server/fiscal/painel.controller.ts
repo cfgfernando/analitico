@@ -5,6 +5,7 @@ import { SpreadsheetImporterService } from './spreadsheet-importer.service';
 import { XmlImporterService } from './xml-importer.service';
 import { PncpConnectorService } from './pncp-connector.service';
 import { AutoSyncSchedulerService } from './auto-sync-scheduler.service';
+import { Public } from '../auth/decorators/public.decorator';
 
 const ARAUCARIA_IBGE = '4101804';
 
@@ -18,6 +19,7 @@ export class PainelController {
   ) {}
 
   // 0. POST /api/painel/sincronizar-todas-fontes — Sincroniza em lote todas as 4 fontes oficiais
+  @Public()
   @Post('sincronizar-todas-fontes')
   async sincronizarTodasFontes(@Body() body: { tenantId?: string; cnpj?: string }) {
     const tenant = await this.resolveTenant(body.tenantId);
@@ -57,6 +59,7 @@ export class PainelController {
           where: {
             OR: [
               { codigoIbge: String(tenantId) },
+              { id: { contains: String(tenantId) } },
               { nomePrefeitura: { contains: String(tenantId) } },
             ],
           },
@@ -87,6 +90,7 @@ export class PainelController {
   }
 
   // 1. GET /api/painel/contratos — Lista todos os contratos oficiais cadastrados
+  @Public()
   @Get('contratos')
   async getContratos(
     @Query('tenantId') tenantId?: string,
@@ -98,20 +102,30 @@ export class PainelController {
     @Query('valorMaximo') valorMaximoStr?: string,
     @Query('diasRestantesMax') diasRestantesMaxStr?: string,
   ) {
-    const ano = parseInt(anoStr || '2025', 10);
+    const ano = parseInt(anoStr || '2026', 10);
     const tenant = await this.resolveTenant(tenantId);
     if (!tenant) {
       return { contratos: [], secretarias: [] };
     }
 
     // Monta filtro dinâmico
-    const whereContrato: any = { tenantId: tenant.id, ativo: true };
+    const whereContrato: any = {
+      OR: [
+        { tenantId: tenant.id },
+        { tenantId: tenant.codigoIbge },
+      ],
+      ativo: true,
+    };
 
-    if (secretariaFiltro && secretariaFiltro !== 'todas') {
+    if (secretariaFiltro && secretariaFiltro !== 'todas' && secretariaFiltro !== 'Todas as Secretarias') {
       const secBusca = secretariaFiltro.replace('Secretaria Municipal de ', '').trim();
-      whereContrato.OR = [
-        { secretaria: { codigo: { equals: secretariaFiltro } } },
-        { secretaria: { nome: { contains: secBusca } } },
+      whereContrato.AND = [
+        {
+          OR: [
+            { secretaria: { codigo: { equals: secretariaFiltro } } },
+            { secretaria: { nome: { contains: secBusca } } },
+          ],
+        },
       ];
     }
 
@@ -133,8 +147,13 @@ export class PainelController {
 
     // Busca secretarias disponíveis para popular filtros
     const secretariasDb = await this.prisma.secretaria.findMany({
-      where: { tenantId: tenant.id },
-      select: { codigo: true, nome: true },
+      where: {
+        OR: [
+          { tenantId: tenant.id },
+          { tenantId: tenant.codigoIbge },
+        ],
+      },
+      select: { codigo: true, nome: true, orcamentoTotal: true, orcamentoEmpenhado: true, orcamentoLiquidado: true },
     });
 
     const hoje = new Date();
@@ -221,6 +240,7 @@ export class PainelController {
   }
 
   // 2. POST /api/painel/sincronizar-pncp — Sincroniza com PNCP e persiste no banco
+  @Public()
   @Post('sincronizar-pncp')
   async sincronizarPncp(@Body() body: { tenantId?: string; ano?: number; cnpj?: string }) {
     const ano = body.ano || 2025;
@@ -382,6 +402,7 @@ export class PainelController {
   }
 
   // 3. POST /api/painel/validar-planilha
+  @Public()
   @Post('validar-planilha')
   validarPlanilha(@Body() body: { csvContent: string }) {
     if (!body.csvContent) {
@@ -391,6 +412,7 @@ export class PainelController {
   }
 
   // 4. POST /api/painel/importar-planilha
+  @Public()
   @Post('importar-planilha')
   async importarPlanilha(@Body() body: { csvContent: string; tenantId?: string; userNome?: string }) {
     const tenant = await this.resolveTenant(body.tenantId);
@@ -472,6 +494,7 @@ export class PainelController {
   }
 
   // 5. POST /api/painel/validar-xml
+  @Public()
   @Post('validar-xml')
   validarXml(@Body() body: { xmlContent: string }) {
     if (!body.xmlContent) {
@@ -481,6 +504,7 @@ export class PainelController {
   }
 
   // 6. POST /api/painel/importar-xml
+  @Public()
   @Post('importar-xml')
   async importarXml(@Body() body: { xmlContent: string; tenantId?: string }) {
     this.logger.log(`[importar-xml] Recebido tenantId=${body?.tenantId || '(vazio)'}`);
@@ -579,6 +603,7 @@ export class PainelController {
   }
 
   // 7. POST /api/painel/conectar-api-generica
+  @Public()
   @Post('conectar-api-generica')
   async conectarApiGenerica(@Body() body: { apiUrl: string; authHeader?: string; tenantId?: string; nomeFonte?: string }) {
     const { apiUrl, authHeader, tenantId, nomeFonte = 'API Externa' } = body;

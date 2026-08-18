@@ -9,6 +9,9 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
   Shield,
   Info,
   Check,
@@ -32,6 +35,7 @@ import {
   Printer,
   Sparkles,
   Flame,
+  Database,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -47,7 +51,7 @@ import {
   Bar,
 } from 'recharts';
 import { EscopoPainel } from '../../types/painel';
-import { formatCurrency, formatCompactCurrency, exportToCSV } from '../../utils/formatters';
+import { formatCurrency, formatCompactCurrency, exportToCSV, formatDataBR } from '../../utils/formatters';
 import { syncRealContractsFromPncp } from '../../data/contratosTcePncp';
 import { ModalCentralImportacao } from './ModalCentralImportacao';
 
@@ -92,6 +96,7 @@ export interface ContratoTcePncpDetalhado {
   fiscalNome: string;
   fiscalMatricula: string;
   isDemonstracao: boolean;
+  categoria?: string;
   historicoMensal: Array<{ mes: string; liquidado: number; empenhado: number }>;
 }
 
@@ -145,8 +150,18 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
   const [isContratosModalOpen, setIsContratosModalOpen] = useState<boolean>(false);
   const [isCentralImportacaoOpen, setIsCentralImportacaoOpen] = useState<boolean>(false);
   const [contratoDetalhe, setContratoDetalhe] = useState<ContratoTcePncpDetalhado | null>(null);
+  const [drillDownModal, setDrillDownModal] = useState<'ORCAMENTO' | 'EMPENHADO' | 'LIQUIDADO' | 'SALDO_ORCAMENTARIO' | 'SALDO_CONTRATUAL' | 'CATEGORIA' | null>(null);
+  const [drillDownCategoria, setDrillDownCategoria] = useState<string | null>(null);
 
-  // Filtros da Tabela de Contratos
+  // Estados de Paginação e Filtros do Modal de Drill-Down Analítico
+  const [drillDownPagina, setDrillDownPagina] = useState<number>(1);
+  const [drillDownItensPorPagina, setDrillDownItensPorPagina] = useState<number>(10);
+  const [drillDownBusca, setDrillDownBusca] = useState<string>('');
+  const [drillDownFiltroSec, setDrillDownFiltroSec] = useState<string>('todas');
+  const [drillDownFiltroStatus, setDrillDownFiltroStatus] = useState<string>('todos');
+  const [drillDownFiltroCrit, setDrillDownFiltroCrit] = useState<string>('todas');
+
+  // Filtros da Tabela Geral de Contratos
   const [filtroSecContratos, setFiltroSecContratos] = useState<string>('todas');
   const [filtroFonteContratos, setFiltroFonteContratos] = useState<'todas' | 'PNCP' | 'TCE-PR'>('todas');
   const [filtroStatusContratos, setFiltroStatusContratos] = useState<string>('todos');
@@ -530,8 +545,8 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
       'Valor Liquidado (R$)': c.valorLiquidado,
       'Saldo Disponível (R$)': c.saldoDisponivel,
       '% Executado': `${c.pctExecutado || 0}%`,
-      'Vigência Início': c.dataVigenciaInicio,
-      'Vigência Fim': c.dataVigenciaFim,
+      'Vigência Início': formatDataBR(c.dataVigenciaInicio),
+      'Vigência Fim': formatDataBR(c.dataVigenciaFim),
       'Status': c.status,
       'Fonte': c.fonteOrigem,
       'Criticidade': (c as any).criticidade || 'IMPORTANTE',
@@ -729,11 +744,15 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
         </div>
 
         <div className="p-4 space-y-4">
-          {/* 6 Cards de KPIs com Fonte JetBrains Mono */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {/* 6 Cards de KPIs com Fonte JetBrains Mono e Drill-Down Interativo */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 font-sans">
             {/* 1. Orçamento Total */}
-            <div className="bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 p-3 rounded-sm flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs">
+            <div
+              onClick={() => setDrillDownModal('ORCAMENTO')}
+              className="group bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500/80 dark:hover:border-emerald-500/80 hover:shadow-md p-3 rounded-sm flex items-center gap-3 cursor-pointer transition-all relative overflow-hidden"
+              title="Clique para ver o detalhamento completo do Orçamento e Dotações"
+            >
+              <div className="w-11 h-11 rounded-full bg-slate-900 group-hover:bg-emerald-600 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs transition-colors">
                 $
               </div>
               <div className="min-w-0">
@@ -743,12 +762,19 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <span className="font-extrabold text-base sm:text-lg text-slate-950 dark:text-white tracking-tight tabular-nums block font-mono">
                   {formatCompactCurrency(kpisBloco1.orcamentoTotal)}
                 </span>
+                <span className="text-[9px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Detalhar <ArrowUpRight className="w-2.5 h-2.5" />
+                </span>
               </div>
             </div>
 
             {/* 2. Empenhado */}
-            <div className="bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 p-3 rounded-sm flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs">
+            <div
+              onClick={() => setDrillDownModal('EMPENHADO')}
+              className="group bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 hover:border-amber-500/80 dark:hover:border-amber-500/80 hover:shadow-md p-3 rounded-sm flex items-center gap-3 cursor-pointer transition-all relative overflow-hidden"
+              title="Clique para ver todos os Empenhos e Contratos Comprometidos"
+            >
+              <div className="w-11 h-11 rounded-full bg-amber-500 group-hover:bg-amber-600 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs transition-colors">
                 <ClipboardList className="w-5 h-5" />
               </div>
               <div className="min-w-0">
@@ -765,8 +791,12 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
             </div>
 
             {/* 3. Liquidado */}
-            <div className="bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 p-3 rounded-sm flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs">
+            <div
+              onClick={() => setDrillDownModal('LIQUIDADO')}
+              className="group bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500/80 dark:hover:border-emerald-500/80 hover:shadow-md p-3 rounded-sm flex items-center gap-3 cursor-pointer transition-all relative overflow-hidden"
+              title="Clique para ver as Liquidações e Execuções Físico-Financeiras"
+            >
+              <div className="w-11 h-11 rounded-full bg-emerald-500 group-hover:bg-emerald-600 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs transition-colors">
                 <Check className="w-5 h-5 stroke-[3]" />
               </div>
               <div className="min-w-0">
@@ -783,8 +813,12 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
             </div>
 
             {/* 4. Saldo Orçamentário */}
-            <div className="bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 p-3 rounded-sm flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs">
+            <div
+              onClick={() => setDrillDownModal('SALDO_ORCAMENTARIO')}
+              className="group bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 hover:border-indigo-500/80 dark:hover:border-indigo-500/80 hover:shadow-md p-3 rounded-sm flex items-center gap-3 cursor-pointer transition-all relative overflow-hidden"
+              title="Clique para ver a Margem Orçamentária Livre da Secretaria"
+            >
+              <div className="w-11 h-11 rounded-full bg-indigo-500 group-hover:bg-indigo-600 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs transition-colors">
                 <Wallet className="w-5 h-5" />
               </div>
               <div className="min-w-0">
@@ -801,8 +835,12 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
             </div>
 
             {/* 5. Contratos Ativos */}
-            <div className="bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 p-3 rounded-sm flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs">
+            <div
+              onClick={() => setIsContratosModalOpen(true)}
+              className="group bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 hover:border-blue-500/80 dark:hover:border-blue-500/80 hover:shadow-md p-3 rounded-sm flex items-center gap-3 cursor-pointer transition-all relative overflow-hidden"
+              title="Clique para abrir a Tabela Completa de Contratos Oficiais PNCP"
+            >
+              <div className="w-11 h-11 rounded-full bg-blue-600 group-hover:bg-blue-700 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs transition-colors">
                 <FileText className="w-5 h-5" />
               </div>
               <div className="min-w-0">
@@ -812,12 +850,19 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                 <span className="font-extrabold text-xl sm:text-2xl text-slate-950 dark:text-white tracking-tight block mt-0.5 font-mono">
                   {kpisBloco1.count}
                 </span>
+                <span className="text-[9px] font-mono text-blue-600 dark:text-blue-400 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Ver Todos ({kpisBloco1.count}) <ArrowUpRight className="w-2.5 h-2.5" />
+                </span>
               </div>
             </div>
 
             {/* 6. Valor Contratual Disponível */}
-            <div className="bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 p-3 rounded-sm flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-cyan-500 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs">
+            <div
+              onClick={() => setDrillDownModal('SALDO_CONTRATUAL')}
+              className="group bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 hover:border-cyan-500/80 dark:hover:border-cyan-500/80 hover:shadow-md p-3 rounded-sm flex items-center gap-3 cursor-pointer transition-all relative overflow-hidden"
+              title="Clique para ver o Saldo Contratual Restante por Fornecedor"
+            >
+              <div className="w-11 h-11 rounded-full bg-cyan-500 group-hover:bg-cyan-600 text-white flex items-center justify-center font-bold text-base shrink-0 shadow-xs transition-colors">
                 <PiggyBank className="w-5 h-5" />
               </div>
               <div className="min-w-0">
@@ -891,7 +936,12 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
                     <div
                       key={i}
                       onClick={() => {
-                        setCategoriaFiltroRapido(isSelected ? null : item.label);
+                        const next = isSelected ? null : item.label;
+                        setCategoriaFiltroRapido(next);
+                        if (next) {
+                          setDrillDownCategoria(next);
+                          setDrillDownModal('CATEGORIA');
+                        }
                       }}
                       className={`flex items-center justify-between gap-2 text-xs p-1 rounded-sm cursor-pointer transition ${
                         isSelected ? 'bg-indigo-50 dark:bg-indigo-950/60 ring-1 ring-indigo-500' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
@@ -1591,122 +1641,347 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
             </div>
 
             {/* Modal Body - Tabela de Contratos */}
-            <div className="p-4 overflow-y-auto flex-1 space-y-4">
-              <div className="border border-slate-200 dark:border-slate-800 rounded-sm overflow-hidden shadow-xs">
+            <div className="p-3 sm:p-4 overflow-y-auto overflow-x-auto flex-1 space-y-4 font-sans">
+              <div className="border border-slate-200 dark:border-slate-800 rounded-sm overflow-hidden min-w-[1100px] shadow-xs">
                 <table className="w-full text-xs text-left border-collapse font-sans">
                   <thead className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700 text-[11px] font-mono uppercase">
                     <tr>
-                      <th className="p-2.5">Nº / PNCP</th>
-                      <th className="p-2.5">Secretaria</th>
-                      <th className="p-2.5">Fornecedor / CNPJ</th>
-                      <th className="p-2.5">Objeto</th>
-                      <th className="p-2.5 text-right">Valor Total (R$)</th>
-                      <th className="p-2.5 text-right">Liquidado (R$)</th>
-                      <th className="p-2.5 text-center">% Exec.</th>
-                      <th className="p-2.5 text-center">Status</th>
-                      <th className="p-2.5 text-center">Ações</th>
+                      <th className="p-2.5 min-w-[120px]">Nº / PNCP</th>
+                      <th className="p-2.5 min-w-[150px]">Secretaria</th>
+                      <th className="p-2.5 min-w-[200px]">Fornecedor / CNPJ</th>
+                      <th className="p-2.5 min-w-[260px]">Objeto</th>
+                      <th className="p-2.5 text-right font-mono min-w-[120px]">Valor Total</th>
+                      <th className="p-2.5 text-right font-mono min-w-[120px]">Liquidado</th>
+                      <th className="p-2.5 text-right font-mono min-w-[120px]">Saldo Livre</th>
+                      <th className="p-2.5 text-center font-mono min-w-[90px]">% Exec.</th>
+                      <th className="p-2.5 text-center min-w-[100px]">Vigência</th>
+                      <th className="p-2.5 text-center min-w-[100px]">Status</th>
+                      <th className="p-2.5 text-center min-w-[100px]">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300 text-xs">
-                    {contratosFiltrados.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina).map(c => (
-                      <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-                        <td className="p-2.5 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                          <div>{c.numero}</div>
-                          <span className="text-[9px] text-slate-400 block font-normal">{c.idPncp || 'PNCP'}</span>
-                        </td>
-                        <td className="p-2.5 whitespace-nowrap">
-                          <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300">
-                            {c.secretariaNome || c.secretaria}
-                          </span>
-                        </td>
-                        <td className="p-2.5">
-                          <div className="font-bold text-slate-900 dark:text-white truncate max-w-[180px]" title={c.fornecedor}>
-                            {c.fornecedor}
-                          </div>
-                          <span className="text-[10px] font-mono text-slate-400">{c.cnpj}</span>
-                        </td>
-                        <td className="p-2.5 max-w-[300px]">
-                          <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2" title={c.objeto}>
-                            {c.objeto}
-                          </p>
-                        </td>
-                        <td className="p-2.5 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                          {formatCurrency(c.valorTotal)}
-                        </td>
-                        <td className="p-2.5 text-right font-mono text-emerald-600 dark:text-emerald-400 font-bold whitespace-nowrap">
-                          {formatCurrency(c.valorLiquidado)}
-                        </td>
-                        <td className="p-2.5 text-center font-mono font-bold">
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] ${
-                            (c.pctExecutado || 0) > 80 ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
-                          }`}>
-                            {c.pctExecutado ? `${c.pctExecutado.toFixed(0)}%` : '50%'}
-                          </span>
-                        </td>
-                        <td className="p-2.5 text-center whitespace-nowrap">
-                          <span className={`px-2 py-0.5 rounded-xs text-[10px] font-mono font-bold ${
-                            c.status === 'A_VENCER_60D' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
-                          }`}>
-                            {c.status === 'A_VENCER_60D' ? 'A Vencer 60D' : 'Vigente'}
-                          </span>
-                        </td>
-                        <td className="p-2.5 text-center whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => setContratoDetalhe(c)}
-                            className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white font-mono font-bold text-[10px] rounded-xs uppercase tracking-wider transition cursor-pointer"
-                          >
-                            Ver Ficha
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {contratosFiltrados.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina).map(c => {
+                      const pct = c.pctExecutado ?? (c.valorTotal > 0 ? ((c.valorLiquidado || 0) / c.valorTotal) * 100 : 0);
+                      const saldo = c.saldoDisponivel ?? Math.max(0, (c.valorTotal || 0) - (c.valorLiquidado || 0));
+
+                      return (
+                        <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
+                          <td className="p-2.5 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                            <div>{c.numero}</div>
+                            <span className="text-[9px] text-slate-400 block font-normal">{c.idPncp ? `PNCP: ${c.idPncp.slice(0, 18)}...` : `Proc: ${c.processo}`}</span>
+                          </td>
+                          <td className="p-2.5 whitespace-nowrap">
+                            <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-xs text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                              {c.secretariaNome || c.secretaria}
+                            </span>
+                          </td>
+                          <td className="p-2.5">
+                            <div className="font-bold text-slate-900 dark:text-white truncate max-w-[200px]" title={c.fornecedor}>
+                              {c.fornecedor}
+                            </div>
+                            <span className="text-[10px] font-mono text-slate-400 block">{c.cnpj}</span>
+                          </td>
+                          <td className="p-2.5 max-w-[280px]">
+                            <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed" title={c.objeto}>
+                              {c.objeto}
+                            </p>
+                          </td>
+                          <td className="p-2.5 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                            {formatCurrency(c.valorTotal)}
+                          </td>
+                          <td className="p-2.5 text-right font-mono text-emerald-600 dark:text-emerald-400 font-bold whitespace-nowrap">
+                            {formatCurrency(c.valorLiquidado)}
+                          </td>
+                          <td className="p-2.5 text-right font-mono text-indigo-600 dark:text-indigo-400 font-bold whitespace-nowrap">
+                            {formatCurrency(saldo)}
+                          </td>
+                          <td className="p-2.5 text-center font-mono whitespace-nowrap">
+                            <div className="inline-flex flex-col items-center gap-1">
+                              <span className={`px-1.5 py-0.5 rounded-xs text-[10px] font-bold ${
+                                pct >= 90 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                : pct >= 50 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                              }`}>
+                                {pct.toFixed(0)}%
+                              </span>
+                              <div className="w-12 bg-slate-200 dark:bg-slate-700 h-1 rounded-full overflow-hidden">
+                                <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, Math.max(5, pct))}%` }} />
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-2.5 text-center font-mono whitespace-nowrap text-[10px]">
+                            <span className="text-slate-700 dark:text-slate-300 block">{formatDataBR(c.dataVigenciaFim || '2026-12-31')}</span>
+                            <span className={`font-bold block text-[9px] ${
+                              (c.diasRestantes ?? 99) < 60 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'
+                            }`}>
+                              {c.diasRestantes !== undefined ? `${c.diasRestantes} dias` : 'Vigente'}
+                            </span>
+                          </td>
+                          <td className="p-2.5 text-center whitespace-nowrap">
+                            <span className={`inline-block px-2 py-0.5 rounded-xs text-[10px] font-mono font-bold ${
+                              c.status === 'A_VENCER_60D' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                              : c.status === 'A_VENCER_180D' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                              : c.status === 'QUITADO' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                              : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                            }`}>
+                              {c.status === 'A_VENCER_60D' ? 'A Vencer 60D'
+                               : c.status === 'A_VENCER_180D' ? 'A Vencer 180D'
+                               : c.status === 'QUITADO' ? 'Quitado'
+                               : c.status === 'ENCERRADO' ? 'Encerrado'
+                               : 'Vigente'}
+                            </span>
+                          </td>
+                          <td className="p-2.5 text-center whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => setContratoDetalhe(c)}
+                              className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-mono font-bold text-[10px] rounded-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1 mx-auto shadow-xs border border-slate-700"
+                              title="Abrir Dossiê Completo 360° do Contrato"
+                            >
+                              <Eye className="w-3 h-3 text-amber-400" />
+                              <span>Ficha 360°</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                     {contratosFiltrados.length === 0 && (
                       <tr>
-                        <td colSpan={9} className="p-8 text-center text-slate-400 font-mono">
-                          Nenhum contrato localizado com os filtros selecionados.
+                        <td colSpan={11} className="p-12 text-center text-slate-400 font-mono">
+                          <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-2 opacity-60" />
+                          <p className="font-bold text-slate-700 dark:text-slate-200 text-sm">
+                            Nenhum contrato localizado com os filtros selecionados.
+                          </p>
                         </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
+            </div>
 
-              {/* Paginação */}
-              <div className="flex items-center justify-between text-xs font-mono text-slate-500">
+            {/* Paginação do Modal de Contratos */}
+            <div className="p-3 px-4 sm:px-6 bg-slate-100 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-mono shrink-0">
+              <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
                 <span>
-                  Exibindo página {paginaAtual} de {Math.max(1, Math.ceil(contratosFiltrados.length / itensPorPagina))}
+                  Mostrando <strong className="text-slate-900 dark:text-white">{contratosFiltrados.length > 0 ? (paginaAtual - 1) * itensPorPagina + 1 : 0}</strong> a <strong className="text-slate-900 dark:text-white">{Math.min(paginaAtual * itensPorPagina, contratosFiltrados.length)}</strong> de <strong className="text-slate-900 dark:text-white">{contratosFiltrados.length}</strong> contratos
                 </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={paginaAtual <= 1}
-                    onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
-                    className="px-3 py-1 bg-slate-100 dark:bg-slate-800 disabled:opacity-40 rounded border border-slate-200 dark:border-slate-700 cursor-pointer"
+
+                <div className="flex items-center gap-1">
+                  <span>Exibir:</span>
+                  <select
+                    value={itensPorPagina}
+                    onChange={e => {
+                      setItensPorPagina(Number(e.target.value));
+                      setPaginaAtual(1);
+                    }}
+                    className="px-2 py-0.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none font-mono text-xs cursor-pointer"
                   >
-                    Anterior
-                  </button>
-                  <button
-                    type="button"
-                    disabled={paginaAtual >= Math.ceil(contratosFiltrados.length / itensPorPagina)}
-                    onClick={() => setPaginaAtual(p => p + 1)}
-                    className="px-3 py-1 bg-slate-100 dark:bg-slate-800 disabled:opacity-40 rounded border border-slate-200 dark:border-slate-700 cursor-pointer"
-                  >
-                    Próxima
-                  </button>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  disabled={paginaAtual <= 1}
+                  onClick={() => setPaginaAtual(1)}
+                  className="p-1.5 px-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer flex items-center gap-1"
+                  title="Primeira Página"
+                >
+                  <ChevronsLeft className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline text-[11px]">Primeira</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={paginaAtual <= 1}
+                  onClick={() => setPaginaAtual(p => Math.max(1, p - 1))}
+                  className="p-1.5 px-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer flex items-center gap-1"
+                  title="Página Anterior"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline text-[11px]">Anterior</span>
+                </button>
+
+                <div className="px-3 py-1 bg-slate-900 text-white dark:bg-slate-800 border border-slate-800 dark:border-slate-700 rounded-sm font-bold text-xs">
+                  Página {paginaAtual} de {Math.max(1, Math.ceil(contratosFiltrados.length / itensPorPagina))}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={paginaAtual >= Math.ceil(contratosFiltrados.length / itensPorPagina)}
+                  onClick={() => setPaginaAtual(p => p + 1)}
+                  className="p-1.5 px-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer flex items-center gap-1"
+                  title="Próxima Página"
+                >
+                  <span className="hidden sm:inline text-[11px]">Próxima</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  type="button"
+                  disabled={paginaAtual >= Math.ceil(contratosFiltrados.length / itensPorPagina)}
+                  onClick={() => setPaginaAtual(Math.ceil(contratosFiltrados.length / itensPorPagina))}
+                  className="p-1.5 px-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer flex items-center gap-1"
+                  title="Última Página"
+                >
+                  <span className="hidden sm:inline text-[11px]">Última</span>
+                  <ChevronsRight className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsContratosModalOpen(false)}
+                  className="ml-3 px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-sm uppercase tracking-wider text-xs transition cursor-pointer"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================
+          7. DRAWER / MODAL DE DETALHES DO CONTRATO (DOSSIÊ 360°)
+          ============================================================ */}
+      {contratoDetalhe && (
+        <div className="fixed inset-0 z-70 bg-black/80 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-150 font-sans">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
+            {/* Header */}
+            <div className="bg-slate-900 text-white p-4 px-6 flex items-center justify-between shrink-0 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xs bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-xs border border-emerald-500/40">
+                      FICHA CADASTRAL 360° • TCE-PR & PNCP
+                    </span>
+                    <span className="text-xs font-mono text-slate-400">
+                      {cidade}/{uf}
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold font-mono mt-0.5 text-white">
+                    Contrato Nº {contratoDetalhe.numero} • {contratoDetalhe.secretariaNome || contratoDetalhe.secretaria}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="p-1.5 px-2.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-mono flex items-center gap-1.5 cursor-pointer transition"
+                  title="Imprimir Ficha do Contrato"
+                >
+                  <Printer className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="hidden sm:inline">Imprimir</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setContratoDetalhe(null)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-sm hover:bg-slate-800 transition cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 sm:p-6 overflow-y-auto space-y-5 text-xs font-sans">
+              {/* Painel de Identificação Oficial */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-sm border border-slate-200 dark:border-slate-800 font-mono">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-sans font-bold">Fornecedor:</span>
+                  <strong className="text-slate-900 dark:text-white text-xs block truncate" title={contratoDetalhe.fornecedor}>
+                    {contratoDetalhe.fornecedor}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-sans font-bold">CNPJ:</span>
+                  <strong className="text-slate-900 dark:text-white text-xs block">{contratoDetalhe.cnpj}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-sans font-bold">Processo Adm.:</span>
+                  <strong className="text-slate-900 dark:text-white text-xs block">{contratoDetalhe.processo}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-sans font-bold">PNCP ID:</span>
+                  <strong className="text-slate-900 dark:text-white text-xs block truncate" title={contratoDetalhe.idPncp}>
+                    {contratoDetalhe.idPncp || 'PNCP Oficial'}
+                  </strong>
+                </div>
+              </div>
+
+              {/* Objeto do Contrato */}
+              <div className="space-y-1">
+                <span className="font-mono font-bold text-slate-500 dark:text-slate-400 text-[10px] uppercase block">
+                  Objeto da Contratação Pública:
+                </span>
+                <p className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-sm border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-sans">
+                  {contratoDetalhe.objeto}
+                </p>
+              </div>
+
+              {/* Matriz Financeira */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center font-mono">
+                <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-500 uppercase block font-sans font-bold">Valor Total</span>
+                  <strong className="text-slate-900 dark:text-white text-sm block mt-0.5">{formatCurrency(contratoDetalhe.valorTotal)}</strong>
+                </div>
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-sm border border-amber-200 dark:border-amber-800">
+                  <span className="text-[10px] text-amber-600 uppercase block font-sans font-bold">Empenhado</span>
+                  <strong className="text-amber-700 dark:text-amber-300 text-sm block mt-0.5">{formatCurrency(contratoDetalhe.valorEmpenhado || contratoDetalhe.valorTotal)}</strong>
+                </div>
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 rounded-sm border border-emerald-200 dark:border-emerald-800">
+                  <span className="text-[10px] text-emerald-600 uppercase block font-sans font-bold">Liquidado</span>
+                  <strong className="text-emerald-700 dark:text-emerald-300 text-sm block mt-0.5">{formatCurrency(contratoDetalhe.valorLiquidado)}</strong>
+                </div>
+                <div className="p-3 bg-indigo-50 dark:bg-indigo-950/40 rounded-sm border border-indigo-200 dark:border-indigo-800">
+                  <span className="text-[10px] text-indigo-600 uppercase block font-sans font-bold">Saldo Disponível</span>
+                  <strong className="text-indigo-700 dark:text-indigo-300 text-sm block mt-0.5">{formatCurrency(contratoDetalhe.saldoDisponivel)}</strong>
+                </div>
+              </div>
+
+              {/* Vigência e Gestão do Contrato */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-sm border border-slate-200 dark:border-slate-800 font-mono text-xs">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-sans font-bold">Início da Vigência:</span>
+                  <strong className="text-slate-900 dark:text-white">{formatDataBR(contratoDetalhe.dataVigenciaInicio || '2026-01-01')}</strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-sans font-bold">Término da Vigência:</span>
+                  <strong className="text-slate-900 dark:text-white">{formatDataBR(contratoDetalhe.dataVigenciaFim || '2026-12-31')}</strong>
+                  <span className={`block text-[10px] font-bold mt-0.5 ${
+                    (contratoDetalhe.diasRestantes ?? 99) < 60 ? 'text-rose-600' : 'text-emerald-600'
+                  }`}>
+                    {contratoDetalhe.diasRestantes !== undefined ? `${contratoDetalhe.diasRestantes} dias restantes` : 'Vigente'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-sans font-bold">Fiscal do Contrato:</span>
+                  <strong className="text-slate-900 dark:text-white">{contratoDetalhe.fiscalNome || 'Auditor Fiscal Designado'}</strong>
+                  <span className="block text-[10px] text-slate-400">Matrícula: {contratoDetalhe.fiscalMatricula || 'MAT-7782'}</span>
                 </div>
               </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="p-3 px-4 bg-slate-100 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs font-mono text-slate-500 shrink-0">
-              <span>Fonte de Dados: Base Oficial do PNCP e TCE-PR • {cidade}/{uf}</span>
+            {/* Footer */}
+            <div className="p-3 px-6 bg-slate-100 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs font-mono text-slate-500 shrink-0">
+              <span>Protocolo TCE-PR: {contratoDetalhe.protocoloTce || 'TCE-PR'} • Base Oficial PNCP</span>
               <button
                 type="button"
-                onClick={() => setIsContratosModalOpen(false)}
-                className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-sm uppercase tracking-wider text-xs transition cursor-pointer"
+                onClick={() => setContratoDetalhe(null)}
+                className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-mono font-bold text-xs rounded uppercase tracking-wider transition cursor-pointer"
               >
-                Fechar Painel
+                Fechar Ficha
               </button>
             </div>
           </div>
@@ -1714,108 +1989,503 @@ export const PainelGestaoPage: React.FC<PainelGestaoPageProps> = ({
       )}
 
       {/* ============================================================
-          7. DRAWER / MODAL DE DETALHES DO CONTRATO
+          7.5. MODAL DE DRILL-DOWN ANALÍTICO DE KPIS (ORÇAMENTO, EMPENHADO, LIQUIDADO, SALDO)
           ============================================================ */}
-      {contratoDetalhe && (
-        <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto animate-in fade-in duration-150 font-sans">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm shadow-2xl w-full max-w-3xl overflow-hidden">
-            <div className="bg-slate-900 text-white p-4 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-xs border border-emerald-500/40">
-                  FICHA TÉCNICA DO CONTRATO PÚBLICO
-                </span>
-                <h3 className="text-base font-bold font-mono mt-1">
-                  Contrato Nº {contratoDetalhe.numero} • {contratoDetalhe.secretariaNome || contratoDetalhe.secretaria}
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setContratoDetalhe(null)}
-                className="p-1.5 text-slate-400 hover:text-white rounded"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {drillDownModal && (() => {
+        // Filtragem dos contratos para o Drill-down
+        const contratosFiltradosDrill = contratosDaSecretaria.filter(c => {
+          // Filtro por Secretaria
+          if (drillDownFiltroSec !== 'todas') {
+            const secNome = (c.secretariaNome || c.secretaria || '').toLowerCase();
+            const secFiltro = drillDownFiltroSec.toLowerCase();
+            if (!secNome.includes(secFiltro) && c.secretariaCodigo !== drillDownFiltroSec) {
+              return false;
+            }
+          }
 
-            <div className="p-5 space-y-4 text-xs font-sans">
-              {/* Informações Básicas */}
-              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded border border-slate-200 dark:border-slate-800 font-mono">
-                <div>
-                  <span className="text-slate-400 block text-[10px]">Fornecedor Contratado:</span>
-                  <strong className="text-slate-900 dark:text-white text-xs">{contratoDetalhe.fornecedor}</strong>
+          // Filtro por Status
+          if (drillDownFiltroStatus !== 'todos' && c.status !== drillDownFiltroStatus) {
+            return false;
+          }
+
+          // Filtro por Criticidade
+          if (drillDownFiltroCrit !== 'todas' && c.criticidade !== drillDownFiltroCrit) {
+            return false;
+          }
+
+          // Filtro por Categoria (quando ativado pelo Bloco 2)
+          if (drillDownModal === 'CATEGORIA' && drillDownCategoria) {
+            const objLower = (c.objeto || '').toLowerCase();
+            const catLower = drillDownCategoria.toLowerCase();
+            if (!objLower.includes(catLower) && !c.categoria?.toLowerCase().includes(catLower)) {
+              // Verifica se pertence ao agrupamento
+              const matchAny = catLower.split(' ')[0];
+              if (!objLower.includes(matchAny)) return false;
+            }
+          }
+
+          // Filtro por Texto de Busca
+          if (drillDownBusca.trim()) {
+            const termo = drillDownBusca.toLowerCase().trim();
+            const num = (c.numero || '').toLowerCase();
+            const forn = (c.fornecedor || '').toLowerCase();
+            const cnpj = (c.cnpj || '').toLowerCase();
+            const obj = (c.objeto || '').toLowerCase();
+            const proc = (c.processo || '').toLowerCase();
+            const idp = (c.idPncp || '').toLowerCase();
+            if (!num.includes(termo) && !forn.includes(termo) && !cnpj.includes(termo) && !obj.includes(termo) && !proc.includes(termo) && !idp.includes(termo)) {
+              return false;
+            }
+          }
+
+          return true;
+        });
+
+        // Totais consolidados da lista filtrada
+        const totalFiltradoQtd = contratosFiltradosDrill.length;
+        const totalFiltradoValor = contratosFiltradosDrill.reduce((acc, it) => acc + (it.valorTotal || 0), 0);
+        const totalFiltradoLiq = contratosFiltradosDrill.reduce((acc, it) => acc + (it.valorLiquidado || 0), 0);
+        const totalFiltradoEmp = contratosFiltradosDrill.reduce((acc, it) => acc + (it.valorEmpenhado || it.valorTotal || 0), 0);
+        const totalFiltradoSaldo = contratosFiltradosDrill.reduce((acc, it) => acc + (it.saldoDisponivel || Math.max(0, (it.valorTotal || 0) - (it.valorLiquidado || 0))), 0);
+
+        // Paginação do Drill-down
+        const totalPaginasDrill = Math.max(1, Math.ceil(totalFiltradoQtd / drillDownItensPorPagina));
+        const paginaCorrigida = Math.min(drillDownPagina, totalPaginasDrill);
+        const inicioIdx = (paginaCorrigida - 1) * drillDownItensPorPagina;
+        const fimIdx = Math.min(inicioIdx + drillDownItensPorPagina, totalFiltradoQtd);
+        const contratosPaginados = contratosFiltradosDrill.slice(inicioIdx, fimIdx);
+
+        return (
+          <div className="fixed inset-0 z-60 bg-black/80 backdrop-blur-xs flex items-center justify-center p-2 sm:p-3 overflow-y-auto animate-in fade-in duration-150 font-sans">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm shadow-2xl w-full max-w-[98vw] 2xl:max-w-[1680px] h-[95vh] max-h-[95vh] flex flex-col overflow-hidden">
+              {/* 1. Header do Modal */}
+              <div className="bg-slate-900 text-white p-3 sm:p-4 px-4 sm:px-6 flex items-center justify-between shrink-0 border-b border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
+                    <Database className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-mono font-bold uppercase bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-xs border border-emerald-500/40">
+                        DETALHAMENTO ANALÍTICO OFICIAL
+                      </span>
+                      <span className="text-xs font-mono text-slate-400">
+                        {secretariaSelecionada} • {cidade}/{uf} • Exercício {ano}
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold font-sans mt-0.5 text-white">
+                      {drillDownModal === 'ORCAMENTO' && 'Matriz Orçamentária & Dotações da Secretaria'}
+                      {drillDownModal === 'EMPENHADO' && 'Relação de Empenhos & Contratos Comprometidos'}
+                      {drillDownModal === 'LIQUIDADO' && 'Execução Orçamentária & Liquidações Fiscais'}
+                      {drillDownModal === 'SALDO_ORCAMENTARIO' && 'Margem Orçamentária Livre & Disponibilidade'}
+                      {drillDownModal === 'SALDO_CONTRATUAL' && 'Saldo Contratual a Executar por Fornecedor'}
+                      {drillDownModal === 'CATEGORIA' && `Contratos da Categoria: ${drillDownCategoria || 'Selecionada'}`}
+                    </h3>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">CNPJ:</span>
-                  <strong className="text-slate-900 dark:text-white text-xs">{contratoDetalhe.cnpj}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">Processo Administrativo:</span>
-                  <strong className="text-slate-900 dark:text-white text-xs">{contratoDetalhe.processo}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">Identificador PNCP:</span>
-                  <strong className="text-slate-900 dark:text-white text-xs">{contratoDetalhe.idPncp}</strong>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const csvRows = contratosFiltradosDrill.map(c => ({
+                        Numero: c.numero,
+                        Processo: c.processo,
+                        ProtocoloTCE: c.protocoloTce,
+                        IdPNCP: c.idPncp,
+                        Secretaria: c.secretariaNome || c.secretaria,
+                        Fornecedor: c.fornecedor,
+                        CNPJ: c.cnpj,
+                        Objeto: c.objeto,
+                        ValorTotal: c.valorTotal,
+                        Liquidado: c.valorLiquidado,
+                        Empenhado: c.valorEmpenhado,
+                        SaldoLivre: c.saldoDisponivel,
+                        PctExecutado: c.pctExecutado ? `${c.pctExecutado.toFixed(1)}%` : '0%',
+                        Status: c.status,
+                        VigenciaInicio: formatDataBR(c.dataVigenciaInicio),
+                        VigenciaFim: formatDataBR(c.dataVigenciaFim),
+                        DiasRestantes: c.diasRestantes,
+                        Fiscal: c.fiscalNome,
+                      }));
+                      exportToCSV(`detalhamento-${drillDownModal?.toLowerCase()}-${cidade}-${ano}`, csvRows);
+                    }}
+                    className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 text-xs font-mono font-bold transition cursor-pointer"
+                    title="Exportar todos os registros filtrados para planilha CSV"
+                  >
+                    <Download className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Exportar CSV ({totalFiltradoQtd})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDrillDownModal(null)}
+                    className="p-1.5 text-slate-400 hover:text-white rounded-sm hover:bg-slate-800 transition cursor-pointer"
+                    title="Fechar janela"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
 
-              {/* Objeto */}
-              <div className="space-y-1">
-                <span className="font-mono font-bold text-slate-500 text-[10px] uppercase block">Objeto do Contrato:</span>
-                <p className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
-                  {contratoDetalhe.objeto}
-                </p>
-              </div>
-
-              {/* Matriz Financeira */}
-              <div className="grid grid-cols-4 gap-2 text-center font-mono">
-                <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                  <span className="text-[10px] text-slate-500 block">Valor Total</span>
-                  <strong className="text-slate-900 dark:text-white text-xs">{formatCurrency(contratoDetalhe.valorTotal)}</strong>
+              {/* 2. Sub-Header com Resumo em Números Dinâmicos */}
+              <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 px-4 sm:px-6 border-b border-slate-200 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs font-mono shrink-0">
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-xs border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-400 block uppercase font-sans font-bold">Total Filtrado</span>
+                  <strong className="text-slate-900 dark:text-white text-sm tabular-nums">{totalFiltradoQtd} contratos</strong>
                 </div>
-                <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded border border-emerald-200 dark:border-emerald-800">
-                  <span className="text-[10px] text-emerald-600 block">Liquidado</span>
-                  <strong className="text-emerald-700 dark:text-emerald-300 text-xs">{formatCurrency(contratoDetalhe.valorLiquidado)}</strong>
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-xs border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-400 block uppercase font-sans font-bold">Valor Global</span>
+                  <strong className="text-slate-900 dark:text-white text-sm tabular-nums">{formatCurrency(totalFiltradoValor)}</strong>
                 </div>
-                <div className="p-2 bg-amber-50 dark:bg-amber-950/40 rounded border border-amber-200 dark:border-amber-800">
-                  <span className="text-[10px] text-amber-600 block">Empenhado</span>
-                  <strong className="text-amber-700 dark:text-amber-300 text-xs">{formatCurrency(contratoDetalhe.valorEmpenhado)}</strong>
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-xs border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-amber-600 dark:text-amber-400 block uppercase font-sans font-bold">Empenhado</span>
+                  <strong className="text-amber-700 dark:text-amber-300 text-sm tabular-nums">{formatCurrency(totalFiltradoEmp)}</strong>
                 </div>
-                <div className="p-2 bg-blue-50 dark:bg-blue-950/40 rounded border border-blue-200 dark:border-blue-800">
-                  <span className="text-[10px] text-blue-600 block">Saldo Livre</span>
-                  <strong className="text-blue-700 dark:text-blue-300 text-xs">{formatCurrency(contratoDetalhe.saldoDisponivel)}</strong>
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-xs border border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block uppercase font-sans font-bold">Liquidado</span>
+                  <strong className="text-emerald-700 dark:text-emerald-300 text-sm tabular-nums">{formatCurrency(totalFiltradoLiq)}</strong>
+                </div>
+                <div className="bg-white dark:bg-slate-900 p-2 rounded-xs border border-slate-200 dark:border-slate-700 col-span-2 sm:col-span-1">
+                  <span className="text-[10px] text-indigo-600 dark:text-indigo-400 block uppercase font-sans font-bold">Saldo Restante</span>
+                  <strong className="text-indigo-700 dark:text-indigo-300 text-sm tabular-nums">{formatCurrency(totalFiltradoSaldo)}</strong>
                 </div>
               </div>
 
-              {/* Vigência e Fiscal */}
-              <div className="grid grid-cols-3 gap-2 font-mono text-[11px] pt-1">
-                <div>
-                  <span className="text-slate-400 block text-[10px]">Início Vigência:</span>
-                  <strong>{contratoDetalhe.dataVigenciaInicio}</strong>
+              {/* 3. Barra de Filtros e Controles */}
+              <div className="p-3 px-4 sm:px-6 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2.5 text-xs shrink-0 font-mono">
+                <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+                  {/* Busca Rápida */}
+                  <div className="relative flex-1 min-w-[220px]">
+                    <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={drillDownBusca}
+                      onChange={e => {
+                        setDrillDownBusca(e.target.value);
+                        setDrillDownPagina(1);
+                      }}
+                      placeholder="Buscar por nº, processo, fornecedor, CNPJ ou objeto..."
+                      className="w-full text-xs font-mono bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-sm pl-8 pr-3 py-1.5 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+                    />
+                    {drillDownBusca && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDrillDownBusca('');
+                          setDrillDownPagina(1);
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Filtro por Secretaria */}
+                  <select
+                    value={drillDownFiltroSec}
+                    onChange={e => {
+                      setDrillDownFiltroSec(e.target.value);
+                      setDrillDownPagina(1);
+                    }}
+                    className="px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none font-mono text-xs cursor-pointer"
+                  >
+                    <option value="todas">🏢 Todas as Secretarias</option>
+                    {listaSecretariasOpcoes.filter(s => s !== 'Todas as Secretarias').map(sec => (
+                      <option key={sec} value={sec}>
+                        {sec}
+                      </option>
+                    ))}
+                  </select>
+
+                  {/* Filtro por Status */}
+                  <select
+                    value={drillDownFiltroStatus}
+                    onChange={e => {
+                      setDrillDownFiltroStatus(e.target.value);
+                      setDrillDownPagina(1);
+                    }}
+                    className="px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none font-mono text-xs cursor-pointer"
+                  >
+                    <option value="todos">🚦 Todos os Status</option>
+                    <option value="VIGENTE">🟢 Vigente</option>
+                    <option value="A_VENCER_60D">🔴 A Vencer em 60D</option>
+                    <option value="A_VENCER_180D">🟡 A Vencer em 180D</option>
+                    <option value="QUITADO">🔵 Quitado (100%)</option>
+                    <option value="ENCERRADO">⚪ Encerrado</option>
+                  </select>
+
+                  {/* Filtro por Criticidade */}
+                  <select
+                    value={drillDownFiltroCrit}
+                    onChange={e => {
+                      setDrillDownFiltroCrit(e.target.value);
+                      setDrillDownPagina(1);
+                    }}
+                    className="px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none font-mono text-xs cursor-pointer"
+                  >
+                    <option value="todas">⚡ Todas as Criticidades</option>
+                    <option value="ESSENCIAL">🔴 Essencial</option>
+                    <option value="IMPORTANTE">🟡 Importante</option>
+                    <option value="DIFERIVEL">🟢 Diferível</option>
+                  </select>
                 </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">Fim Vigência:</span>
-                  <strong>{contratoDetalhe.dataVigenciaFim}</strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px]">Fiscal Designado:</span>
-                  <strong>{contratoDetalhe.fiscalNome}</strong>
+
+                {/* Seletor de Itens por Página */}
+                <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-mono">
+                  <span>Exibir:</span>
+                  <select
+                    value={drillDownItensPorPagina}
+                    onChange={e => {
+                      setDrillDownItensPorPagina(Number(e.target.value));
+                      setDrillDownPagina(1);
+                    }}
+                    className="px-2 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-sm text-slate-800 dark:text-slate-200 font-bold focus:outline-none font-mono text-xs cursor-pointer"
+                  >
+                    <option value={10}>10 por pág.</option>
+                    <option value={25}>25 por pág.</option>
+                    <option value={50}>50 por pág.</option>
+                    <option value={100}>100 por pág.</option>
+                  </select>
                 </div>
               </div>
-            </div>
 
-            <div className="p-3 bg-slate-100 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <span className="text-[11px] font-mono text-slate-500">Protocolo TCE: {contratoDetalhe.protocoloTce}</span>
-              <button
-                type="button"
-                onClick={() => setContratoDetalhe(null)}
-                className="px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-mono font-bold text-xs rounded uppercase tracking-wider"
-              >
-                Fechar
-              </button>
+              {/* 4. Tabela de Detalhamento Analítico com Todas as Colunas */}
+              <div className="p-3 sm:p-4 overflow-y-auto overflow-x-auto flex-1 font-sans">
+                <div className="border border-slate-200 dark:border-slate-800 rounded-sm overflow-hidden min-w-[1100px] shadow-xs">
+                  <table className="w-full text-left text-xs border-collapse font-sans">
+                    <thead className="bg-slate-100 dark:bg-slate-800 text-[11px] font-mono uppercase text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
+                      <tr>
+                        <th className="p-2.5 font-bold min-w-[120px]">Contrato / PNCP</th>
+                        <th className="p-2.5 font-bold min-w-[150px]">Secretaria</th>
+                        <th className="p-2.5 font-bold min-w-[200px]">Fornecedor & CNPJ</th>
+                        <th className="p-2.5 font-bold min-w-[260px]">Objeto do Contrato</th>
+                        <th className="p-2.5 font-bold text-right font-mono min-w-[120px]">Valor Total</th>
+                        <th className="p-2.5 font-bold text-right font-mono min-w-[120px]">
+                          {drillDownModal === 'LIQUIDADO' ? 'Liquidado' : drillDownModal === 'EMPENHADO' ? 'Empenhado' : 'Liquidado'}
+                        </th>
+                        <th className="p-2.5 font-bold text-right font-mono min-w-[120px]">Saldo Livre</th>
+                        <th className="p-2.5 font-bold text-center font-mono min-w-[90px]">% Exec.</th>
+                        <th className="p-2.5 font-bold text-center min-w-[100px]">Vigência</th>
+                        <th className="p-2.5 font-bold text-center min-w-[100px]">Status</th>
+                        <th className="p-2.5 font-bold text-center min-w-[100px]">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300 text-xs">
+                      {contratosPaginados.map(c => {
+                        const pct = c.pctExecutado ?? (c.valorTotal > 0 ? ((c.valorLiquidado || 0) / c.valorTotal) * 100 : 0);
+                        const saldo = c.saldoDisponivel ?? Math.max(0, (c.valorTotal || 0) - (c.valorLiquidado || 0));
+
+                        return (
+                          <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition group">
+                            {/* 1. Contrato / PNCP */}
+                            <td className="p-2.5 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                              <div className="flex items-center gap-1.5">
+                                <span>{c.numero}</span>
+                              </div>
+                              <span className="text-[9px] text-slate-400 block font-normal font-mono">
+                                {c.idPncp ? `PNCP: ${c.idPncp.slice(0, 18)}...` : `Proc: ${c.processo}`}
+                              </span>
+                            </td>
+
+                            {/* 2. Secretaria */}
+                            <td className="p-2.5">
+                              <span className="inline-block px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-xs text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                {c.secretariaNome || c.secretaria}
+                              </span>
+                            </td>
+
+                            {/* 3. Fornecedor & CNPJ */}
+                            <td className="p-2.5">
+                              <div className="font-bold text-slate-900 dark:text-white truncate max-w-[200px]" title={c.fornecedor}>
+                                {c.fornecedor}
+                              </div>
+                              <span className="text-[10px] font-mono text-slate-400 block">{c.cnpj}</span>
+                            </td>
+
+                            {/* 4. Objeto */}
+                            <td className="p-2.5 max-w-[280px]">
+                              <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed" title={c.objeto}>
+                                {c.objeto}
+                              </p>
+                            </td>
+
+                            {/* 5. Valor Total */}
+                            <td className="p-2.5 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                              {formatCurrency(c.valorTotal)}
+                            </td>
+
+                            {/* 6. Liquidado / Empenhado */}
+                            <td className="p-2.5 text-right font-mono font-bold whitespace-nowrap">
+                              {drillDownModal === 'EMPENHADO' ? (
+                                <span className="text-amber-600 dark:text-amber-400">
+                                  {formatCurrency(c.valorEmpenhado || c.valorTotal)}
+                                </span>
+                              ) : (
+                                <span className="text-emerald-600 dark:text-emerald-400">
+                                  {formatCurrency(c.valorLiquidado)}
+                                </span>
+                              )}
+                            </td>
+
+                            {/* 7. Saldo Livre */}
+                            <td className="p-2.5 text-right font-mono font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                              {formatCurrency(saldo)}
+                            </td>
+
+                            {/* 8. % Execução com Mini Bar */}
+                            <td className="p-2.5 text-center font-mono whitespace-nowrap">
+                              <div className="inline-flex flex-col items-center gap-1">
+                                <span className={`px-1.5 py-0.5 rounded-xs text-[10px] font-bold ${
+                                  pct >= 90 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+                                  : pct >= 50 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                                  : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                }`}>
+                                  {pct.toFixed(0)}%
+                                </span>
+                                <div className="w-12 bg-slate-200 dark:bg-slate-700 h-1 rounded-full overflow-hidden">
+                                  <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, Math.max(5, pct))}%` }} />
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* 9. Vigência */}
+                            <td className="p-2.5 text-center font-mono whitespace-nowrap text-[10px]">
+                              <span className="text-slate-700 dark:text-slate-300 block">{formatDataBR(c.dataVigenciaFim || '2026-12-31')}</span>
+                              <span className={`font-bold block text-[9px] ${
+                                (c.diasRestantes ?? 99) < 60 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400'
+                              }`}>
+                                {c.diasRestantes !== undefined ? `${c.diasRestantes} dias` : 'Vigente'}
+                              </span>
+                            </td>
+
+                            {/* 10. Status */}
+                            <td className="p-2.5 text-center whitespace-nowrap">
+                              <span className={`inline-block px-2 py-0.5 rounded-xs text-[10px] font-mono font-bold ${
+                                c.status === 'A_VENCER_60D' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                                : c.status === 'A_VENCER_180D' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                                : c.status === 'QUITADO' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                              }`}>
+                                {c.status === 'A_VENCER_60D' ? 'A Vencer 60D'
+                                 : c.status === 'A_VENCER_180D' ? 'A Vencer 180D'
+                                 : c.status === 'QUITADO' ? 'Quitado'
+                                 : c.status === 'ENCERRADO' ? 'Encerrado'
+                                 : 'Vigente'}
+                              </span>
+                            </td>
+
+                            {/* 11. Ações */}
+                            <td className="p-2.5 text-center whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={() => setContratoDetalhe(c)}
+                                className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-mono font-bold text-[10px] rounded-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-1 mx-auto shadow-xs border border-slate-700"
+                                title="Abrir Dossiê Completo 360° do Contrato"
+                              >
+                                <Eye className="w-3 h-3 text-amber-400" />
+                                <span>Ficha 360°</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+
+                      {contratosFiltradosDrill.length === 0 && (
+                        <tr>
+                          <td colSpan={11} className="p-12 text-center text-slate-400 font-mono">
+                            <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-2 opacity-60" />
+                            <p className="font-bold text-slate-700 dark:text-slate-200 text-sm">
+                              Nenhum contrato localizado com os filtros selecionados.
+                            </p>
+                            <p className="text-xs text-slate-400 mt-1">
+                              Tente remover termos da busca ou selecionar "Todas as Secretarias".
+                            </p>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* 5. Footer do Modal com Barra de Paginação Completa */}
+              <div className="p-3 px-4 sm:px-6 bg-slate-100 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-mono shrink-0">
+                {/* Indicador de Registros */}
+                <div className="text-slate-600 dark:text-slate-400 text-xs">
+                  Mostrando <strong className="text-slate-900 dark:text-white">{totalFiltradoQtd > 0 ? inicioIdx + 1 : 0}</strong> a <strong className="text-slate-900 dark:text-white">{fimIdx}</strong> de <strong className="text-slate-900 dark:text-white">{totalFiltradoQtd}</strong> contratos
+                </div>
+
+                {/* Controles de Navegação de Página */}
+                <div className="flex items-center gap-1.5">
+                  {/* Primeira Página */}
+                  <button
+                    type="button"
+                    disabled={paginaCorrigida <= 1}
+                    onClick={() => setDrillDownPagina(1)}
+                    className="p-1.5 px-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer flex items-center gap-1"
+                    title="Primeira Página"
+                  >
+                    <ChevronsLeft className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline text-[11px]">Primeira</span>
+                  </button>
+
+                  {/* Página Anterior */}
+                  <button
+                    type="button"
+                    disabled={paginaCorrigida <= 1}
+                    onClick={() => setDrillDownPagina(p => Math.max(1, p - 1))}
+                    className="p-1.5 px-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer flex items-center gap-1"
+                    title="Página Anterior"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline text-[11px]">Anterior</span>
+                  </button>
+
+                  {/* Indicador de Página Atual */}
+                  <div className="px-3 py-1 bg-slate-900 text-white dark:bg-slate-800 border border-slate-800 dark:border-slate-700 rounded-sm font-bold text-xs">
+                    Página {paginaCorrigida} de {totalPaginasDrill}
+                  </div>
+
+                  {/* Próxima Página */}
+                  <button
+                    type="button"
+                    disabled={paginaCorrigida >= totalPaginasDrill}
+                    onClick={() => setDrillDownPagina(p => Math.min(totalPaginasDrill, p + 1))}
+                    className="p-1.5 px-2.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer flex items-center gap-1"
+                    title="Próxima Página"
+                  >
+                    <span className="hidden sm:inline text-[11px]">Próxima</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+
+                  {/* Última Página */}
+                  <button
+                    type="button"
+                    disabled={paginaCorrigida >= totalPaginasDrill}
+                    onClick={() => setDrillDownPagina(totalPaginasDrill)}
+                    className="p-1.5 px-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-sm text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer flex items-center gap-1"
+                    title="Última Página"
+                  >
+                    <span className="hidden sm:inline text-[11px]">Última</span>
+                    <ChevronsRight className="w-3.5 h-3.5" />
+                  </button>
+
+                  {/* Botão Fechar Modal */}
+                  <button
+                    type="button"
+                    onClick={() => setDrillDownModal(null)}
+                    className="ml-3 px-4 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-sm uppercase tracking-wider text-xs transition cursor-pointer"
+                  >
+                    Fechar
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ============================================================
           8. CENTRAL DE IMPORTAÇÃO MULTI-FONTES (MODAL)

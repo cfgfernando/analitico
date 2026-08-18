@@ -180,11 +180,42 @@ export class TenantsService implements OnModuleInit {
     this.siconfiSyncService = siconfiSyncService || null;
   }
 
-  onModuleInit() {
+  async onModuleInit() {
     if (this.siconfiSyncService) {
       this.logger.log('SiconfiSyncService conectado ao TenantsService para sync real.');
     } else {
       this.logger.warn('SiconfiSyncService não disponível. Sync usará modo simulado.');
+    }
+
+    try {
+      const dbTenants = await this.tenantsRepository.findAll();
+      if (dbTenants && dbTenants.length > 0) {
+        for (const dbT of dbTenants) {
+          const exists = this.saasTenants.find(t => t.id === dbT.id || t.codigoIbge === dbT.codigoIbge);
+          if (!exists) {
+            this.saasTenants.push({
+              id: dbT.id,
+              codigoIbge: dbT.codigoIbge,
+              nomePrefeitura: dbT.nomePrefeitura,
+              cidade: dbT.cidade,
+              uf: dbT.estadoUf,
+              cnpj: dbT.cnpj,
+              status: dbT.status as any,
+              planoNome: 'Plano Básico Municipal',
+              valorMensalBase: 1890.0,
+              userLimit: 2,
+              valorUsuarioExtra: 150.0,
+              diaVencimento: 10,
+              emailFaturamento: dbT.emailFaturamento || 'fazenda@prefeitura.gov.br',
+              telefoneContato: dbT.telefoneContato || '(41) 3000-0000',
+              createdAt: dbT.createdAt.toISOString(),
+            });
+          }
+        }
+        this.logger.log(`[TenantsService] ${this.saasTenants.length} prefeituras sincronizadas com o banco.`);
+      }
+    } catch (e: any) {
+      this.logger.warn(`[TenantsService] Não foi possível sincronizar com o banco: ${e.message}`);
     }
   }
 

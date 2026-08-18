@@ -53,7 +53,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { ObraAraucaria, ObraStatus, ObraSecretaria, ObraFonteRecurso, ObrasSummary } from '../types/fiscal';
-import { formatCurrency, formatCompactCurrency, formatPercent, exportToCSV } from '../utils/formatters';
+import { formatCurrency, formatCompactCurrency, formatPercent, exportToCSV, formatDataBR } from '../utils/formatters';
 import { AraucariaSvgMap } from './AraucariaSvgMap';
 
 interface ModuleObrasMapProps {
@@ -236,8 +236,8 @@ export const ModuleObrasMap: React.FC<ModuleObrasMapProps> = ({
       'Fonte de Recursos': o.fonteRecurso,
       'Empresa Contratada': o.empresaContratada,
       'Contrato Nº': o.numeroContrato,
-      'Data Início': o.dataInicio,
-      'Previsão de Conclusão': o.dataPrevisaoFim,
+      'Data Início': formatDataBR(o.dataInicio),
+      'Previsão de Conclusão': formatDataBR(o.dataPrevisaoFim),
       'Beneficiários Estimados': o.beneficiariosEstimados || '-',
       'Impacto Social / Urbano': o.impactoSocial,
     }));

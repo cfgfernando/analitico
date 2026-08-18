@@ -13,6 +13,8 @@ import { AuthenticatedUser } from '../interfaces/jwt-payload.interface';
  *
  * MASTER_ADMIN tem acesso cross-tenant irrestrito.
  */
+import { resolveTenant } from '../../municipalFiscalEngine';
+
 @Injectable()
 export class TenantGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
@@ -20,7 +22,7 @@ export class TenantGuard implements CanActivate {
     const user = request.user as AuthenticatedUser | undefined;
 
     if (!user) {
-      // Sem usuário = JwtAuthGuard vai lidar com 401
+      // Sem usuário logado
       return true;
     }
 
@@ -38,13 +40,24 @@ export class TenantGuard implements CanActivate {
       return true;
     }
 
-    // Enforce: se foi solicitado um tenant diferente do que está no token -> 403
-    if (requestedTenant && requestedTenant !== user.tenantId) {
-      throw new ForbiddenException(
-        `[Isolamento de Tenant] Acesso cruzado não autorizado. ` +
-        `Seu usuário pertence ao município '${user.tenantId}', mas tentou acessar dados de '${requestedTenant}'. ` +
-        `Cada prefeitura só acessa seus próprios dados.`,
-      );
+    if (requestedTenant) {
+      const userTenant = resolveTenant(user.tenantId, []);
+      const reqTenant = resolveTenant(requestedTenant, []);
+
+      // Se ambos foram resolvidos, compara id e codigoIbge
+      const isSameTenant =
+        userTenant.id === reqTenant.id ||
+        userTenant.codigoIbge === reqTenant.codigoIbge ||
+        user.tenantId === requestedTenant;
+
+      if (!isSameTenant) {
+        throw new ForbiddenException(
+          `[Isolamento de Tenant] Acesso cruzado não autorizado. ` +
+          `Seu usuário pertence ao município '${userTenant.nomePrefeitura}' (${userTenant.codigoIbge}), ` +
+          `mas tentou acessar dados de '${reqTenant.nomePrefeitura}' (${reqTenant.codigoIbge}). ` +
+          `Cada prefeitura só acessa seus próprios dados.`,
+        );
+      }
     }
 
     // Força o tenantId da requisição a ser o do token JWT (imutável)

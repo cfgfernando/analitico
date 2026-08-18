@@ -33,7 +33,7 @@ import {
   ChamadaCalendario,
   SimulacaoContrapartida,
 } from '../types/fiscal';
-import { formatCompactCurrency, formatCurrency, formatPercent } from '../utils/formatters';
+import { formatCompactCurrency, formatCurrency, formatPercent, formatDataBR } from '../utils/formatters';
 import { DataSourceBadge } from './DataSourceBadge';
 
 interface RadarCaptacaoProps {
@@ -753,7 +753,7 @@ export const RadarCaptacao: React.FC<RadarCaptacaoProps> = ({
 
                 <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                   <span className="text-[10px] font-mono text-slate-400">
-                    Prazo final: {prog.dataFimInscricao}
+                    Prazo final: {formatDataBR(prog.dataFimInscricao)}
                   </span>
                   <a
                     href={prog.linkTransferegov}

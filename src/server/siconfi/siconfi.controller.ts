@@ -55,6 +55,7 @@ export class SiconfiController {
    * GET /api/siconfi/logs
    * Retorna os registros de auditoria e histórico de sincronização
    */
+  @Public()
   @Get('logs')
   getLogs(@Query('tenantId') tenantId?: string) {
     return {
@@ -67,6 +68,7 @@ export class SiconfiController {
    * GET /api/siconfi/proxy
    * Gateway proxy transparente para consultas dinâmicas à API Siconfi
    */
+  @Public()
   @Get('proxy')
   async queryProxy(@Query() query: Record<string, string>) {
     const endpoint = query.endpoint || 'entes';

@@ -16,6 +16,17 @@ import {
 } from '../types/fiscal';
 import { buildComparativeAnalysis } from '../utils/comparative';
 import api from '../api/client';
+import {
+  resolveTenant,
+  getMunicipalFiscalSummary,
+  getMunicipalReceitas,
+  getMunicipalDespesas,
+  getMunicipalLimites,
+  getMunicipalCaptacao,
+  getMunicipalFundeb,
+  getMunicipalAlertas,
+  getMunicipalObras,
+} from '../server/municipalFiscalEngine';
 
 export interface FiscalDataHook {
   loading: boolean;
@@ -99,23 +110,44 @@ export function useFiscalData(
         api.get<any>(`/api/siconfi/status${query}`).catch(() => null),
       ]);
 
-      if (summaryRes) setSummary(summaryRes);
-      if (receitasRes) {
+      const tenantInfo = resolveTenant(safeTenantId || safeIbge, []);
+
+      const finalSummary = (summaryRes || getMunicipalFiscalSummary(tenantInfo, ano)) as FiscalKPIs;
+      setSummary(finalSummary);
+
+      if (receitasRes && (Array.isArray(receitasRes) ? receitasRes.length > 0 : (receitasRes.receitas && receitasRes.receitas.length > 0))) {
         setReceitas(Array.isArray(receitasRes) ? receitasRes : (receitasRes.receitas || []));
+      } else {
+        const fallbackRec: any = getMunicipalReceitas(tenantInfo, ano);
+        setReceitas(fallbackRec.receitas || fallbackRec || []);
       }
-      if (despesasRes) {
+
+      if (despesasRes && (despesasRes.porNatureza?.length > 0 || despesasRes.porFuncao?.length > 0)) {
         setPorNatureza(Array.isArray(despesasRes.porNatureza) ? despesasRes.porNatureza : (Array.isArray(despesasRes) ? despesasRes : []));
         setPorFuncao(Array.isArray(despesasRes.porFuncao) ? despesasRes.porFuncao : []);
+      } else {
+        const desp: any = getMunicipalDespesas(tenantInfo, ano);
+        setPorNatureza(desp.porNatureza || []);
+        setPorFuncao(desp.porFuncao || []);
       }
-      if (lrfRes) {
+
+      if (lrfRes && (Array.isArray(lrfRes) ? lrfRes.length > 0 : (lrfRes.limites && lrfRes.limites.length > 0))) {
         setLimites(Array.isArray(lrfRes) ? lrfRes : (lrfRes.limites || []));
+      } else {
+        const fallbackLim: any = getMunicipalLimites(tenantInfo, ano);
+        setLimites(fallbackLim.limites || fallbackLim || []);
       }
-      if (captacaoRes) setCaptacao(captacaoRes);
-      if (fundebRes) setFundeb(fundebRes);
-      if (alertasRes) {
+
+      setCaptacao(captacaoRes || (getMunicipalCaptacao(tenantInfo) as any));
+      setFundeb(fundebRes || (getMunicipalFundeb(tenantInfo) as any));
+      
+      if (alertasRes && (Array.isArray(alertasRes) ? alertasRes.length > 0 : (alertasRes.alertas && alertasRes.alertas.length > 0))) {
         setAlerts(Array.isArray(alertasRes) ? alertasRes : (alertasRes.alertas || []));
+      } else {
+        setAlerts(getMunicipalAlertas(tenantInfo) as FiscalAlert[]);
       }
-      if (obrasRes) setObrasData(obrasRes);
+
+      setObrasData(obrasRes?.obras?.length ? obrasRes : (getMunicipalObras(tenantInfo) as any));
       if (siconfiRes) setSiconfiStatus(siconfiRes);
 
       if (isComparativoAnual) {

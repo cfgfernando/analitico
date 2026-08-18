@@ -42,13 +42,38 @@ export function isEmendaRecente(dataProcessamento?: string, dias: number = 7): b
   return diffMs >= 0 && diffMs <= maxMs;
 }
 
-export function formatDataBR(dataStr?: string): string {
-  if (!dataStr || typeof dataStr !== 'string') return '-';
-  const parts = dataStr.split('-');
-  if (parts.length === 3) {
-    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+export function formatDataBR(dataInput?: string | Date | null): string {
+  if (!dataInput) return '-';
+  if (dataInput instanceof Date) {
+    if (isNaN(dataInput.getTime())) return '-';
+    return dataInput.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
   }
-  return dataStr;
+  if (typeof dataInput !== 'string') return '-';
+  const trimmed = dataInput.trim();
+  if (!trimmed) return '-';
+
+  // Se já estiver no formato DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  // Remove parte de hora se houver (ex.: 2026-03-02T00:00:00.000Z ou 2026-03-02 00:00:00)
+  const clean = trimmed.split('T')[0].split(' ')[0];
+  const parts = clean.split('-');
+  if (parts.length === 3 && parts[0].length === 4) {
+    const ano = parts[0];
+    const mes = parts[1].padStart(2, '0');
+    const dia = parts[2].padStart(2, '0');
+    return `${dia}/${mes}/${ano}`;
+  }
+
+  // Tenta parse via Date
+  const parsed = new Date(trimmed);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+  }
+
+  return trimmed;
 }
 
 export function getDiasDecorridos(dataStr?: string): number {

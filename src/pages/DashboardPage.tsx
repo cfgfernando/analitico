@@ -85,6 +85,8 @@ interface DashboardPageProps {
   isPresentationMode?: boolean;
 }
 
+import { getMunicipalFiscalSummary, resolveTenant } from '../server/municipalFiscalEngine';
+
 export const DashboardPage: React.FC<DashboardPageProps> = ({
   activeTab,
   ano,
@@ -167,10 +169,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           />
         )}
 
-        {activeTab === 'modulo1' && (
-          summary ? (
+        {activeTab === 'modulo1' && (() => {
+          const tenantInfo = resolveTenant(activeTenant?.codigoIbge || activeTenant?.id || '4101804', []);
+          const displaySummary = (summary || getMunicipalFiscalSummary(tenantInfo, ano)) as FiscalKPIs;
+
+          return (
             <Module1KPIs
-              summary={summary}
+              summary={displaySummary}
               alerts={alerts}
               ano={ano}
               onNavigateToTab={onNavigateToTab}
@@ -181,13 +186,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               quarterlyComparativeData={quarterlyComparativeData}
               tenantInfo={activeTenant}
             />
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20 space-y-3">
-              <RefreshCw className="w-8 h-8 animate-spin text-emerald-500" />
-              <p className="text-sm font-mono text-slate-500">Carregando indicadores fiscais do Exercício {ano}...</p>
-            </div>
-          )
-        )}
+          );
+        })()}
 
         {activeTab === 'modulo2' && (
           <Module2Receitas
@@ -274,7 +274,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         )}
 
         {activeTab === 'siconfi' && (
-          <ModuleSiconfiExplorer siconfiStatus={siconfiStatus} ano={ano} />
+          <ModuleSiconfiExplorer siconfiStatus={siconfiStatus} ano={ano} activeTenant={activeTenant} />
         )}
 
         {activeTab === 'diagnostico' && (
